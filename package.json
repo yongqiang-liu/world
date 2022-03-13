@@ -1,0 +1,36 @@
+{
+  "name": "world",
+  "private": true,
+  "version": "2.0.0",
+  "description": "世界OL日常脚本",
+  "scripts": {
+    "start": "yarn build:preload && cross-env TS_NODE_TRANSPILE_ONLY=true electron -r ts-node/register -r tsconfig-paths/register ./src/electron-main/main.ts",
+    "build": "yarn build:preload && yarn build:main",
+    "build:main": "webpack --config ./build/webpack.main.ts",
+    "build:preload": "webpack --config ./build/webpack.renderer.ts",
+    "package": "electron-builder build --publish never",
+    "prepackage": "node prebuild.js && npm run clean && yarn build",
+    "patch": "node scripts/patch.js",
+    "major": "node scripts/major.js",
+    "clean": "rimraf ./release/build"
+  },
+  "author": "Seven",
+  "dependencies": {
+    "electron-updater": "^4.6.5",
+    "json5": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.21",
+    "cross-env": "^7.0.3",
+    "electron": "15.3.0",
+    "electron-builder": "^22.14.13",
+    "prettier": "^2.5.1",
+    "rimraf": "^3.0.2",
+    "ts-loader": "^9.2.7",
+    "ts-node": "^10.7.0",
+    "tsconfig-paths": "^3.13.0",
+    "typescript": "^4.6.2",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2"
+  }
+}

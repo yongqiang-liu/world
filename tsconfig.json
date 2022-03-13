@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "lib": ["esnext", "dom"],
+    "declaration": true,
+    "declarationMap": true,
+    "strict": true,
+    "pretty": true,
+    "sourceMap": true,
+    "baseUrl": "./src",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "paths": {
+      "common/*": ["electron-common/*"],
+      "main/*": ["electron-main/*"],
+      "renderer/*":["electron-renderer/*"]
+    },
+  },
+  "exclude": ["assets/*"]
+}
