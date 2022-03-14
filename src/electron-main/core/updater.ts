@@ -14,6 +14,8 @@ export const enum UPDATER_EVENT {
 
 export default class AutoUpdater {
   constructor(window: MainWidow) {
+    autoUpdater.autoDownload = false;
+
     autoUpdater.on(UPDATER_EVENT.CHECKING_FOR_UPDATE, () => {
       console.log("检查更新中...");
     });

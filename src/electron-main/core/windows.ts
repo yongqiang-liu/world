@@ -590,6 +590,7 @@ export default class MainWidow extends BrowserWindow {
 
     this.on("closed", () => {
       app.quit();
+      
     });
 
     this.on("focus", () => {
