@@ -1,4 +1,4 @@
-import { dialog, nativeImage } from "electron";
+import { app, dialog, nativeImage } from "electron";
 import { autoUpdater, ProgressInfo, UpdateInfo } from "electron-updater";
 import { resolveAssets } from "./paths";
 import MainWidow from "./windows";
@@ -60,9 +60,10 @@ export default class AutoUpdater {
           icon: nativeImage.createFromPath(resolveAssets("icons/win/icon.ico")),
           buttons: ["立即退出并更新", "退出时自动更新"],
         });
-        
+
         if (response.response === 0) {
           autoUpdater.quitAndInstall(true, true);
+          app.quit();
         }
 
         if (response.response === 1) {

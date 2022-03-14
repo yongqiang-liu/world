@@ -588,6 +588,10 @@ export default class MainWidow extends BrowserWindow {
       }, 200)
     );
 
+    this.on("closed", () => {
+      app.quit();
+    });
+
     this.on("focus", () => {
       this.registerAccelerator = true;
     });
