@@ -1,6 +1,6 @@
 import { BrowserWindow, Notification, ipcMain, app } from "electron";
 import { resolveAssets } from "./paths";
-import Configuration from "./Configuration";
+import Configuration, { ConfigurationEvents } from "./Configuration";
 import GameView, { GameViewState } from "./GameView";
 import { combineKey, KEYMAP } from "../../electron-common/keymap";
 import VERSIONMAP from "./versions";
@@ -9,7 +9,11 @@ import { Account, IConfiguration } from "common/configuration";
 import { IPCM } from "common/ipcEventConst";
 import { MainWidowConfiguration } from "./windowConfig";
 import AutoUpdater from "./updater";
-import { buildFromTemplateWrapper, MenuTemplate } from "./menuHelper";
+import {
+  buildFromTemplateWrapper,
+  hookWindowMenuClick,
+  MenuTemplate,
+} from "./menuHelper";
 
 ipcMain.setMaxListeners(30);
 
@@ -91,13 +95,7 @@ export default class MainWidow extends BrowserWindow {
 
     this.registerListener();
     this.buildWindowMenu();
-
-    setInterval(async () => {
-      this.updateViewConfiguration();
-      // console.time("构建菜单耗时: ");
-      await this.buildWindowMenu();
-      // console.timeEnd("构建菜单耗时: ");
-    }, 300);
+    this.updateViewConfiguration();
   }
 
   async prebuildWindowMenu() {
@@ -332,12 +330,11 @@ export default class MainWidow extends BrowserWindow {
   async buildWindowMenu() {
     await this.prebuildWindowMenu();
 
-    // this.windowMenus = hookWindowMenuClick(this.windowMenus, () => {
-    //   console.log("重新构建菜单");
-
-    //   // 重新构建菜单
-    //   this.buildWindowMenu();
-    // });
+    this.windowMenus = hookWindowMenuClick(this.windowMenus, async () => {
+      console.time("构建菜单耗时: ");
+      await this.buildWindowMenu();
+      console.timeEnd("构建菜单耗时: ");
+    });
 
     const windowMenu = buildFromTemplateWrapper(this.windowMenus, {
       enable: this.enable,
@@ -512,6 +509,7 @@ export default class MainWidow extends BrowserWindow {
     this.setTopBrowserView(view.view);
     this.actived_view = top;
     this.activedView = view;
+    this.buildWindowMenu();
   }
 
   switchVersion(name: string) {
@@ -535,6 +533,12 @@ export default class MainWidow extends BrowserWindow {
   }
 
   registerListener() {
+    // 自动更新配置
+    this.configuration.on(ConfigurationEvents.SAVED, () => {
+      this.updateViewConfiguration();
+      this.buildWindowMenu();
+    });
+
     ipcMain.handle(IPCM.INVOKE_VERSION_INFO, () => {
       return VERSIONMAP[this.config.version];
     });

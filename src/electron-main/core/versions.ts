@@ -7,7 +7,7 @@ export interface Version {
   url: string;
 }
 
-const enum VERSIONNAME {
+const enum VERSIONNAMES {
   XIAOQI = "小七",
   TIANYU = "天宇",
   GUANFANG = "官方",
@@ -27,13 +27,13 @@ const VersionMap: VersionMap = {};
     };
   }
 
-  Define(VERSIONNAME.XIAOQI, "http://www.x7sy.com/h5game_play/182.html");
+  Define(VERSIONNAMES.XIAOQI, "http://www.x7sy.com/h5game_play/182.html");
   Define(
-    VERSIONNAME.TIANYU,
+    VERSIONNAMES.TIANYU,
     "https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953"
   );
   Define(
-    VERSIONNAME.GUANFANG,
+    VERSIONNAMES.GUANFANG,
     "https://worldh5.gamehz.cn/version/world/publish/channel/res/index.html"
   );
 })();

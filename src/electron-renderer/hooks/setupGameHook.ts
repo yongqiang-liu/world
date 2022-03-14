@@ -19,39 +19,30 @@ function setupMsgHandler() {
   });
 
   // ESCORT
-  bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_START, (t: any) => {
-    window.__myEvent__.emit(EVENTS.ENTER_ESCORT_MAP, t);
+  bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_START, () => {
+    window.__myEvent__.emit(EVENTS.ENTER_ESCORT_MAP);
   });
 
-  bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_MOVE, (...args: any[]) => {
-    console.log(...args);
+  bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_MOVE, () => {
     window.__myEvent__.emit(EVENTS.MOVE_ESCORT_MAP);
   });
 
-  bindMsgHandler(
-    ProtocolDefine.CG_TASK_ESCORT_CHOICE_EVENT,
-    (...args: any[]) => {
-      console.log(...args);
-      window.__myEvent__.emit(EVENTS.CHECK_ESCORT_EVENT);
-    }
-  );
+  bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_CHOICE_EVENT, () => {
+    window.__myEvent__.emit(EVENTS.CHECK_ESCORT_EVENT);
+  });
 
-  bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_CANCEL, (...args: any[]) => {
-    console.log(...args);
+  bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_CANCEL, () => {
     window.__myEvent__.emit(EVENTS.EXIT_ESCORT_MAP);
   });
 
   // Battle
-  bindMsgHandler(ProtocolDefine.CG_FIGHT_BATTLE_UPDATE, (...args: any[]) => {
-    console.log("更新战斗: ", ...args);
+  bindMsgHandler(ProtocolDefine.CG_FIGHT_BATTLE_UPDATE, () => {
+    console.log("更新战斗: ");
   });
 
-  bindMsgHandler(
-    ProtocolDefine.CG_FIGHT_ENTER_PLAYER_REMOTEBATTLE_EXIT,
-    (...args: any[]) => {
-      console.log("退出战斗: ", ...args);
-    }
-  );
+  bindMsgHandler(ProtocolDefine.CG_FIGHT_ENTER_PLAYER_REMOTEBATTLE_EXIT, () => {
+    console.log("退出战斗: ");
+  });
 
   // City
   bindMsgHandler(ProtocolDefine.CG_SCENE_GO_CITY, () => {

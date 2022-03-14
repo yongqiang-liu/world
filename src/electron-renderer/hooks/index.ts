@@ -1,13 +1,13 @@
 import { IPCM } from "common/ipcEventConst";
 import { ipcRenderer } from "electron";
-import ExpandBagTool from "./AutoExpandBag";
-import AutoOnlineReward from "./AutoOnlineReward";
-import AutoRepairEquip from "./AutoRepairEquip";
-import AutoSell from "./AutoSell";
-import DefaultFunction from "./Default";
+import ExpandBagTool from "./tools/AutoExpandBag";
+import AutoOnlineReward from "./tools/AutoOnlineReward";
+import AutoRepairEquip from "./tools/AutoRepairEquip";
+import AutoSell from "./tools/AutoSell";
+import DefaultFunction from "./tools/Default";
 import setupFunction from "./setupFunction";
 import setupGameHook from "./setupGameHook";
-import TestRefreshGame from "./TestRefreshGame";
+import TestRefreshGame from "./tools/TestRefreshGame";
 
 export function setupHooks() {
   ipcRenderer.send(IPCM.GAME_HOOK_STARTED);
