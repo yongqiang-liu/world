@@ -49,26 +49,27 @@ export default class AutoUpdater {
       }
     );
 
-    autoUpdater.on(UPDATER_EVENT.UPDATE_DOWNLOADED, (info: UpdateInfo) => {
-      console.log("下载更新完成...", info);
-      dialog
-        .showMessageBox(window, {
+    autoUpdater.on(
+      UPDATER_EVENT.UPDATE_DOWNLOADED,
+      async (info: UpdateInfo) => {
+        console.log("下载更新完成...", info);
+        const response = await dialog.showMessageBox(window, {
           title: "世界OL脚本更新",
           message: "新版本已下载完成...",
-          type: "none",
+          defaultId: 0,
           icon: nativeImage.createFromPath(resolveAssets("icons/win/icon.ico")),
           buttons: ["立即退出并更新", "退出时自动更新"],
-        })
-        .then((v) => {
-          if (v.response === 0) {
-            autoUpdater.quitAndInstall();
-          }
-          if (v.response === 1) {
-            autoUpdater.autoInstallOnAppQuit = true;
-          }
-        })
-        .catch((err) => console.error(err));
-    });
+        });
+        
+        if (response.response === 0) {
+          autoUpdater.quitAndInstall(true, true);
+        }
+
+        if (response.response === 1) {
+          autoUpdater.autoInstallOnAppQuit = true;
+        }
+      }
+    );
   }
 
   checkUpdate() {
