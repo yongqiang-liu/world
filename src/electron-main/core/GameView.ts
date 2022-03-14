@@ -185,7 +185,7 @@ export default class GameView {
     this.setOptionLock = true;
     await this.whenInitalized();
 
-    this.send(IPCR.SET_SELL_OPTIONS, this._sellOptions);
+    this.send(IPCR.SET_SELL_OPTIONS, JSON.parse(JSON.stringify(this._sellOptions)));
     this.setOptionLock = false;
   }
 

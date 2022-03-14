@@ -1,4 +1,5 @@
 import { IConfiguration } from "common/configuration";
+import { deepProxy } from "common/functional";
 import EventEmitter from "events";
 import fs from "fs";
 
@@ -26,6 +27,7 @@ export const enum ConfigurationEvents {
   SAVED = "saved",
 }
 
+
 export default class Configuration extends EventEmitter {
   configuration!: IConfiguration;
 
@@ -47,7 +49,7 @@ export default class Configuration extends EventEmitter {
       this.configuration = defaultConfigurtion;
     }
 
-    this.configuration = new Proxy(this.configuration, {
+    this.configuration = deepProxy(this.configuration, {
       set: (target, p, value) => {
         target[p] = value;
 
@@ -76,7 +78,7 @@ export default class Configuration extends EventEmitter {
         flag: "w+",
       },
       (err) => {
-        console.error(err);
+        if(err) console.error(err);
       }
     );
 

@@ -28,6 +28,7 @@ window.addEventListener("load", async () => {
   setupHooks();
 
   await whenGameStarted();
+  console.log('进入游戏并选择角色...');
 
   setupEvent();
 

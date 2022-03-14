@@ -3,7 +3,7 @@ import { SellOptions } from "common/Sell";
 import { ipcRenderer } from "electron";
 import { EVENTS } from "renderer/events/eventConst";
 import { Define } from "renderer/gameConst";
-import { gameStarted, transformFilter } from "renderer/gameFunctional";
+import { gameStarted, transformFilter, whenGameStarted } from "renderer/gameFunctional";
 import { isRegExp } from "util";
 
 export default class AutoSell {
@@ -313,7 +313,9 @@ export default class AutoSell {
     window.AutoSell.sendToSellNoAlert(t);
   }
 
-  private sell() {
+  private async sell() {
+    await whenGameStarted();
+
     window?.AutoSell?.autoSell_onekeyDailyMission();
   }
 

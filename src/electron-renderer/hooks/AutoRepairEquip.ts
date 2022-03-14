@@ -1,9 +1,13 @@
+import { EVENTS } from "renderer/events/eventConst";
+
 export default class AutoRepairEquip {
   _isStarting = false;
 
   private _interval: null | number = null;
 
-  private repairEquipTimer = false;
+  private repairEquipTimer: null | number = null;
+
+  private requireEquipTimer = false;
 
   private useRepairRoll = false;
 
@@ -14,9 +18,11 @@ export default class AutoRepairEquip {
   start(d = 1000) {
     if (!this._isStarting && !this._interval) {
       this._interval = window.setInterval(() => {
-        if (!this.repairEquipTimer) this.logic();
+        if (!this.requireEquipTimer) this.logic();
       }, d);
       this._isStarting = true;
+
+      window.__myEvent__.on(EVENTS.ENTER_CITY, this.enterCity);
     }
   }
 
@@ -25,13 +31,22 @@ export default class AutoRepairEquip {
       clearInterval(this._interval);
       this._interval = null;
       this._isStarting = false;
+      window.__myEvent__.removeListener(EVENTS.ENTER_CITY, this.enterCity);
     }
+  }
+
+  private enterCity() {
+    if (this.repairEquipTimer) clearTimeout(this.repairEquipTimer);
+    this.requireEquipTimer = false;
   }
 
   private setRepairTimer() {
     /** 修理的内置计时器 */
-    if (this.repairEquipTimer)
-      setTimeout(() => (this.repairEquipTimer = false), 5 * 60 * 1000);
+    if (this.requireEquipTimer)
+      this.repairEquipTimer = window.setTimeout(() => {
+        this.requireEquipTimer = false;
+        this.repairEquipTimer = null;
+      }, 5 * 60 * 1000);
   }
 
   private doUseRepairRoll() {
@@ -48,10 +63,10 @@ export default class AutoRepairEquip {
   private logic() {
     if (window?.xworld.isInCityNow()) {
       window?.xworld?.doRepairEquipNoAlert();
-      this.repairEquipTimer = true;
+      this.requireEquipTimer = true;
     } else if (!window?.xworld.isInCityNow() && this.useRepairRoll) {
       this.doUseRepairRoll();
-      this.repairEquipTimer = true;
+      this.requireEquipTimer = true;
     }
 
     this.setRepairTimer();

@@ -2,11 +2,11 @@ import { EVENTS, WroldEvent } from "renderer/events/eventConst";
 import { ProtocolDefine } from "renderer/gameConst";
 
 function setupMsgHandler() {
+  const msgHandler = window.nato.Network.addMsgHandler;
+
   function bindMsgHandler(protocol: number, callback: Function) {
     msgHandler?.(protocol, callback, window.MsgHandler.instance);
   }
-
-  const msgHandler = window.nato.Network.addMsgHandler;
 
   // Bag
   // 整理背包
@@ -16,7 +16,7 @@ function setupMsgHandler() {
 
   bindMsgHandler(ProtocolDefine.CG_SCENE_GO_CITY, () => {
     window.__myEvent__.emit(EVENTS.ENTER_CITY);
-  })
+  });
 
   // ESCORT
   bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_START, (t: any) => {
@@ -52,6 +52,11 @@ function setupMsgHandler() {
       console.log("退出战斗: ", ...args);
     }
   );
+
+  // City
+  bindMsgHandler(ProtocolDefine.CG_SCENE_GO_CITY, () => {
+    window.__myEvent__.emit(EVENTS.ENTER_CITY);
+  });
 }
 
 export default function setupGameHook() {

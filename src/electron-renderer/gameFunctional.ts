@@ -56,7 +56,6 @@ export function whenGameStarted() {
   return new Promise<void>((resolve) => {
     const t = setInterval(() => {
       if (gameStarted()) {
-        console.log("点击进入游戏按钮");
         clearInterval(t);
         resolve();
       }

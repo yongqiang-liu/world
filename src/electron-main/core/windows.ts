@@ -4,16 +4,12 @@ import Configuration from "./Configuration";
 import GameView, { GameViewState } from "./GameView";
 import { combineKey, KEYMAP } from "../../electron-common/keymap";
 import VERSIONMAP from "./versions";
-import { debounce, fromEmitter, timeoutWithPromise } from "common/functional";
+import { debounce, timeoutWithPromise } from "common/functional";
 import { Account, IConfiguration } from "common/configuration";
 import { IPCM } from "common/ipcEventConst";
 import { MainWidowConfiguration } from "./windowConfig";
 import AutoUpdater from "./updater";
-import {
-  buildFromTemplateWrapper,
-  hookWindowMenuClick,
-  MenuTemplate,
-} from "./menuHelper";
+import { buildFromTemplateWrapper, MenuTemplate } from "./menuHelper";
 
 ipcMain.setMaxListeners(30);
 
@@ -36,6 +32,10 @@ export interface ViewState {
 
 // 再三思考决定采用 BrowserView 来实现窗口的堆叠
 export default class MainWidow extends BrowserWindow {
+  private oneKeyDailyMission = false;
+
+  private oneKeyRefreshMonster = false;
+
   private actived_view = 0;
 
   private views: Array<GameView> = [];
@@ -63,6 +63,8 @@ export default class MainWidow extends BrowserWindow {
 
     this.accounts.push(...configuration.configuration.accounts);
 
+    this.setMenu(null);
+
     this.initalize();
     this.updater.checkUpdate();
   }
@@ -89,9 +91,19 @@ export default class MainWidow extends BrowserWindow {
     }
 
     this.registerListener();
-    this.updateViewConfiguration();
-
     this.buildWindowMenu();
+
+    const t = setInterval(async () => {
+      if (this.isDestroyed()) {
+        clearInterval(t);
+        return;
+      }
+
+      this.updateViewConfiguration();
+      // console.time("构建菜单耗时: ");
+      await this.buildWindowMenu();
+      // console.timeEnd("构建菜单耗时: ");
+    }, 300);
   }
 
   async prebuildWindowMenu() {
@@ -105,23 +117,15 @@ export default class MainWidow extends BrowserWindow {
 
     if (this.activedView) {
       const refreshMonster: boolean = !!(await timeoutWithPromise(
-        fromEmitter.bind(
-          this,
-          ipcMain,
-          IPCM.RECEIVE_IS_REFESH_MONSTER,
-          (_e, v: boolean) => v
-        ),
-        false
+        this.activedView.getRefreshMonster.bind(this.activedView),
+        false,
+        100
       ));
 
       const oneKeyDailyMission: boolean = !!(await timeoutWithPromise(
-        fromEmitter.bind(
-          this,
-          ipcMain,
-          IPCM.RECEIVE_IS_AUTO_DAILY,
-          (_e, v: boolean) => v
-        ),
-        false
+        this.activedView.getAutoDaily.bind(this.activedView),
+        false,
+        100
       ));
 
       this.windowMenus[0] = {
@@ -135,9 +139,11 @@ export default class MainWidow extends BrowserWindow {
           {
             label: "自动日常",
             type: "checkbox",
-            checked: oneKeyDailyMission,
+            checked: oneKeyDailyMission || this.oneKeyDailyMission,
             click: async () => {
-              this.activedView?.setOneKeyDailyMission(!oneKeyDailyMission);
+              this.activedView?.setOneKeyDailyMission(
+                !(oneKeyDailyMission || this.oneKeyDailyMission)
+              );
             },
           },
           {
@@ -161,11 +167,11 @@ export default class MainWidow extends BrowserWindow {
           {
             label: "一键自动日常",
             type: "checkbox",
-            checked: oneKeyDailyMission,
+            checked: this.oneKeyDailyMission,
             click: () => {
+              this.oneKeyDailyMission = !this.oneKeyDailyMission;
               this.views.map(async (view) => {
-                const oneKeyDailyMission = !!!(await view.getAutoDaily());
-                view.setOneKeyDailyMission(!oneKeyDailyMission);
+                view.setOneKeyDailyMission(this.oneKeyDailyMission);
               });
             },
           },
@@ -220,10 +226,11 @@ export default class MainWidow extends BrowserWindow {
           {
             label: "自动刷怪",
             type: "checkbox",
-            checked: refreshMonster,
+            checked: this.oneKeyRefreshMonster,
             click: () => {
-              this.views.map(async (view) => {
-                view.setRefreshMonster(await view.getRefreshMonster());
+              this.oneKeyRefreshMonster = !this.oneKeyRefreshMonster;
+              this.views.map((view) => {
+                view.setRefreshMonster(this.oneKeyRefreshMonster);
               });
             },
           },
@@ -331,19 +338,19 @@ export default class MainWidow extends BrowserWindow {
   async buildWindowMenu() {
     await this.prebuildWindowMenu();
 
-    this.windowMenus = hookWindowMenuClick(this.windowMenus, () => {
-      console.log("重新构建菜单");
+    // this.windowMenus = hookWindowMenuClick(this.windowMenus, () => {
+    //   console.log("重新构建菜单");
 
-      // 重新构建菜单
-      this.buildWindowMenu();
-    });
+    //   // 重新构建菜单
+    //   this.buildWindowMenu();
+    // });
 
     const windowMenu = buildFromTemplateWrapper(this.windowMenus, {
       enable: this.enable,
       registerAccelerator: this.registerAccelerator,
     });
 
-    this.setMenu(windowMenu);
+    if (!this.isDestroyed()) this.setMenu(windowMenu);
   }
 
   async saveAccounts() {
@@ -511,7 +518,6 @@ export default class MainWidow extends BrowserWindow {
     this.setTopBrowserView(view.view);
     this.actived_view = top;
     this.activedView = view;
-    this.buildWindowMenu();
   }
 
   switchVersion(name: string) {
@@ -524,16 +530,12 @@ export default class MainWidow extends BrowserWindow {
       if (this.config.accounts[i])
         this.config.accounts[i].url = VERSIONMAP[name].url;
     }
-
-    this.configuration.save();
   }
 
   setViewOptionById(id: number, viewState: GameViewState) {
     this.viewsState.map((state) => {
       if (state.id === id) {
         state.state = viewState;
-
-        this.buildWindowMenu();
       }
     });
   }
@@ -588,23 +590,19 @@ export default class MainWidow extends BrowserWindow {
 
     this.on("focus", () => {
       this.registerAccelerator = true;
-      this.buildWindowMenu();
     });
 
     this.on("hide", () => {
       this.registerAccelerator = false;
-      this.buildWindowMenu();
     });
 
     this.on("minimize", () => {
       this.registerAccelerator = false;
-      this.buildWindowMenu();
     });
 
     this.on("maximize", () => {
       this.registerAccelerator = true;
       this.focus();
-      this.buildWindowMenu();
     });
   }
 

@@ -98,7 +98,7 @@ function setupAutoFunction() {
 
     ipcRenderer.send(
       IPCM.RECEIVE_IS_REFESH_MONSTER,
-      window.OneKeyDailyMission._isStarting
+      window.testRefreshGame._isStarting
     );
   });
 
