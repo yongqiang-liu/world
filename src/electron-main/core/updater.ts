@@ -14,19 +14,21 @@ export const enum UPDATER_EVENT {
 
 export default class AutoUpdater {
   constructor(window: MainWidow) {
-    autoUpdater.autoDownload = false;
-
     autoUpdater.on(UPDATER_EVENT.CHECKING_FOR_UPDATE, () => {
       console.log("检查更新中...");
+      window.windowMenus[8] = { label: "检查更新中", enable: true };
     });
 
     autoUpdater.on(UPDATER_EVENT.UPDATE_AVAILABLE, (info: UpdateInfo) => {
       console.log("有更新可用...", info);
-      autoUpdater.downloadUpdate();
+
+      window.windowMenus[8] = { label: "有更新可用", enable: true };
     });
 
     autoUpdater.on(UPDATER_EVENT.UPDATE_NOT_AVAILABLE, (info: UpdateInfo) => {
       console.log("无更新可用...", info);
+
+      window.windowMenus[8] = { label: "无更新可用", enable: true };
     });
 
     autoUpdater.on(UPDATER_EVENT.ERROR, (err: Error) => {
@@ -47,7 +49,10 @@ export default class AutoUpdater {
           progressObj.total +
           ")";
 
-        console.log(log_message);
+        window.windowMenus[8] = {
+          label: `更新中(${progressObj.percent})`,
+          enable: true,
+        };
       }
     );
 
@@ -55,6 +60,8 @@ export default class AutoUpdater {
       UPDATER_EVENT.UPDATE_DOWNLOADED,
       async (info: UpdateInfo) => {
         console.log("下载更新完成...", info);
+
+        window.windowMenus[8] = { label: "下载更新完成", enable: true };
         const response = await dialog.showMessageBox(window, {
           title: "世界OL脚本更新",
           message: "新版本已下载完成...",
@@ -73,9 +80,7 @@ export default class AutoUpdater {
         }
       }
     );
-  }
 
-  checkUpdate() {
     autoUpdater.checkForUpdatesAndNotify();
   }
 }

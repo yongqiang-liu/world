@@ -20,7 +20,9 @@
   extraResources: ["./assets"],
   nsis: {
     oneClick: false,
+    allowElevation: true,
     allowToChangeInstallationDirectory: true,
+    shortcutName: '世界H5'
   },
   directories: {
     app: "./release/app",

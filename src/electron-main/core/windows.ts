@@ -46,7 +46,7 @@ export default class MainWidow extends BrowserWindow {
 
   private activedView: GameView | null = null;
 
-  private windowMenus: MenuTemplate[] = [];
+  windowMenus: MenuTemplate[] = [];
 
   private config: IConfiguration;
 
@@ -54,7 +54,7 @@ export default class MainWidow extends BrowserWindow {
 
   private registerAccelerator = false;
 
-  private readonly updater = new AutoUpdater(this);
+  updater = new AutoUpdater(this);
 
   constructor(private readonly configuration: Configuration) {
     super(MainWidowConfiguration);
@@ -66,7 +66,6 @@ export default class MainWidow extends BrowserWindow {
     this.setMenu(null);
 
     this.initalize();
-    this.updater.checkUpdate();
   }
 
   initalize() {
@@ -93,12 +92,7 @@ export default class MainWidow extends BrowserWindow {
     this.registerListener();
     this.buildWindowMenu();
 
-    const t = setInterval(async () => {
-      if (this.isDestroyed()) {
-        clearInterval(t);
-        return;
-      }
-
+    setInterval(async () => {
       this.updateViewConfiguration();
       // console.time("构建菜单耗时: ");
       await this.buildWindowMenu();
@@ -116,11 +110,11 @@ export default class MainWidow extends BrowserWindow {
     }
 
     if (this.activedView) {
-      const refreshMonster: boolean = !!(await timeoutWithPromise(
-        this.activedView.getRefreshMonster.bind(this.activedView),
-        false,
-        100
-      ));
+      // const refreshMonster: boolean = !!(await timeoutWithPromise(
+      //   this.activedView.getRefreshMonster.bind(this.activedView),
+      //   false,
+      //   100
+      // ));
 
       const oneKeyDailyMission: boolean = !!(await timeoutWithPromise(
         this.activedView.getAutoDaily.bind(this.activedView),
@@ -587,11 +581,6 @@ export default class MainWidow extends BrowserWindow {
         }
       }, 200)
     );
-
-    this.on("closed", () => {
-      app.quit();
-      
-    });
 
     this.on("focus", () => {
       this.registerAccelerator = true;
