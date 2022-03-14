@@ -1,4 +1,6 @@
 export const enum EVENTS {
+  ENTER_CITY = "enter:city",
+
   DO_JUMP_MAP = "do:jump:map",
 
   BAG_WILL_FULL = "bag:will:full",

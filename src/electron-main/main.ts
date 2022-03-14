@@ -44,14 +44,14 @@ function setupProtocol() {
 }
 
 function setupTray() {
-  tray = new Tray(resolveAssets("icon.ico"));
+  tray = new Tray(resolveAssets("icons/win/icon.ico"));
 
   const contextMenu = Menu.buildFromTemplate([
     {
       label: "退出",
       type: "normal",
       click: () => {
-        mainWindow.close();
+        app.quit();
       },
     },
   ]);

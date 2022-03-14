@@ -79,10 +79,12 @@ export default class GameView {
       });
     `);
 
-    this.webContents.addListener("did-finish-load", async () => {});
+    this.webContents.addListener("did-finish-load", async () => {
+      this.setSellOption(this._sellOptions);
+    });
 
     this.webContents.addListener("did-fail-load", () => {
-      this.webContents.reload();
+      this.reload();
     });
   }
 
@@ -212,7 +214,7 @@ export default class GameView {
   }
 
   //
-  getRefreshMonster() {
+  getRefreshMonster(): Promise<boolean> {
     return new Promise((resolve) => {
       ipcMain.once(IPCR.GET_IS_REFRESH_MONSTER, (_, v) => {
         resolve(!!v);
@@ -224,11 +226,11 @@ export default class GameView {
 
   getAutoDaily(): Promise<boolean> {
     return new Promise((resolve) => {
-      ipcMain.once(IPCR.GET_IS_AUTO_DAILY, (_, started: boolean) => {
+      ipcMain.once(IPCM.RECEIVE_IS_AUTO_DAILY, (_, started: boolean) => {
         resolve(!!started);
       });
 
-      this.send(IPCM.RECEIVE_IS_AUTO_DAILY);
+      this.send(IPCR.GET_IS_AUTO_DAILY);
     });
   }
 
@@ -271,6 +273,7 @@ export default class GameView {
 
   reload() {
     this.webContents.reloadIgnoringCache();
+    this.changeState(GameViewState.UNINITALIZE);
   }
 
   get webContents() {

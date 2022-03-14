@@ -26,4 +26,5 @@ export interface IConfiguration {
   app: ApplicationConfiguration;
   oaccounts: Array<Account>;
   list: FilterList;
+  [key: string | symbol]: any;
 }

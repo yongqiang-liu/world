@@ -1,21 +1,19 @@
-import {
-  BrowserWindow,
-  Menu,
-  Notification,
-  ipcMain,
-  session,
-  app,
-  MenuItemConstructorOptions,
-} from "electron";
+import { BrowserWindow, Notification, ipcMain, app } from "electron";
 import { resolveAssets } from "./paths";
 import Configuration from "./Configuration";
 import GameView, { GameViewState } from "./GameView";
-import { combineKey, KEYMAP } from "./keymap";
+import { combineKey, KEYMAP } from "../../electron-common/keymap";
 import VERSIONMAP from "./versions";
-import { debounce } from "common/functional";
+import { debounce, fromEmitter, timeoutWithPromise } from "common/functional";
 import { Account, IConfiguration } from "common/configuration";
 import { IPCM } from "common/ipcEventConst";
 import { MainWidowConfiguration } from "./windowConfig";
+import AutoUpdater from "./updater";
+import {
+  buildFromTemplateWrapper,
+  hookWindowMenuClick,
+  MenuTemplate,
+} from "./menuHelper";
 
 ipcMain.setMaxListeners(30);
 
@@ -28,37 +26,35 @@ export const enum WindowState {
   INITALIZED = "initalized",
 }
 
-export const enum FunctionState {
-  SETUP_FUNCTION_STARTED = "function:started",
-  SETUP_FUNCTION_ENDED = "function:ended",
-  SETUP_HOOKS_STARTED = "hooks:started",
-  SETUP_HOOKS_ENDED = "hooks:ended",
-  REDAY = "reday",
-}
+export interface ViewOptions {}
 
-export interface ViewOption {
-  view: GameView;
-  registerAccelerator: boolean;
-  enable: boolean;
+export interface ViewState {
+  id: number;
+  state: GameViewState;
+  options: ViewOptions;
 }
 
 // 再三思考决定采用 BrowserView 来实现窗口的堆叠
 export default class MainWidow extends BrowserWindow {
-  refreshMonster = false;
+  private actived_view = 0;
 
-  autoOneKey = false;
+  private views: Array<GameView> = [];
 
-  autoOnline = false;
+  private viewsState: Array<ViewState> = [];
 
-  actived_view = 0;
+  private accounts: Array<Account> = [];
 
-  views: Array<GameView> = [];
+  private activedView: GameView | null = null;
 
-  accounts: Array<Account> = [];
+  private windowMenus: MenuTemplate[] = [];
 
-  config: IConfiguration;
+  private config: IConfiguration;
 
-  registerAccelerator = false;
+  private enable = false;
+
+  private registerAccelerator = false;
+
+  private readonly updater = new AutoUpdater(this);
 
   constructor(private readonly configuration: Configuration) {
     super(MainWidowConfiguration);
@@ -67,6 +63,11 @@ export default class MainWidow extends BrowserWindow {
 
     this.accounts.push(...configuration.configuration.accounts);
 
+    this.initalize();
+    this.updater.checkUpdate();
+  }
+
+  initalize() {
     this.accounts.map((v) => {
       const view = this.createView();
       if (v.url) {
@@ -87,156 +88,109 @@ export default class MainWidow extends BrowserWindow {
       );
     }
 
-    this.setupMenu();
     this.registerListener();
     this.updateViewConfiguration();
+
+    this.buildWindowMenu();
   }
 
-  setupMenu() {
-    const menu = Menu.buildFromTemplate([
-      {
+  async prebuildWindowMenu() {
+    const state = this.viewsState[this.actived_view];
+
+    if (state.state === GameViewState.INITALIZED) {
+      this.enable = true;
+    } else {
+      this.enable = false;
+    }
+
+    if (this.activedView) {
+      const refreshMonster: boolean = !!(await timeoutWithPromise(
+        fromEmitter.bind(
+          this,
+          ipcMain,
+          IPCM.RECEIVE_IS_REFESH_MONSTER,
+          (_e, v: boolean) => v
+        ),
+        false
+      ));
+
+      const oneKeyDailyMission: boolean = !!(await timeoutWithPromise(
+        fromEmitter.bind(
+          this,
+          ipcMain,
+          IPCM.RECEIVE_IS_AUTO_DAILY,
+          (_e, v: boolean) => v
+        ),
+        false
+      ));
+
+      this.windowMenus[0] = {
         label: "功能",
         submenu: [
           {
-            label: "自动日常",
-            type: "checkbox",
-            checked: !!this.autoOneKey,
-            click: () => {
-              const view = this.getActivedView();
-              this.autoOneKey = !this.autoOneKey;
-              if (view) {
-                view.setOneKeyDailyMission(this.autoOneKey);
-              }
-            },
+            label: "快速存号",
+            enable: true,
+            click: () => this.saveAccounts(),
           },
           {
-            label: "快速修理",
-            type: "normal",
-            click: () => {
-              const view = this.getActivedView();
-              view?.repairEquip();
+            label: "自动日常",
+            type: "checkbox",
+            checked: oneKeyDailyMission,
+            click: async () => {
+              this.activedView?.setOneKeyDailyMission(!oneKeyDailyMission);
             },
           },
           {
             label: "快速出售",
-            type: "normal",
             click: () => {
-              const view = this.getActivedView();
-              view?.sellProduct();
+              this.activedView?.sellProduct();
             },
           },
           {
             label: "刷新页面",
-            type: "normal",
             click: () => {
-              const view = this.getActivedView();
-              view?.reload();
-            },
-          },
-          {
-            label: "跳到登录",
-            type: "normal",
-            click: () => {
-              const view = this.getActivedView();
-              session.defaultSession.clearStorageData();
-              view?.loadURL(VERSIONMAP[this.config.version].url);
-            },
-          },
-          {
-            label: "开启日常箱子(测试中)",
-            click: () => {
-              const view = this.getActivedView();
-
-              view?.openDailyBox();
+              this.activedView?.reload();
             },
           },
         ],
-      },
-      {
+      };
+
+      this.windowMenus[1] = {
         label: "快捷功能",
         submenu: [
           {
-            label: "一键自动",
+            label: "一键自动日常",
             type: "checkbox",
-            checked: !!this.autoOneKey,
-            registerAccelerator: this.registerAccelerator,
-            accelerator: combineKey(KEYMAP.CTRL, KEYMAP.KEY_A),
+            checked: oneKeyDailyMission,
             click: () => {
-              this.autoOneKey = !this.autoOneKey;
-              this.views.map((v) => {
-                v.setOneKeyDailyMission(this.autoOneKey);
-              });
-
-              this.setupMenu();
-            },
-          },
-          {
-            label: "一键出售",
-            type: "normal",
-            registerAccelerator: this.registerAccelerator,
-            accelerator: combineKey(KEYMAP.CTRL, KEYMAP.KEY_T),
-            click: () => {
-              this.views.map((v) => {
-                v.sellProduct();
+              this.views.map(async (view) => {
+                const oneKeyDailyMission = !!!(await view.getAutoDaily());
+                view.setOneKeyDailyMission(!oneKeyDailyMission);
               });
             },
           },
           {
-            label: "一键修理",
-            registerAccelerator: this.registerAccelerator,
-            accelerator: combineKey(KEYMAP.CTRL, KEYMAP.KEY_R),
+            label: "一键出售垃圾",
             click: () => {
-              this.views.map((v) => {
-                v.repairEquip();
-              });
+              this.views.map((view) => view.sellProduct());
             },
           },
           {
-            label: "一键存号",
-            type: "normal",
-            registerAccelerator: this.registerAccelerator,
-            accelerator: combineKey(KEYMAP.CTRL, KEYMAP.KEY_S),
-            click: async () => {
-              for (let index = 0; index < this.views.length; index++) {
-                const v = this.views[index];
-                const url = await v.getVersionURL();
-
-                if (index < this.config.accounts.length) {
-                  this.config.accounts[index].url =
-                    url || VERSIONMAP[this.config.version].url;
-                } else {
-                  this.configuration.configuration.accounts.push({
-                    url: url || VERSIONMAP[this.config.version].url,
-                  });
-                }
-              }
-
-              if (this.views.length > 0)
-                this.config.oaccounts = await this.views[0].getAccounts();
-
-              this.configuration.save();
-              if (Notification.isSupported()) {
-                const n = new Notification({
-                  icon: resolveAssets("icon.ico"),
-                });
-                n.title = "世界OL脚本设置提醒";
-                n.body = "存号成功";
-                n.show();
-              }
+            label: "一键修理装备",
+            click: () => {
+              this.views.map((view) => view.repairEquip());
             },
           },
           {
             label: "一键领取微端奖励",
-            type: "normal",
             click: () => {
-              this.views.map((v) => {
-                v.microReward();
-              });
+              this.views.map((view) => view.microReward());
             },
           },
         ],
-      },
-      {
+      };
+
+      this.windowMenus[2] = {
         label: "自动化功能",
         submenu: [
           {
@@ -246,13 +200,10 @@ export default class MainWidow extends BrowserWindow {
             click: () => {
               this.config.app.autoSellByBagWillFull =
                 !!!this.config.app.autoSellByBagWillFull;
-              this.views.map((v) => {
-                v.setSellProduct(this.config.app.autoSellByBagWillFull);
+              this.views.map((view) => {
+                view.setSellProduct(this.config.app.autoSellByBagWillFull);
               });
-              this.configuration.save();
-              this.setupMenu();
             },
-            toolTip: "当你的启用该功能并且背包快满时, 它会自动出售物品",
           },
           {
             label: "自动修理",
@@ -261,26 +212,18 @@ export default class MainWidow extends BrowserWindow {
             click: () => {
               this.config.app.autoRepairEquip =
                 !!!this.config.app.autoRepairEquip;
-
-              this.views.map((v) => {
-                v.setRepairEquip(this.config.app.autoRepairEquip);
+              this.views.map((view) => {
+                view.setSellProduct(this.config.app.autoRepairEquip);
               });
-
-              this.configuration.save();
-
-              this.setupMenu();
             },
-            toolTip:
-              "当你的启用该功能并且处于自动日常状态时回到城市, 会自动修理装备",
           },
           {
             label: "自动刷怪",
             type: "checkbox",
-            checked: this.refreshMonster,
+            checked: refreshMonster,
             click: () => {
-              this.refreshMonster = !this.refreshMonster;
-              this.views.map((v) => {
-                v.setRefreshMonster(this.refreshMonster);
+              this.views.map(async (view) => {
+                view.setRefreshMonster(await view.getRefreshMonster());
               });
             },
           },
@@ -290,13 +233,9 @@ export default class MainWidow extends BrowserWindow {
             checked: !!this.config.app.autoOnline,
             click: () => {
               this.config.app.autoOnline = !!!this.config.app.autoOnline;
-
-              this.views.map((v) => {
-                v.setOnlineReward(this.config.app.autoOnline);
-              });
-
-              this.setupMenu();
-              this.configuration.save();
+              this.views.map((view) =>
+                view.setOnlineReward(this.config.app.autoOnline)
+              );
             },
           },
           {
@@ -305,19 +244,21 @@ export default class MainWidow extends BrowserWindow {
             checked: !!this.config.app.autoExpandBag,
             click: () => {
               this.config.app.autoExpandBag = !!!this.config.app.autoExpandBag;
-              this.views.map((v) => {
-                v.setExpandBag(this.config.app.autoExpandBag);
-              });
-              this.configuration.save();
+              this.views.map((view) =>
+                view.setExpandBag(this.config.app.autoExpandBag)
+              );
             },
           },
         ],
-      },
-      {
+      };
+
+      this.windowMenus[3] = {
         label: `小号( ${this.actived_view + 1}/${this.views.length} )`,
-        submenu: this.genAccountMenu(),
-      },
-      {
+        submenu: this.createAccountMenu(),
+        enable: true,
+      };
+
+      this.windowMenus[4] = {
         label: "附加选项",
         submenu: [
           {
@@ -327,7 +268,9 @@ export default class MainWidow extends BrowserWindow {
             click: () => {
               this.config.app.sell_buildMaterial =
                 !!!this.config.app.sell_buildMaterial;
-              this.configuration.save();
+              this.views.map((view) =>
+                view.setSellBuildMaterial(this.config.app.sell_buildMaterial)
+              );
             },
           },
           {
@@ -337,7 +280,9 @@ export default class MainWidow extends BrowserWindow {
             click: () => {
               this.config.app.sell_RareEquip =
                 !!!this.config.app.sell_RareEquip;
-              this.configuration.save();
+              this.views.map((view) =>
+                view.setSellBuildMaterial(this.config.app.sell_RareEquip)
+              );
             },
           },
           {
@@ -349,24 +294,85 @@ export default class MainWidow extends BrowserWindow {
               this.views.map((v) => {
                 v.setUseRepairRoll(this.config.app.repairRoll);
               });
-              this.configuration.save();
             },
           },
         ],
-      },
-      {
+      };
+
+      this.windowMenus[5] = {
+        id: "version",
         label: "版本切换",
-        submenu: this.genVersionMenu(),
-      },
-      {
+        enable: true,
+        submenu: this.createVersionMenu(),
+      };
+
+      this.windowMenus[6] = {
+        label: "测试功能",
+        submenu: [
+          {
+            label: "开启日常箱子",
+            click: () => {
+              this.activedView?.openDailyBox();
+            },
+          },
+        ],
+      };
+
+      this.windowMenus[7] = {
         label: "关于",
+        enable: true,
         click: () => {
           app.showAboutPanel();
         },
-      },
-    ]);
+      };
+    }
+  }
 
-    this.setMenu(menu);
+  async buildWindowMenu() {
+    await this.prebuildWindowMenu();
+
+    this.windowMenus = hookWindowMenuClick(this.windowMenus, () => {
+      console.log("重新构建菜单");
+
+      // 重新构建菜单
+      this.buildWindowMenu();
+    });
+
+    const windowMenu = buildFromTemplateWrapper(this.windowMenus, {
+      enable: this.enable,
+      registerAccelerator: this.registerAccelerator,
+    });
+
+    this.setMenu(windowMenu);
+  }
+
+  async saveAccounts() {
+    for (let index = 0; index < this.views.length; index++) {
+      const v = this.views[index];
+      const url = await v.getVersionURL();
+
+      if (index < this.config.accounts.length) {
+        this.config.accounts[index].url =
+          url || VERSIONMAP[this.config.version].url;
+      } else {
+        this.configuration.configuration.accounts.push({
+          url: url || VERSIONMAP[this.config.version].url,
+        });
+      }
+    }
+
+    if (this.views.length > 0)
+      this.config.oaccounts = await this.views[0].getAccounts();
+
+    this.configuration.save();
+    if (Notification.isSupported()) {
+      const n = new Notification({
+        icon: resolveAssets("icons/win/icon.ico"),
+      });
+      n.title = "世界OL脚本设置提醒";
+      n.body = "存号成功";
+      n.show();
+    }
   }
 
   getActivedView() {
@@ -377,8 +383,8 @@ export default class MainWidow extends BrowserWindow {
     return this.views[this.actived_view];
   }
 
-  genAccountMenu() {
-    const menu = [];
+  createAccountMenu() {
+    const menu: MenuTemplate[] = [];
 
     menu.push({
       label: "添加小号",
@@ -408,7 +414,6 @@ export default class MainWidow extends BrowserWindow {
         this.views.splice(this.actived_view, 1);
         this.configuration.configuration.accounts.splice(this.actived_view, 1);
         this.actived_view = this.actived_view - 1;
-        this.setupMenu();
         this.configuration.save();
       },
     });
@@ -425,8 +430,8 @@ export default class MainWidow extends BrowserWindow {
     return menu;
   }
 
-  genVersionMenu(): Array<MenuItemConstructorOptions> {
-    const menu: Array<MenuItemConstructorOptions> = [];
+  createVersionMenu() {
+    const menu: MenuTemplate[] = [];
 
     const keys = Object.keys(VERSIONMAP);
     for (let i = 0; i < keys.length; i++) {
@@ -438,7 +443,6 @@ export default class MainWidow extends BrowserWindow {
         checked: this.config.version === v.name,
         click: () => {
           this.switchVersion(v.name);
-          this.setupMenu();
         },
       });
     }
@@ -461,6 +465,13 @@ export default class MainWidow extends BrowserWindow {
 
     this.addBrowserView(view.view);
     this.views.push(view);
+    this.viewsState.push({
+      id: view.id,
+      state: view.getGameStarted()
+        ? GameViewState.INITALIZED
+        : GameViewState.UNINITALIZE,
+      options: [],
+    });
     this.actived_view = this.views.length - 1;
     view.executeJavaScript(
       `window.localStorage.setItem('world-1000-1100-accountList', '${JSON.stringify(
@@ -468,8 +479,9 @@ export default class MainWidow extends BrowserWindow {
       )}')`
     );
 
-    this.setupMenu();
     this.updateViewConfiguration();
+
+    this.activedView = view;
 
     return view;
   }
@@ -484,10 +496,9 @@ export default class MainWidow extends BrowserWindow {
       view.setSellBuildMaterial(!!this.config.app.sell_buildMaterial);
       view.setSellRareEquip(!!this.config.app.sell_RareEquip);
     });
-    this.setupMenu();
   }
 
-  async setTopView(top: number) {
+  setTopView(top: number) {
     if (top > this.views.length - 1) {
       top = 0;
     }
@@ -499,7 +510,8 @@ export default class MainWidow extends BrowserWindow {
     const view = this.views[top];
     this.setTopBrowserView(view.view);
     this.actived_view = top;
-    this.setupMenu();
+    this.activedView = view;
+    this.buildWindowMenu();
   }
 
   switchVersion(name: string) {
@@ -514,6 +526,16 @@ export default class MainWidow extends BrowserWindow {
     }
 
     this.configuration.save();
+  }
+
+  setViewOptionById(id: number, viewState: GameViewState) {
+    this.viewsState.map((state) => {
+      if (state.id === id) {
+        state.state = viewState;
+
+        this.buildWindowMenu();
+      }
+    });
   }
 
   registerListener() {
@@ -531,6 +553,7 @@ export default class MainWidow extends BrowserWindow {
       // 该 BrowserView 的功能初始化完毕
       const view = this.getViewById(e.sender.id);
       view?.changeState(GameViewState.INITALIZED);
+      this.setViewOptionById(e.sender.id, GameViewState.INITALIZED);
     });
 
     ipcMain.on(IPCM.GAME_HOOK_STARTED, (e) => {
@@ -565,23 +588,23 @@ export default class MainWidow extends BrowserWindow {
 
     this.on("focus", () => {
       this.registerAccelerator = true;
-      this.setupMenu();
+      this.buildWindowMenu();
     });
 
     this.on("hide", () => {
       this.registerAccelerator = false;
-      this.setupMenu();
+      this.buildWindowMenu();
     });
 
     this.on("minimize", () => {
       this.registerAccelerator = false;
-      this.setupMenu();
+      this.buildWindowMenu();
     });
 
     this.on("maximize", () => {
       this.registerAccelerator = true;
       this.focus();
-      this.setupMenu();
+      this.buildWindowMenu();
     });
   }
 

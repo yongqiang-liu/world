@@ -8,7 +8,7 @@ import {
   whenGameWillReady,
 } from "./gameFunctional";
 import { setupHooks } from "./hooks";
-import { setupFunction } from "./ipcEvent";
+import { setupFunction, setupUnInitalizeFunction } from "./ipcEvent";
 
 ipcRenderer.setMaxListeners(30);
 window.__myEvent__ = new EventEmitter({ captureRejections: true });
@@ -20,6 +20,8 @@ window.addEventListener("load", async () => {
   document.addEventListener("wheel", (e) => {
     ipcRenderer.send(IPCM.MOUSE_WHEEL, e.deltaY);
   });
+
+  setupUnInitalizeFunction();
 
   await whenGameWillReady();
 

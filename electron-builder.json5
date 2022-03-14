@@ -27,9 +27,9 @@
     output: "./release/build",
   },
   publish: [
-    // {
-    //   provider: "generic",
-    //   url: "http://47.115.63.158/worldh5/dl",
-    // },
+    {
+      provider: "github",
+      private: true,
+    },
   ],
 }

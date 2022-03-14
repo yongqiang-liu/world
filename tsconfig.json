@@ -24,5 +24,6 @@
       "renderer/*":["electron-renderer/*"]
     },
   },
-  "exclude": ["assets/*"]
+  "include": ["./src"],
+  // "exclude": ["assets/*", "scripts/*", "release/*"]
 }

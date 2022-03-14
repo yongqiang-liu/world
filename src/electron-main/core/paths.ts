@@ -23,6 +23,6 @@ export function resolveConfiguration(name: string) {
   return path.join(assetsPath, name);
 }
 
-export function resolveAssets(name: string) {
-  return path.join(assetsPath, name);
+export function resolveAssets(...paths: string[]) {
+  return path.join(assetsPath, ...paths);
 }

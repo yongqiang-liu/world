@@ -2,8 +2,6 @@
  * 版本切换
  */
 
-import { BrowserView } from "electron";
-
 export interface Version {
   name: string;
   url: string;
@@ -39,7 +37,5 @@ const VersionMap: VersionMap = {};
     "https://worldh5.gamehz.cn/version/world/publish/channel/res/index.html"
   );
 })();
-
-export function setupVersionController(view: BrowserView) {}
 
 export default VersionMap;

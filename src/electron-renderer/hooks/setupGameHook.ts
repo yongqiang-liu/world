@@ -14,6 +14,10 @@ function setupMsgHandler() {
     window.__myEvent__.emit(EVENTS.BAG_CLEAN, ...args);
   });
 
+  bindMsgHandler(ProtocolDefine.CG_SCENE_GO_CITY, () => {
+    window.__myEvent__.emit(EVENTS.ENTER_CITY);
+  })
+
   // ESCORT
   bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_START, (t: any) => {
     window.__myEvent__.emit(EVENTS.ENTER_ESCORT_MAP, t);

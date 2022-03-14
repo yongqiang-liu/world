@@ -2,8 +2,6 @@ import { IConfiguration } from "common/configuration";
 import EventEmitter from "events";
 import fs from "fs";
 
-
-
 const defaultConfigurtion: IConfiguration = {
   version: "天宇", // 天宇
   accounts: [],
@@ -23,6 +21,10 @@ const defaultConfigurtion: IConfiguration = {
     equipWhite: [".护符$", ".书."],
   },
 };
+
+export const enum ConfigurationEvents {
+  SAVED = "saved",
+}
 
 export default class Configuration extends EventEmitter {
   configuration!: IConfiguration;
@@ -44,6 +46,16 @@ export default class Configuration extends EventEmitter {
     } catch (error) {
       this.configuration = defaultConfigurtion;
     }
+
+    this.configuration = new Proxy(this.configuration, {
+      set: (target, p, value) => {
+        target[p] = value;
+
+        this.save();
+
+        return true;
+      },
+    });
   }
 
   create() {
@@ -57,11 +69,14 @@ export default class Configuration extends EventEmitter {
   }
 
   save() {
-    fs.writeFileSync(
+    fs.writeFile(
       this.configurationPath,
       JSON.stringify(this.configuration || defaultConfigurtion),
       {
         flag: "w+",
+      },
+      (err) => {
+        console.error(err);
       }
     );
 
