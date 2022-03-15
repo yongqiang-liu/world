@@ -1,9 +1,14 @@
 import { IPCR } from "common/ipcEventConst";
 import { SellOptions } from "common/Sell";
+import { TimeHelper } from "common/timer";
 import { ipcRenderer } from "electron";
 import { EVENTS } from "renderer/events/eventConst";
 import { Define } from "renderer/gameConst";
-import { gameStarted, transformFilter, whenGameStarted } from "renderer/gameFunctional";
+import {
+  gameStarted,
+  transformFilter,
+  whenGameStarted,
+} from "renderer/gameFunctional";
 import { isRegExp } from "util";
 
 export default class AutoSell {
@@ -26,10 +31,10 @@ export default class AutoSell {
 
       const { xself } = window;
 
-      if (xself.bag.countFreePos() < 7) {
+      if (xself?.bag.countFreePos() < 7) {
         window.__myEvent__.emit(EVENTS.BAG_WILL_FULL);
       }
-    }, 10 * 1000);
+    }, TimeHelper.second(10));
 
     ipcRenderer.on(IPCR.SET_SELL_OPTIONS, (_e, options: SellOptions) => {
       this._sellOptions = {
@@ -64,7 +69,7 @@ export default class AutoSell {
       e = window.xself.getLevel(),
       n = (10 * Math.floor((2 * e) / 10)) / 2,
       i = window.xself.bag;
-    if (null == i) return null;
+    if (null == i) return;
     for (var o = window.PlayerBag.BAG_START; o <= i.bagEnd; o++) {
       var a = i.store[o];
       // 该背包格为空
@@ -111,93 +116,6 @@ export default class AutoSell {
       // 不出售时效道具
       if (a.isTimeItem()) continue;
 
-      // 出售任务物品
-      // if (
-      //   a.type === Define.ITEM_TYPE_TASK &&
-      //   (a.grade < 2 || TASK_BlackList.includes(a.name)) &&
-      //   !TASK_WhiteList.map((v) => {
-      //     if (isRegExp(v)) {
-      //       return v.test(a.name);
-      //     } else {
-      //       v.includes(a.name);
-      //     }
-      //   }).some((v) => v)
-      // ) {
-      //   let result = false;
-      //   // 检测当前得任务列表是否需要该物品, 如果不需要则卖出
-      //   for (let i = 0; i < xself.missionList.length; i++) {
-      //     const ms = xself.missionList[i];
-      //     for (let j = 0; j < ms.submitCondition.length; j++) {
-      //       if (!ms.submitCondition || Array.isArray(ms.submitCondition)) break;
-
-      //       const c = ms.submitCondition[j];
-
-      //       if (c.type === 7) {
-      //         c.data, (c.data.position = 0);
-      //         try {
-      //           c.readInt();
-      //           if (c.data && a.name.includes(c.data.readUTF())) {
-      //             result = true;
-      //             break;
-      //           }
-      //         } catch (error) {}
-      //       }
-      //     }
-      //   }
-
-      //   if (!result) {
-      //     t.push(a);
-      //     done[o] = true;
-      //   }
-      //   continue;
-      // }
-
-      // GroupWhiteList.map((v) => {
-      //   if (isRegExp(v) && v.test(a.name) && a.grade < 3) {
-      //     for (let j = PlayerBag.BAG_START; j <= i.bagEnd; j++) {
-      //       let p = i.store[j];
-
-      //       if (p == null) continue;
-
-      //       if (j !== o && !done[j] && v.test(a.name) && a.grade < 3) {
-      //         if (a.quantity == 99 && p.quantity < 99) {
-      //           t.push(p);
-      //           done[j] = true;
-      //           return;
-      //         }
-
-      //         if (p.quantity == 99) {
-      //           // 找到一组相同的物品
-      //           t.push(a);
-      //           done[o] = true;
-      //           return;
-      //         }
-      //       }
-      //     }
-      //   } else if (typeof v === "string" && a.name.includes(v) && a.grade < 3) {
-      //     for (let j = PlayerBag.BAG_START; j <= i.bagEnd; j++) {
-      //       let p = i.store[j];
-
-      //       if (p == null) continue;
-
-      //       if (j !== o && !done[j] && a.name.includes(v) && a.grade < 3) {
-      //         if (a.quantity == 99 && p.quantity < 99) {
-      //           t.push(p);
-      //           done[j] = true;
-      //           return;
-      //         }
-
-      //         if (p.quantity == 99) {
-      //           // 找到一组相同的物品
-      //           t.push(a);
-      //           done[o] = true;
-      //           return;
-      //         }
-      //       }
-      //     }
-      //   }
-      // });
-
       // 出售非史诗建筑道具
       if (
         _sellOptions.buildMaterial &&
@@ -222,7 +140,7 @@ export default class AutoSell {
 
       // 出售材料箱
       if (
-        _sellOptions.rareEquip &&
+        _sellOptions.buildMaterial &&
         a.type === Define.ITEM_TYPE_NOT_BATTLE_USE &&
         a.grade < 2 &&
         a.info.includes("建筑材料")
@@ -316,7 +234,7 @@ export default class AutoSell {
   private async sell() {
     await whenGameStarted();
 
-    window?.AutoSell?.autoSell_onekeyDailyMission();
+    setTimeout(() => this.ai_sell());
   }
 
   private logic() {

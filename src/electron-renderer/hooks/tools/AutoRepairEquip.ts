@@ -1,3 +1,4 @@
+import { TimeHelper } from "common/timer";
 import { EVENTS } from "renderer/events/eventConst";
 
 export default class AutoRepairEquip {
@@ -46,22 +47,22 @@ export default class AutoRepairEquip {
       this.repairEquipTimer = window.setTimeout(() => {
         this.requireEquipTimer = false;
         this.repairEquipTimer = null;
-      }, 5 * 60 * 1000);
+      }, TimeHelper.minute(10));
   }
 
   private doUseRepairRoll() {
     /** 使用修理卷进行修理 */
-    if (
-      window?.xself?.bag.getRepaireItemCount() > 0 &&
-      window?.xself?.bag.getRepairEquipCount() > 3
-    ) {
+    if (window?.xself?.bag.getRepairEquipCount() >= 3) {
       // 检测修理卷数量和需要维修的装备数量
       window.xself.bag.useRepaireItem();
     }
   }
 
   private logic() {
-    if (window?.xworld.isInCityNow()) {
+    if (
+      window?.xworld.isInCityNow() &&
+      window?.xself?.bag.getRepairEquipCount() >= 3
+    ) {
       window?.xworld?.doRepairEquipNoAlert();
       this.requireEquipTimer = true;
     } else if (!window?.xworld.isInCityNow() && this.useRepairRoll) {

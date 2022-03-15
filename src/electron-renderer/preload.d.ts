@@ -1,10 +1,10 @@
 import EventEmitter from "events";
-import ExpandBagTool from "./hooks/AutoExpandBag";
-import AutoOnlineReward from "./hooks/AutoOnlineReward";
-import AutoRepairEquip from "./hooks/AutoRepairEquip";
-import AutoSell from "./hooks/AutoSell";
-import DefaultFunction from "./hooks/Default";
-import TestRefreshGame from "./hooks/TestRefreshGame";
+import ExpandBagTool from "./hooks/tools/AutoExpandBag";
+import AutoOnlineReward from "./hooks/tools/AutoOnlineReward";
+import AutoRepairEquip from "./hooks/tools/AutoRepairEquip";
+import AutoSell from "./hooks/tools/AutoSell";
+import DefaultFunction from "./hooks/tools/Default";
+import TestRefreshGame from "./hooks/tools/TestRefreshGame";
 
 declare global {
   interface Window {
@@ -26,6 +26,7 @@ declare global {
     nato: any;
 
     Main: any;
+    Player: any;
     Battle: any;
     DrugPanel: any;
     BattleConst: any;
@@ -61,6 +62,19 @@ declare global {
     TeamBoss: any;
     Mission: any;
     AutoGamer: any;
+    MyPet: any;
+    PetDetailScene: any;
+    PetEquipDes: any;
+    StringBuffer: any;
+    ItemData: any;
+    GameText2: any;
+    SafeLock: any;
+    ForgeScene: any;
+    Skill: any;
+    PetGuide: any;
+    MountGuide: any;
+    Enchant: any;
+    PlayerTurnMonster: any;
 
     GuideHandler: any;
   }

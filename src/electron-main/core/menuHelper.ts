@@ -106,7 +106,7 @@ export function hookWindowMenuClick(
       const click = template.click;
       template.click = (item, window, event) => {
         click?.(item, window, event);
-        wrapper?.(item, window, event);
+        setTimeout(() => wrapper?.(item, window, event));
       };
     }
     template.submenu = template.submenu

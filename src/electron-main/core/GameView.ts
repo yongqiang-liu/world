@@ -185,7 +185,10 @@ export default class GameView {
     this.setOptionLock = true;
     await this.whenInitalized();
 
-    this.send(IPCR.SET_SELL_OPTIONS, JSON.parse(JSON.stringify(this._sellOptions)));
+    this.send(
+      IPCR.SET_SELL_OPTIONS,
+      JSON.parse(JSON.stringify(this._sellOptions))
+    );
     this.setOptionLock = false;
   }
 
@@ -214,24 +217,12 @@ export default class GameView {
   }
 
   //
-  getRefreshMonster(): Promise<boolean> {
-    return new Promise((resolve) => {
-      ipcMain.once(IPCR.GET_IS_REFRESH_MONSTER, (_, v) => {
-        resolve(!!v);
-      });
-
-      this.send(IPCM.RECEIVE_IS_REFESH_MONSTER);
-    });
+  getRefreshMonster() {
+    return this._refreshMonster;
   }
 
-  getAutoDaily(): Promise<boolean> {
-    return new Promise((resolve) => {
-      ipcMain.once(IPCM.RECEIVE_IS_AUTO_DAILY, (_, started: boolean) => {
-        resolve(!!started);
-      });
-
-      this.send(IPCR.GET_IS_AUTO_DAILY);
-    });
+  getAutoDaily() {
+    return this._oneKeyDailyMission;
   }
 
   getAccounts(): Promise<Account[]> {

@@ -3,6 +3,9 @@ export const enum EVENTS {
 
   DO_JUMP_MAP = "do:jump:map",
 
+  SELL_ENDED = 'sell:ended',
+  USED_ITEM = 'used:item',
+
   BAG_WILL_FULL = "bag:will:full",
   BAG_FULL = "bag:full",
   BAG_CLEAN = "bag:clean",

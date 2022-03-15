@@ -48,6 +48,16 @@ function setupMsgHandler() {
   bindMsgHandler(ProtocolDefine.CG_SCENE_GO_CITY, () => {
     window.__myEvent__.emit(EVENTS.ENTER_CITY);
   });
+
+  // Sell
+  bindMsgHandler(ProtocolDefine.CG_AUTO_SELL, () => {
+    setTimeout(() => window.__myEvent__.emit(EVENTS.SELL_ENDED));
+  });
+
+  // useItem
+  bindMsgHandler(ProtocolDefine.CG_ACTOR_PLAYERBAG, () => {
+    setTimeout(() => window.__myEvent__.emit(EVENTS.USED_ITEM));
+  });
 }
 
 export default function setupGameHook() {
@@ -314,6 +324,479 @@ export default function setupGameHook() {
     return (
       nato.Network.sendCmd(s, r, this), PanelManager.openWaitForServer(), !0
     );
+  };
+
+  window.AutoSell.sendToSellNoAlert = function (t: any) {
+    const { PanelManager, xself, nato } = window;
+    function e(t: any) {
+      PanelManager.closeWaitForServer();
+      var e = t.getByte();
+      for (var n = "", i = 0; e > i; i++) {
+        var o = (t.getInt(), t.getShort()),
+          a = t.getShort(),
+          r = xself.bag.getBagItemBySlotPos(a);
+        null != r && (n += "\n" + r.getNameInfo() + "X" + o),
+          xself.bag.removeBagItemByPos(a, o);
+      }
+      var s = t.getInt(),
+        l = t.getInt(),
+        _ = t.getInt(),
+        h = t.getInt();
+
+      xself.setPlayerMoneyValue(s, l, _);
+    }
+
+    if (null != t && 0 != t.length) {
+      var n = new nato.Message(ProtocolDefine.CG_AUTO_SELL);
+      n.putByte(t.length);
+      for (var i = 0; i < t.length; i++) {
+        var o = t[i];
+        n.putInt(o.id), n.putShort(o.slotPos), n.putShort(o.quantity);
+      }
+      nato.Network.sendCmd(n, e, this), PanelManager.openWaitForServer();
+    }
+  };
+
+  window.ItemManager.doItemNoAlert = function (e: any, n: any) {
+    void 0 === n && (n = !0);
+    const {
+      xself,
+      SafeLock,
+      PanelManager,
+      ForgeScene,
+      Define,
+      Skill,
+      PetGuide,
+      ItemManager,
+      MountGuide,
+      Enchant,
+      PlayerTurnMonster,
+    } = window;
+    var i = xself;
+    if (0 != SafeLock.doSafeLockVerify() && null != e) {
+      if (e.isIdentifyScrollItem() || e.isHighIdentifyScrollItem())
+        return void PanelManager.openForgeScene(ForgeScene.TAB_INDEX_IDENTIFY);
+      if (e.isUpgradeIdentifyScrollItem())
+        return void PanelManager.openForgeScene(ForgeScene.TAB_INDEX_IDENTIFY);
+      if (e.isUpgradeIntensifyScroll())
+        return void PanelManager.openForgeScene(ForgeScene.TAB_INDEX_UPSTAR);
+      if (e.type == Define.ITEM_TYPE_SKILL_BOOK)
+        return void Skill.doUseLearnSkillItem(e, !1, null, null);
+      if (Define.POWER_NEW_GET_PET == e.power1)
+        return void PetGuide.doPetGuideList(e);
+      if (Define.POWER_NEW_GET_ITEM == e.power1)
+        return void MountGuide.doGetMountGuideItemList(e);
+      if (Define.POWER_ENCHANT_ITEM == e.power1)
+        return void Enchant.doEnchantGetLists(e, !1);
+      if (Define.POWER_FORMATION_BOOK == e.power1)
+        return void Skill.doUseFormationBookItem(e);
+      if (Define.POWER_TURN_MONSTER_CARD == e.power1)
+        return void PlayerTurnMonster.doUseTurnMonsterCard(e);
+      var o = ItemManager.doWorldUseItemActionNoAlert(i, e, n, null, null);
+      o &&
+        PanelManager.bagScene &&
+        PanelManager.bagScene.stage &&
+        PanelManager.bagScene.updatePanel();
+    }
+  };
+
+  window.ItemManager.doWorldUseItemActionNoAlert = function (
+    e: any,
+    n: any,
+    i: any,
+    o: any,
+    a: any
+  ) {
+    if (
+      (void 0 === o && (o = null),
+      void 0 === a && (a = null),
+      null == e || null == n || null == e.bag)
+    )
+      return !1;
+
+    const {
+      Define,
+      AlertPanel,
+      GameText,
+      Tool,
+      ColorUtils,
+      PowerString,
+      GameText2,
+    } = window;
+    var r = function () {
+      window.ItemManager.doWorldUseItemActionToServerNoAlert(e, n, i, o, a);
+    };
+    if (Define.isChangeJobItem(n.id)) {
+      AlertPanel.alert(
+        GameText.getText(GameText.TI_WARM_SHOW),
+        Tool.manageString(
+          GameText.STR_PLAYER_CHANGE_JOB_ASK,
+          PowerString.makeColorString(n.name, ColorUtils.COLOR_RED)
+        ),
+        r,
+        this
+      );
+    } else if (null != a && n.isPetResetItem())
+      AlertPanel.alert(
+        GameText.STR_ITEM_SHOW,
+        Tool.manageString(GameText.STR_PET_ITEM_RESET_ASK, a.getLevel() + ""),
+        r,
+        this
+      );
+    else if (n.isChangeSexItem())
+      AlertPanel.alert(
+        GameText.STR_ITEM_SHOW,
+        GameText2.STR_CHANGE_SEX_INFO,
+        r,
+        this
+      );
+    else {
+      if (
+        !(
+          n.isCpPointAddItem() ||
+          n.isSpPointAddItem() ||
+          n.isProsperityDegreePointAddItem() ||
+          n.isSkillPlayerItem() ||
+          n.isSkillPetItem()
+        )
+      )
+        return window.ItemManager.doWorldUseItemActionToServerNoAlert(
+          e,
+          n,
+          i,
+          o,
+          a
+        );
+      AlertPanel.alert(
+        GameText.STR_ITEM_SHOW,
+        Tool.manageString(
+          GameText2.STR_USE_ITEM_ASK,
+          PowerString.makeColorString(n.name, ColorUtils.COLOR_WHITE)
+        ),
+        r,
+        this
+      );
+    }
+    return !1;
+  };
+
+  window.ItemManager.doWorldUseItemActionToServerNoAlert = function (
+    e: any,
+    n: any,
+    i: any,
+    o: any,
+    a: any
+  ) {
+    const {
+      Tool,
+      GameWorld,
+      AlertPanel,
+      StringBuffer,
+      GameText,
+      Define,
+      ItemData,
+      PlayerBag,
+      PanelManager,
+      DrugPanel,
+      ModelConst,
+      MsgHandler,
+      nato,
+      MyPet,
+      xself,
+      PetDetailScene,
+      PopUpManager,
+      PetEquipDes,
+      WorldMessage,
+    } = window;
+
+    if ((void 0 === o && (o = null), void 0 === a && (a = null), null == e))
+      return !1;
+    if (
+      Tool.isAbleToAddHPMP(n) &&
+      (GameWorld.isCountryBossStatus() ||
+        GameWorld.isEscortStatus() ||
+        GameWorld.isTeamBossStatus() ||
+        GameWorld.isCountryWarStatus())
+    )
+      return AlertPanel.alertCommon("当前场景下不能使用"), !1;
+
+    var r = e.bag;
+    if (null == r) return !1;
+    if (null == n) return !1;
+    if (n.isNotOperate())
+      return AlertPanel.alertCommon(GameText.STR_IN_SHOP_NO_USE), !1; // 摆摊
+    var s = new StringBuffer(),
+      l = n.slotPos,
+      _ = r.getBagItemBySlotPos(l);
+    if (null == _) return !1;
+    var h = ItemData.isValidEquipRequire(e, _);
+    if (h != Define.OK)
+      return AlertPanel.alertNotify(GameText.getText(GameText.TI_ERROR), h), !1;
+    if (0 == _.isCanUse(1))
+      return (
+        AlertPanel.alertNotify(
+          GameText.getText(GameText.TI_ERROR),
+          GameText.STR_CANNOT_USE_IN_WORD
+        ),
+        !1
+      );
+    if (n.isChangeNameItem()) return GameWorld.doModifyActorName(!1, l);
+    var u = ProtocolDefine.BAG_NO_WAIT;
+    Define.isChangeJobItem(n.id)
+      ? (u = ProtocolDefine.BAG_CHANGE_JOB)
+      : n.isPetEgg()
+      ? (u = ProtocolDefine.BAG_USE_PET_EGG)
+      : n.isChestItem()
+      ? (u = ProtocolDefine.BAG_USE_CHEST)
+      : n.isCountryBook()
+      ? (u = ProtocolDefine.BAG_COMMAND_BOOK)
+      : n.isOpenStoreItem()
+      ? (u = ProtocolDefine.BAG_ADD_STORE_NUM)
+      : n.isPetAddSkill()
+      ? (u = ProtocolDefine.BAG_PET_ITEM_ADD_SKILLS)
+      : n.isPetAgeItem()
+      ? (u = ProtocolDefine.BAG_PET_AGE)
+      : n.isPetResetItem()
+      ? (u = ProtocolDefine.BAG_PET_RESET)
+      : n.isPetExpItem()
+      ? (u = ProtocolDefine.BAG_ADD_PET_EXP)
+      : n.isPlayerExpItem()
+      ? (u = ProtocolDefine.BAG_ADD_EXP)
+      : n.isRepairItem()
+      ? (u = ProtocolDefine.BAG_REPAIR)
+      : n.isTitleItem()
+      ? (u = ProtocolDefine.BAG_GET_TITLE)
+      : n.isChangeSexItem()
+      ? (u = ProtocolDefine.BAG_ALERT_SEX)
+      : n.isCpPointAddItem()
+      ? (u = ProtocolDefine.BAG_ADD_CP)
+      : n.isSpPointAddItem()
+      ? (u = ProtocolDefine.BAG_ADD_SP)
+      : n.isProsperityDegreePointAddItem()
+      ? (u = ProtocolDefine.BAG_ADD_PROSPERITY_DEGREE)
+      : n.isSkillPlayerItem()
+      ? (u = ProtocolDefine.BAG_SKILL_SLOT_PALYER)
+      : n.isSkillPetItem()
+      ? (u = ProtocolDefine.BAG_SKILL_SLOT_PET)
+      : (n.isTimeItem() || n.isVipItem()) && (u = ProtocolDefine.BAG_WAIT);
+    var c = -1;
+    if ((null != o && (c = o.slotPos), n.isPetCanUseItem() && -1 == c)) {
+      if (
+        ((o = e.bag.getItem(PlayerBag.PET_POS)),
+        (a = e.getPet()),
+        null == o || null == a)
+      )
+        return AlertPanel.alertCommon(GameText.STR_PET_NOT_SET_FIGHT), !1;
+      c = o.slotPos;
+    }
+    var T = function () {
+        if (
+          (_.usePower(e),
+          PanelManager.getPanel(DrugPanel, !1) &&
+            PanelManager.getPanel(DrugPanel).checkClose(),
+          1 == i)
+        )
+          if (n.isPetEgg())
+            AlertPanel.alertNotify(GameText.STR_PET_EGG, s.toString());
+          else if (n.isChestItem()) {
+            var t = s.toString();
+            Tool.isNullText(t) && (t = GameText.STR_BOX_NULL),
+              AlertPanel.alertNotify(GameText.STR_OPEN_BOX_GET, t);
+          } else if (n.isRepairItem()) {
+            var o =
+              p > 0
+                ? Tool.manageStringU(
+                    GameText.STR_ITEM_USE_SAVE,
+                    p + GameText.getMoneyText(ModelConst.MONEY3)
+                  )
+                : "。";
+            AlertPanel.alertNotify(
+              GameText.STR_REPAIR_EQUIP,
+              Tool.manageStringU(GameText.STR_REPAIR_EQUIP_SUCCESS, o)
+            ),
+              PanelManager.mainMenu &&
+                PanelManager.mainMenu.stage &&
+                PanelManager.mainMenu.updateWorldIconPoint();
+          } else if (n.isCountryBook())
+            AlertPanel.alertNotify(
+              GameText.STR_USE_SUCCESS,
+              GameText.STR_USE_ITEM_COUNTRY_BOOK
+            );
+          else if (n.isTitleItem())
+            AlertPanel.alertNotify(
+              GameText.STR_USE_SUCCESS,
+              Tool.manageStringU(GameText.STR_USE_ITEM_TITLE_INFO, d)
+            );
+          else if (Define.isChangeJobItem(n.id)) {
+          } else {
+            var a = _.getPowerDesc();
+            Tool.isNullText(a)
+              ? AlertPanel.alertCommon(GameText.STR_USE_SUCCESS)
+              : AlertPanel.alertNotify(GameText.STR_USE_SUCCESS, a);
+          }
+      },
+      p = 0,
+      d = "",
+      E = MsgHandler.createPlayerBagMessage(
+        u,
+        ProtocolDefine.PLAYERBAG_USE,
+        n,
+        c
+      );
+    if (u == ProtocolDefine.BAG_NO_WAIT) {
+      var g = r.removeBagItemByPos(l, 1);
+      if (g != Define.SUCCESS) return !1;
+      PanelManager.bagScene &&
+        PanelManager.bagScene.stage &&
+        PanelManager.bagScene.updatePanel(),
+        PanelManager.closeItemView(),
+        PanelManager.isPanelShow(DrugPanel) &&
+          PanelManager.getPanel(DrugPanel).update(),
+        nato.Network.sendCmd(E, null, null);
+    } else {
+      var S = function (i: any) {
+        PanelManager.closeWaitForServer();
+        var h = i.getByte();
+        if (0 > h) return void GameWorld.doErrorJumpShop(i, h);
+        var c = r.removeBagItemByPos(l, 1);
+        if (c != Define.SUCCESS) return !1;
+        switch ((u = h)) {
+          case ProtocolDefine.BAG_GET_TITLE:
+            d = i.getString();
+            break;
+          case ProtocolDefine.BAG_CHANGE_JOB:
+            MsgHandler.instance.processDataPlayerDetail(i, e),
+              (e.skillList = MsgHandler.processDataPlayerSkillMsg(i, !0)),
+              AlertPanel.alertNotify(
+                "转职成功",
+                Tool.manageStringU(
+                  GameText.STR_PLAYER_CHANGE_SUCCEE,
+                  Define.getJobString(e.getJob())
+                )
+              );
+            break;
+          case ProtocolDefine.BAG_ADD_EXP:
+            MsgHandler.instance.processUpLevelMsg(i, e, s);
+            break;
+          case ProtocolDefine.BAG_ADD_PET_EXP:
+            MsgHandler.parsePetReward(i, a, s), ItemData.fromBytesEdit(o, i);
+            break;
+          case ProtocolDefine.BAG_PET_ITEM_ADD_SKILLS:
+            MyPet.doPetAddSkill(e, a, i, r, _, n, o);
+            var E = PanelManager.getPanel(PetDetailScene, !1);
+            E &&
+              (E.setData(a),
+              PopUpManager.removePopUp(PanelManager.getPanel(PetEquipDes, !1)));
+            break;
+          case ProtocolDefine.BAG_PET_RESET:
+            var g = MyPet.dogetResetItemInfo(a.grow),
+              S = MyPet.dogetResetItemInfo(a.compre);
+            ItemData.fromBytesEdit(o, i), MyPet.fromBytesDetail(i, a);
+            var m = MyPet.dogetResetItemInfo(a.grow),
+              f = MyPet.dogetResetItemInfo(a.compre),
+              I = r.getItemNumByID(Define.ITEM_ID_PET_RESET),
+              A = Tool.manageString(GameText.STR_PET_RESET_NUM, I + "") + "\n";
+            if (
+              ((A +=
+                Tool.manageString(
+                  GameText.STR_PET_RESET_ITEM_GROW,
+                  g + " --> " + m
+                ) + "\n"),
+              (A +=
+                Tool.manageString(
+                  GameText.STR_PET_RESET_ITME_COMPRE,
+                  S + " --> " + f
+                ) + "\n"),
+              n.id == Define.ITEM_ID_PET_RESET)
+            )
+              MyPet.doPetUseResetItemMenu(e, a, o, A);
+            else if (n.id == Define.ITEM_ID_PET_RESET2) {
+              var E = PanelManager.getPanel(PetDetailScene, !1);
+              E && E.setData(a);
+            }
+            break;
+          case ProtocolDefine.BAG_PET_AGE:
+            null != a &&
+              ((a.ageTime = i.getLong().value + new Date().getTime()),
+              AlertPanel.alertCommon(GameText.STR_PET_RESET_AGE_INFO));
+            break;
+          case ProtocolDefine.BAG_REPAIR:
+            (p = PlayerBag.repairEquip(e, -1, !1)), xself.checkPower();
+            break;
+          case ProtocolDefine.BAG_COMMAND_BOOK:
+            break;
+          case ProtocolDefine.BAG_ADD_STORE_NUM:
+            e.numStroe = i.getByte();
+            break;
+          case ProtocolDefine.BAG_ALERT_SEX:
+            var y = i.getInt(),
+              R = i.getInt(),
+              P = i.getInt(),
+              C = i.getByte(),
+              v = i.getString();
+            e.setIcon1(y),
+              e.setIcon2(R),
+              e.setIcon3(P),
+              e.setSex(C),
+              e.refreshPlayerAllSprite(),
+              AlertPanel.alertCommon(v);
+            break;
+          case ProtocolDefine.BAG_ADD_CP:
+            var M = i.getShort(),
+              L = i.getString();
+            (e.cp = M), AlertPanel.alertCommon(L);
+            break;
+          case ProtocolDefine.BAG_ADD_SP:
+            var O = i.getInt(),
+              N = i.getString();
+            (e.sp = O), AlertPanel.alertCommon(N);
+            break;
+          case ProtocolDefine.BAG_ADD_PROSPERITY_DEGREE:
+            var D = (i.getInt(), i.getString());
+            AlertPanel.alertCommon(D);
+            break;
+          case ProtocolDefine.BAG_SKILL_SLOT_PALYER:
+            var B = i.getString();
+            AlertPanel.alertCommon(B);
+            break;
+          case ProtocolDefine.BAG_SKILL_SLOT_PET:
+            var b = i.getString();
+            AlertPanel.alertCommon(b);
+            break;
+          case ProtocolDefine.BAG_USE_PET_EGG:
+          case ProtocolDefine.BAG_USE_CHEST:
+            var x = i.getByte();
+            if (0 != x) {
+              var G = i.getShort(),
+                U = i.getInt(),
+                w = r.getItem(G);
+              (null == w || w.id != U) &&
+                WorldMessage.addSystemChat(
+                  "checkItem.id != itemID, checkItem.id=" +
+                    w.id +
+                    ", -> itemID = " +
+                    U
+                ),
+                (c = r.removeBagItemByPos(G, x)),
+                c != Define.SUCCESS;
+            }
+            var F = MsgHandler.processAddItemMsg(
+              i,
+              ProtocolDefine.ADD_ITEM_USE_REWARD
+            );
+            s.append(F),
+              u == ProtocolDefine.BAG_USE_PET_EGG &&
+                window.ItemManager.doQuickEquipPet(e);
+        }
+        PanelManager.bagScene &&
+          PanelManager.bagScene.stage &&
+          PanelManager.bagScene.updatePanel(),
+          PanelManager.isPanelShow(DrugPanel) &&
+            PanelManager.getPanel(DrugPanel).update();
+      };
+      nato.Network.sendCmd(E, S, this), PanelManager.openWaitForServer();
+    }
+    return !0;
   };
 
   setupMsgHandler();

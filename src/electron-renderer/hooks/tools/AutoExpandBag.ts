@@ -5,6 +5,7 @@ export default class AutoExpandBag {
 
   start(d = 10 * 60 * 1000) {
     if (!this._interval) {
+      this.logic();
       this._interval = window.setInterval(() => this.logic(), d);
       this._isStarting = true;
     }

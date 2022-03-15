@@ -1,6 +1,8 @@
-import { delay } from "common/functional";
+import { delay, fromEmitter } from "common/functional";
 import { IPCM } from "common/ipcEventConst";
+import { TimeHelper } from "common/timer";
 import { ipcRenderer } from "electron";
+import { EVENTS } from "./events/eventConst";
 
 export function gameStarted() {
   if (!window.xself) {
@@ -108,24 +110,28 @@ export async function openDailyBox() {
         i.info.includes("有机会") &&
         i.info.includes("装备"))
     ) {
-      if (window.xself.bag.countFreePos() < 4) {
+      if (window.xself.bag.countFreePos() <= 7) {
         // 检测当前背包容量
         window.autoSell?.ai_sell();
-        await delay(2000);
-        if (window.xself.bag.countFreePos() < 4) {
+        await fromEmitter(window.__myEvent__, EVENTS.SELL_ENDED);
+        if (window.xself.bag.countFreePos() <= 7) {
           // 中断开箱
           break;
         }
       }
 
       for (let j = 0; j < i.quantity; j++) {
-        window?.ItemManager.doItem(i);
-        await delay(2000);
+        window?.ItemManager.doItemNoAlert(i);
+        await fromEmitter(window.__myEvent__, EVENTS.USED_ITEM);
+        await delay(TimeHelper.second(0.5));
       }
 
       await openDailyBox();
     }
   }
+
+  window.autoSell?.ai_sell();
+  await fromEmitter(window.__myEvent__, EVENTS.SELL_ENDED);
 
   return;
 }

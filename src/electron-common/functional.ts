@@ -34,11 +34,12 @@ export function timeoutWithPromise<T>(
 export function fromEmitter<T>(
   target: EventEmitter,
   channel: string,
-  callback: (...args: any[]) => T
-): Promise<T> {
+  callback?: (...args: any[]) => T
+): Promise<T | void> {
   return new Promise((resolve) => {
     target.once(channel, (...args: any[]) => {
-      resolve(callback(...args));
+      if (callback) resolve(callback?.(...args));
+      else resolve();
     });
   });
 }

@@ -5,8 +5,8 @@ export default class AutoOnlineReward {
 
   start(d: number = 1000 * 60) {
     if (!this._interval) {
+      this.logic();
       this._interval = window.setInterval(() => this.logic(), d);
-
       this._isStarting = true;
     }
   }

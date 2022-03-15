@@ -186,13 +186,7 @@ export function setupFunction() {
   ipcRenderer.on(IPCR.SELL_PRODUCT, () => {
     if (!gameStarted()) return;
 
-    const { AutoSell } = window;
-
-    if (AutoSell?.my_autoSell_onekeyDailyMission) {
-      AutoSell.my_autoSell_onekeyDailyMission();
-    } else {
-      AutoSell.autoSell_onekeyDailyMission();
-    }
+    window.autoSell.ai_sell();
   });
 
   ipcRenderer.send(IPCM.SETUP_FUNCTION_ENDED);

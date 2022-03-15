@@ -50,9 +50,11 @@ export default class AutoUpdater {
           ")";
 
         window.windowMenus[8] = {
-          label: `更新中(${progressObj.percent})`,
+          label: `更新中(${progressObj.percent.toFixed(2).padStart(2, "0")}%)`,
           enable: true,
         };
+
+        window.buildWindowMenu();
       }
     );
 

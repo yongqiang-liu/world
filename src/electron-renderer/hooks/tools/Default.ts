@@ -1,3 +1,4 @@
+import { TimeHelper } from "common/timer";
 import { EVENTS } from "renderer/events/eventConst";
 import { whenGameStarted } from "renderer/gameFunctional";
 
@@ -10,7 +11,10 @@ export default class DefaultFunction {
     if (!this._isStarting && !this._interval) {
       this.execOne();
       this.eventLogic();
-      this._interval = window.setInterval(() => this.logic(), 60 * 60 * 1000);
+      this._interval = window.setInterval(
+        () => this.logic(),
+        TimeHelper.hour(1)
+      );
       this._isStarting = true;
     }
   }
@@ -24,6 +28,9 @@ export default class DefaultFunction {
   }
 
   private async execOne() {
+    // 修改新手标志
+    window.Player.NOVICE_LEVEL = 0;
+
     await whenGameStarted();
 
     setTimeout(() => {
@@ -31,7 +38,7 @@ export default class DefaultFunction {
       window.doGetMoney();
       // 自动领取经验
       window.doGetExp();
-    }, 10 * 1000);
+    }, TimeHelper.second(10));
   }
 
   private eventLogic() {

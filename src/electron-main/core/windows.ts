@@ -4,7 +4,7 @@ import Configuration, { ConfigurationEvents } from "./Configuration";
 import GameView, { GameViewState } from "./GameView";
 import { combineKey, KEYMAP } from "../../electron-common/keymap";
 import VERSIONMAP from "./versions";
-import { debounce, timeoutWithPromise } from "common/functional";
+import { debounce } from "common/functional";
 import { Account, IConfiguration } from "common/configuration";
 import { IPCM } from "common/ipcEventConst";
 import { MainWidowConfiguration } from "./windowConfig";
@@ -108,17 +108,11 @@ export default class MainWidow extends BrowserWindow {
     }
 
     if (this.activedView) {
-      // const refreshMonster: boolean = !!(await timeoutWithPromise(
-      //   this.activedView.getRefreshMonster.bind(this.activedView),
-      //   false,
-      //   100
-      // ));
+      const oneKeyDailyMission: boolean = !!this.activedView.getAutoDaily();
 
-      const oneKeyDailyMission: boolean = !!(await timeoutWithPromise(
-        this.activedView.getAutoDaily.bind(this.activedView),
-        false,
-        100
-      ));
+      const allOneKeyDailyMission: boolean = this.views
+        .map((view) => view.getAutoDaily())
+        .some((v) => v);
 
       this.windowMenus[0] = {
         label: "功能",
@@ -126,12 +120,14 @@ export default class MainWidow extends BrowserWindow {
           {
             label: "快速存号",
             enable: true,
+            accelerator: combineKey(KEYMAP.CTRL, KEYMAP.KEY_S),
+            registerAccelerator: this.registerAccelerator,
             click: () => this.saveAccounts(),
           },
           {
             label: "自动日常",
             type: "checkbox",
-            checked: oneKeyDailyMission || this.oneKeyDailyMission,
+            checked: oneKeyDailyMission || allOneKeyDailyMission,
             click: async () => {
               this.activedView?.setOneKeyDailyMission(
                 !(oneKeyDailyMission || this.oneKeyDailyMission)
@@ -146,6 +142,7 @@ export default class MainWidow extends BrowserWindow {
           },
           {
             label: "刷新页面",
+            enable: true,
             click: () => {
               this.activedView?.reload();
             },
@@ -159,7 +156,7 @@ export default class MainWidow extends BrowserWindow {
           {
             label: "一键自动日常",
             type: "checkbox",
-            checked: this.oneKeyDailyMission,
+            checked: allOneKeyDailyMission,
             click: () => {
               this.oneKeyDailyMission = !this.oneKeyDailyMission;
               this.views.map(async (view) => {
@@ -324,17 +321,17 @@ export default class MainWidow extends BrowserWindow {
           app.showAboutPanel();
         },
       };
+
+      this.windowMenus = hookWindowMenuClick(this.windowMenus, async () => {
+        console.time("builded window menu cost time: ");
+        await this.buildWindowMenu();
+        console.timeEnd("builded window menu cost time: ");
+      });
     }
   }
 
   async buildWindowMenu() {
     await this.prebuildWindowMenu();
-
-    this.windowMenus = hookWindowMenuClick(this.windowMenus, async () => {
-      console.time("构建菜单耗时: ");
-      await this.buildWindowMenu();
-      console.timeEnd("构建菜单耗时: ");
-    });
 
     const windowMenu = buildFromTemplateWrapper(this.windowMenus, {
       enable: this.enable,
@@ -410,6 +407,7 @@ export default class MainWidow extends BrowserWindow {
         }
 
         this.views.splice(this.actived_view, 1);
+        this.viewsState.splice(this.actived_view, 1);
         this.configuration.configuration.accounts.splice(this.actived_view, 1);
         this.actived_view = this.actived_view - 1;
         this.configuration.save();
@@ -530,6 +528,13 @@ export default class MainWidow extends BrowserWindow {
         state.state = viewState;
       }
     });
+
+    this.buildWindowMenu();
+  }
+
+  setRegisterAccelerator(v: boolean) {
+    this.registerAccelerator = v;
+    this.buildWindowMenu();
   }
 
   registerListener() {
@@ -547,13 +552,30 @@ export default class MainWidow extends BrowserWindow {
       console.log("开始安装程序功能...", e.sender.id);
     });
 
-    ipcMain.on(IPCM.SETUP_FUNCTION_ENDED, (e) => {
+    ipcMain.on(IPCM.SETUP_FUNCTION_ENDED, async (e) => {
       console.log("安装程序功能结束...", e.sender.id);
 
       // 该 BrowserView 的功能初始化完毕
       const view = this.getViewById(e.sender.id);
       view?.changeState(GameViewState.INITALIZED);
       this.setViewOptionById(e.sender.id, GameViewState.INITALIZED);
+
+      for (let index = 0; index < this.views.length; index++) {
+        const v = this.views[index];
+        const url = await v.getVersionURL();
+
+        if (index < this.config.accounts.length) {
+          this.config.accounts[index].url =
+            url || VERSIONMAP[this.config.version].url;
+        } else {
+          this.configuration.configuration.accounts.push({
+            url: url || VERSIONMAP[this.config.version].url,
+          });
+        }
+      }
+
+      if (this.views.length > 0)
+        this.config.oaccounts = await this.views[0].getAccounts();
     });
 
     ipcMain.on(IPCM.GAME_HOOK_STARTED, (e) => {
@@ -587,19 +609,19 @@ export default class MainWidow extends BrowserWindow {
     );
 
     this.on("focus", () => {
-      this.registerAccelerator = true;
+      this.setRegisterAccelerator(true);
     });
 
     this.on("hide", () => {
-      this.registerAccelerator = false;
+      this.setRegisterAccelerator(false);
     });
 
     this.on("minimize", () => {
-      this.registerAccelerator = false;
+      this.setRegisterAccelerator(false);
     });
 
     this.on("maximize", () => {
-      this.registerAccelerator = true;
+      this.setRegisterAccelerator(true);
       this.focus();
     });
   }
