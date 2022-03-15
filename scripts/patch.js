@@ -1,7 +1,6 @@
 const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
-const prettier = require('prettier');
 
 spawn("npm", ["version", "patch"], {
   cwd: process.cwd(),
