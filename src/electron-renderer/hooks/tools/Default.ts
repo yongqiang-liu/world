@@ -30,6 +30,8 @@ export default class DefaultFunction {
   private async execOne() {
     // 修改新手标志
     window.Player.NOVICE_LEVEL = 0;
+    // 修改新手指引
+    window.GameWorld.useGuide = false;
 
     await whenGameStarted();
 
@@ -44,7 +46,11 @@ export default class DefaultFunction {
   private eventLogic() {
     window.__myEvent__.on(EVENTS.EXIT_BATTLE_MAP, () => {
       // 自动回血
-      window?.ItemManager?.doQuickAddHP(window.xself);
+      if (
+        window?.xself.get(window?.ModelConst.HP) <
+        window?.xself.get(window.ModelConst.HPMAX)
+      )
+        window?.ItemManager?.doQuickAddHP(window.xself);
     });
   }
 

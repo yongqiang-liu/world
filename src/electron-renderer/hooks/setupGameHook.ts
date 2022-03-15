@@ -589,53 +589,7 @@ export default function setupGameHook() {
         return AlertPanel.alertCommon(GameText.STR_PET_NOT_SET_FIGHT), !1;
       c = o.slotPos;
     }
-    var T = function () {
-        if (
-          (_.usePower(e),
-          PanelManager.getPanel(DrugPanel, !1) &&
-            PanelManager.getPanel(DrugPanel).checkClose(),
-          1 == i)
-        )
-          if (n.isPetEgg())
-            AlertPanel.alertNotify(GameText.STR_PET_EGG, s.toString());
-          else if (n.isChestItem()) {
-            var t = s.toString();
-            Tool.isNullText(t) && (t = GameText.STR_BOX_NULL),
-              AlertPanel.alertNotify(GameText.STR_OPEN_BOX_GET, t);
-          } else if (n.isRepairItem()) {
-            var o =
-              p > 0
-                ? Tool.manageStringU(
-                    GameText.STR_ITEM_USE_SAVE,
-                    p + GameText.getMoneyText(ModelConst.MONEY3)
-                  )
-                : "。";
-            AlertPanel.alertNotify(
-              GameText.STR_REPAIR_EQUIP,
-              Tool.manageStringU(GameText.STR_REPAIR_EQUIP_SUCCESS, o)
-            ),
-              PanelManager.mainMenu &&
-                PanelManager.mainMenu.stage &&
-                PanelManager.mainMenu.updateWorldIconPoint();
-          } else if (n.isCountryBook())
-            AlertPanel.alertNotify(
-              GameText.STR_USE_SUCCESS,
-              GameText.STR_USE_ITEM_COUNTRY_BOOK
-            );
-          else if (n.isTitleItem())
-            AlertPanel.alertNotify(
-              GameText.STR_USE_SUCCESS,
-              Tool.manageStringU(GameText.STR_USE_ITEM_TITLE_INFO, d)
-            );
-          else if (Define.isChangeJobItem(n.id)) {
-          } else {
-            var a = _.getPowerDesc();
-            Tool.isNullText(a)
-              ? AlertPanel.alertCommon(GameText.STR_USE_SUCCESS)
-              : AlertPanel.alertNotify(GameText.STR_USE_SUCCESS, a);
-          }
-      },
-      p = 0,
+    var p = 0,
       d = "",
       E = MsgHandler.createPlayerBagMessage(
         u,

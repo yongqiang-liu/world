@@ -238,7 +238,7 @@ export default class AutoSell {
   }
 
   private logic() {
-    window.__myEvent__.on(EVENTS.BAG_WILL_FULL, this.sell);
-    window.__myEvent__.on(EVENTS.BAG_FULL, this.sell);
+    window.__myEvent__.on(EVENTS.BAG_WILL_FULL, this.sell.bind(this));
+    window.__myEvent__.on(EVENTS.BAG_FULL, this.sell.bind(this));
   }
 }

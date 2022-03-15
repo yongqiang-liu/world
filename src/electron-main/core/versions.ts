@@ -20,7 +20,7 @@ export interface VersionMap {
 const VersionMap: VersionMap = {};
 
 (function () {
-  function Define(name: string, url: string) {
+  function Define(name: VERSIONNAMES, url: string) {
     VersionMap[name] = {
       name,
       url,

@@ -6,7 +6,7 @@ import baseConfig from "./webpack.base";
 import webpackPaths from "./webpack.paths";
 
 const config: webpack.Configuration = {
-  devtool: process.env.DEBUG_PROD === "true" ? "source-map" : false,
+  devtool: false,
   mode: "production",
   target: "electron-main",
   entry: path.join(webpackPaths.mainPath, "main.ts"),

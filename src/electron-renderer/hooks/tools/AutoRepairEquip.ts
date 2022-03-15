@@ -59,10 +59,7 @@ export default class AutoRepairEquip {
   }
 
   private logic() {
-    if (
-      window?.xworld.isInCityNow() &&
-      window?.xself?.bag.getRepairEquipCount() >= 3
-    ) {
+    if (window?.xworld.isInCityNow()) {
       window?.xworld?.doRepairEquipNoAlert();
       this.requireEquipTimer = true;
     } else if (!window?.xworld.isInCityNow() && this.useRepairRoll) {
