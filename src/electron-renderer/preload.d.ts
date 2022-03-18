@@ -1,4 +1,5 @@
 import EventEmitter from "events";
+import EscortMissionController from "./hooks/escortTool/escortMissionController";
 import ExpandBagTool from "./hooks/tools/AutoExpandBag";
 import AutoOnlineReward from "./hooks/tools/AutoOnlineReward";
 import AutoRepairEquip from "./hooks/tools/AutoRepairEquip";
@@ -14,11 +15,15 @@ declare global {
     autoOnlineReward: AutoOnlineReward;
     autoRepairEquip: AutoRepairEquip;
     autoSell: AutoSell;
+    autoEscortTools: EscortMissionController;
     defaultFunction: DefaultFunction;
     doGetMoney: Function;
     doGetExp: Function;
+    doAcceptWushuangMission: Function;
+    doEnterGame: Function;
 
     __myEvent__: EventEmitter;
+    __escortEmitter__: EventEmitter;
 
     xself: any;
     xevent: any;
@@ -28,6 +33,7 @@ declare global {
     Main: any;
     Player: any;
     Battle: any;
+    TodayEvent: any;
     DrugPanel: any;
     BattleConst: any;
     GameWorld: any;
@@ -49,7 +55,10 @@ declare global {
     PowerString: any;
     ColorUtils: any;
     WorldMessage: any;
+    WorldEvent: any;
 
+    City: any;
+    Login: any;
     Escort: any;
     MenuActionData: any;
     PopUpManager: any;
@@ -75,7 +84,9 @@ declare global {
     MountGuide: any;
     Enchant: any;
     PlayerTurnMonster: any;
-
+    Model: any;
+    CountryTaskListPanel: any;
     GuideHandler: any;
+    AreaLineListPanel: any;
   }
 }

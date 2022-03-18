@@ -2,7 +2,7 @@ import { IPCR } from "common/ipcEventConst";
 import { SellOptions } from "common/Sell";
 import { TimeHelper } from "common/timer";
 import { ipcRenderer } from "electron";
-import { EVENTS } from "renderer/events/eventConst";
+import { EVENTS } from "common/eventConst";
 import { Define } from "renderer/gameConst";
 import {
   gameStarted,
@@ -31,7 +31,7 @@ export default class AutoSell {
 
       const { xself } = window;
 
-      if (xself?.bag.countFreePos() < 7) {
+      if (xself?.bag.countFreePos() <= 7) {
         window.__myEvent__.emit(EVENTS.BAG_WILL_FULL);
       }
     }, TimeHelper.second(10));
@@ -232,8 +232,6 @@ export default class AutoSell {
   }
 
   private async sell() {
-    await whenGameStarted();
-
     setTimeout(() => this.ai_sell());
   }
 

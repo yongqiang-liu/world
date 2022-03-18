@@ -1,11 +1,13 @@
+import { TimeHelper } from "common/timer";
+
 export default class AutoOnlineReward {
   _isStarting = false;
 
   private _interval: number | null = null;
 
-  start(d: number = 1000 * 60) {
+  start(d: number = TimeHelper.minute(1)) {
     if (!this._interval) {
-      this.logic();
+      setTimeout(() => this.logic(), TimeHelper.second(10));
       this._interval = window.setInterval(() => this.logic(), d);
       this._isStarting = true;
     }

@@ -1,5 +1,5 @@
 import { TimeHelper } from "common/timer";
-import { EVENTS } from "renderer/events/eventConst";
+import { EVENTS } from "common/eventConst";
 
 export default class AutoRepairEquip {
   _isStarting = false;
@@ -59,6 +59,8 @@ export default class AutoRepairEquip {
   }
 
   private logic() {
+    if (window?.xself?.bag.getRepairEquipCount() <= 0) return;
+
     if (window?.xworld.isInCityNow()) {
       window?.xworld?.doRepairEquipNoAlert();
       this.requireEquipTimer = true;

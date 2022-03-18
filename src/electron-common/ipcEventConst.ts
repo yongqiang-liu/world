@@ -1,10 +1,10 @@
 /** @description 渲染进程 */
 export const enum IPCR {
-  INITALIZED = 'initalized',
-  UNINITALIZE = 'uninitalize',
+  INITALIZED = "initalized",
+  UNINITALIZE = "uninitalize",
 
   SELL_PRODUCT = "sell:product",
-  REPAIR_EQUIP = 'repair:equip',
+  REPAIR_EQUIP = "repair:equip",
   REPAIR_EQUIP_IN_CITY = "repair:equip:in:city",
   REPAIR_EQUIP_IN_MAP = "repair:equip:in:map",
   OPEN_DAILY_BOX = "open:daily:box",
@@ -15,8 +15,10 @@ export const enum IPCR {
   AUTO_REFRESH_MONSTER = "auto:refresh:monster",
   AUTO_EXPAND_BAG = "auto:expand:bag",
   AUTO_ONLINE_REWARD = "auto:online:reward",
+  AUTO_ESCORT = "auto:escort",
 
   MICRO_REWARD = "micro:reward",
+  WUSHUANG_START = "wushuang:start",
 
   GET_VERSION_URL = "get:version:url",
   GET_IS_AUTO_DAILY = "get:auto:daily",
@@ -25,7 +27,11 @@ export const enum IPCR {
   GET_ACCOUNTS = "get:accounts",
 
   SET_USE_REPAIR_ROLL = "set:repair:roll",
-  SET_SELL_OPTIONS = 'set:sell:options',
+  SET_SELL_OPTIONS = "set:sell:options",
+
+  AUTO_ENTER_GAME = "auto:enter:game",
+
+  EXIT_ESCORT = "exit:escort",
 
   INVOKE_VERSION_INFO = "invoke:version:info",
 }
@@ -33,8 +39,8 @@ export const enum IPCR {
 // receive
 /** @description 主进程 */
 export const enum IPCM {
-  INITALIZED = 'initalized',
-  UNINITALIZE = 'uninitalize',
+  INITALIZED = "initalized",
+  UNINITALIZE = "uninitalize",
 
   RECEIVE_VERSION_URL = "receive:version:url",
   RECEIVE_IS_AUTO_DAILY = "receive:auto:daily",
@@ -48,11 +54,15 @@ export const enum IPCM {
   INVOKE_VERSION_INFO = "invoke:version:info",
   HANDLE_VERSION_INFO = "handle:version:info",
 
-  SETUP_FUNCTION_STARTED = 'setup:function:started',
-  SETUP_FUNCTION_ENDED = 'setup:function:ended',
+  SETUP_FUNCTION_STARTED = "setup:function:started",
+  SETUP_FUNCTION_ENDED = "setup:function:ended",
 
-  GAME_HOOK_STARTED = 'game:hook:started',
-  GAME_HOOK_ENDED = 'game:hook:ended',
+  GAME_HOOK_STARTED = "game:hook:started",
+  GAME_HOOK_ENDED = "game:hook:ended",
 
-  MOUSE_WHEEL = 'mouse:wheel',
+  RELOAD = "reload",
+  EXECUTE = 'execute',
+  EXECUTE_OTHER = "execute:other",
+
+  MOUSE_WHEEL = "mouse:wheel",
 }

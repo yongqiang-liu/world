@@ -40,6 +40,8 @@ export default class MainWidow extends BrowserWindow {
 
   private oneKeyRefreshMonster = false;
 
+  private oneKeyEscort = false;
+
   private actived_view = 0;
 
   private views: Array<GameView> = [];
@@ -58,7 +60,7 @@ export default class MainWidow extends BrowserWindow {
 
   private registerAccelerator = false;
 
-  updater = new AutoUpdater(this);
+  private readonly updater = new AutoUpdater(this);
 
   constructor(private readonly configuration: Configuration) {
     super(MainWidowConfiguration);
@@ -101,7 +103,7 @@ export default class MainWidow extends BrowserWindow {
   async prebuildWindowMenu() {
     const state = this.viewsState[this.actived_view];
 
-    if (state.state === GameViewState.INITALIZED) {
+    if (state?.state === GameViewState.INITALIZED) {
       this.enable = true;
     } else {
       this.enable = false;
@@ -165,6 +167,15 @@ export default class MainWidow extends BrowserWindow {
             },
           },
           {
+            label: "自动护送任务",
+            type: "checkbox",
+            checked: this.oneKeyEscort,
+            click: () => {
+              this.oneKeyEscort = !this.oneKeyEscort;
+              this.views.map((view) => view.setAutoEscort(this.oneKeyEscort));
+            },
+          },
+          {
             label: "一键出售垃圾",
             click: () => {
               this.views.map((view) => view.sellProduct());
@@ -197,6 +208,17 @@ export default class MainWidow extends BrowserWindow {
                 !!!this.config.app.autoSellByBagWillFull;
               this.views.map((view) => {
                 view.setSellProduct(this.config.app.autoSellByBagWillFull);
+              });
+            },
+          },
+          {
+            label: "自动护送",
+            type: "checkbox",
+            checked: !!this.config.app.autoEscort,
+            click: () => {
+              this.config.app.autoEscort = !!!this.config.app.autoEscort;
+              this.views.map((view) => {
+                view.setAutoEscort(this.config.app.autoEscort);
               });
             },
           },
@@ -311,6 +333,14 @@ export default class MainWidow extends BrowserWindow {
               this.activedView?.openDailyBox();
             },
           },
+          {
+            label: "自动无双",
+            click: () => {
+              this.views.map((view) => {
+                view.startWushuangEscort();
+              });
+            },
+          },
         ],
       };
 
@@ -408,8 +438,9 @@ export default class MainWidow extends BrowserWindow {
 
         this.views.splice(this.actived_view, 1);
         this.viewsState.splice(this.actived_view, 1);
-        this.configuration.configuration.accounts.splice(this.actived_view, 1);
+        this.config.accounts.splice(this.actived_view, 1);
         this.actived_view = this.actived_view - 1;
+        this.activedView = this.views[this.actived_view];
         this.configuration.save();
       },
     });
@@ -491,6 +522,7 @@ export default class MainWidow extends BrowserWindow {
       view.setExpandBag(!!this.config.app.autoExpandBag);
       view.setSellBuildMaterial(!!this.config.app.sell_buildMaterial);
       view.setSellRareEquip(!!this.config.app.sell_RareEquip);
+      view.setAutoEscort(!!this.config.app.autoEscort);
     });
   }
 
@@ -592,6 +624,25 @@ export default class MainWidow extends BrowserWindow {
       setTimeout(() => {
         view?.loadURL(url);
       }, 1000);
+    });
+
+    ipcMain.on(IPCM.RELOAD, (e) => {
+      const view = this.getViewById(e.sender.id);
+
+      view?.reload();
+    });
+
+    ipcMain.on(IPCM.EXECUTE, (e) => {
+      console.log("execute");
+      this.views
+        .filter((v) => v.id !== e.sender.id)
+        .map((view) => view.reload());
+    });
+
+    ipcMain.on(IPCM.EXECUTE_OTHER, (e, command: string, ...args: any[]) => {
+      this.views
+        .filter((v) => v.id !== e.sender.id)
+        .map((view) => view.executeCommand(command, ...args));
     });
 
     // 监听鼠标滚轮

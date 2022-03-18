@@ -1,5 +1,5 @@
 import { TimeHelper } from "common/timer";
-import { EVENTS } from "renderer/events/eventConst";
+import { EVENTS } from "common/eventConst";
 import { whenGameStarted } from "renderer/gameFunctional";
 
 export default class DefaultFunction {

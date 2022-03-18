@@ -1,4 +1,5 @@
 import EventEmitter from "events";
+import { TimeHelper } from "./timer";
 
 export function delay(ms: number) {
   return new Promise<void>((resolve) => {
@@ -59,4 +60,21 @@ export function deepProxy<T extends object>(
   }
 
   return new Proxy(target, handler);
+}
+
+export function when<T>(
+  target: T,
+  condition?: (arg1: T) => boolean
+): Promise<void> {
+  return new Promise((resolve) => {
+    const t = setInterval(() => {
+      if (condition && condition(target)) {
+        resolve();
+        clearInterval(t);
+      } else if (target) {
+        resolve();
+        clearInterval(t);
+      }
+    }, TimeHelper.second(1));
+  });
 }

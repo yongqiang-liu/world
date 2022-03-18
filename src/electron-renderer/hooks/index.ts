@@ -8,6 +8,7 @@ import DefaultFunction from "./tools/Default";
 import setupFunction from "./setupFunction";
 import setupGameHook from "./setupGameHook";
 import TestRefreshGame from "./tools/TestRefreshGame";
+import EscortMissionController from "./escortTool/escortMissionController";
 
 export function setupHooks() {
   ipcRenderer.send(IPCM.GAME_HOOK_STARTED);
@@ -23,6 +24,7 @@ export function setupHooks() {
   window.autoOnlineReward = new AutoOnlineReward();
   window.autoRepairEquip = new AutoRepairEquip();
   window.autoSell = new AutoSell();
+  window.autoEscortTools = new EscortMissionController();
 
   ipcRenderer.send(IPCM.GAME_HOOK_ENDED);
 }

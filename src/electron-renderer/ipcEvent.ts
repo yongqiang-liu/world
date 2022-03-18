@@ -153,6 +153,26 @@ function setupAutoFunction() {
       window.autoSell.stop();
     }
   });
+
+  // 自动护送任务
+  ipcRenderer.on(IPCR.AUTO_ESCORT, (_e, v: boolean) => {
+    if (!gameStarted()) return;
+
+    if (v && !window.autoEscortTools._isStarting) {
+      window.autoEscortTools.start();
+    }
+
+    if (!v && window.autoSell._isStarting) {
+      window.autoEscortTools.stop();
+    }
+  });
+
+  // 无双
+  ipcRenderer.on(IPCR.WUSHUANG_START, () => {
+    if (!gameStarted()) return;
+
+    window.doAcceptWushuangMission();
+  });
 }
 
 function setupOptions() {

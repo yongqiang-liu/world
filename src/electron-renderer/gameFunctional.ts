@@ -2,7 +2,7 @@ import { delay, fromEmitter } from "common/functional";
 import { IPCM } from "common/ipcEventConst";
 import { TimeHelper } from "common/timer";
 import { ipcRenderer } from "electron";
-import { EVENTS } from "./events/eventConst";
+import { EVENTS } from "../electron-common/eventConst";
 
 export function gameStarted() {
   if (!window.xself) {

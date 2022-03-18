@@ -1,4 +1,4 @@
-import { EVENTS, WroldEvent } from "renderer/events/eventConst";
+import { EVENTS, WroldEvent } from "common/eventConst";
 import { ProtocolDefine } from "renderer/gameConst";
 
 function setupMsgHandler() {
@@ -20,29 +20,34 @@ function setupMsgHandler() {
 
   // ESCORT
   bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_START, () => {
-    window.__myEvent__.emit(EVENTS.ENTER_ESCORT_MAP);
+    window.__escortEmitter__.emit(EVENTS.ENTER_ESCORT_MAP);
   });
 
   bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_MOVE, () => {
-    window.__myEvent__.emit(EVENTS.MOVE_ESCORT_MAP);
+    window.__escortEmitter__.emit(EVENTS.MOVE_ESCORT_MAP);
+  });
+
+  bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_REFURBISH, () => {
+    window.__escortEmitter__.emit(EVENTS.ESCORT_REFRESH);
   });
 
   bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_CHOICE_EVENT, () => {
-    window.__myEvent__.emit(EVENTS.CHECK_ESCORT_EVENT);
+    window.__escortEmitter__.emit(EVENTS.CHECK_ESCORT_EVENT);
   });
 
   bindMsgHandler(ProtocolDefine.CG_TASK_ESCORT_CANCEL, () => {
-    window.__myEvent__.emit(EVENTS.EXIT_ESCORT_MAP);
+    window.__escortEmitter__.emit(EVENTS.EXIT_ESCORT_MAP);
   });
 
   // Battle
   bindMsgHandler(ProtocolDefine.CG_FIGHT_BATTLE_UPDATE, () => {
-    console.log("更新战斗: ");
+    window.__escortEmitter__.emit(EVENTS.UPDATE_BATTLE);
   });
 
-  bindMsgHandler(ProtocolDefine.CG_FIGHT_ENTER_PLAYER_REMOTEBATTLE_EXIT, () => {
-    console.log("退出战斗: ");
-  });
+  // bindMsgHandler(ProtocolDefine.CG_FIGHT_ENTER_PLAYER_REMOTEBATTLE_EXIT, () => {
+  //   console.log("退出战斗: ");
+  //   window.__escortEmitter__.emit(EVENTS.EXIT_BATTLE_MAP);
+  // });
 
   // City
   bindMsgHandler(ProtocolDefine.CG_SCENE_GO_CITY, () => {
@@ -88,6 +93,162 @@ export default function setupGameHook() {
       i();
     }
   };
+
+  // 接受任务, 留给自己调用的
+  window.Mission.doAcceptMissionMsgNoAlert = function (e: any, n: any, i: any) {
+    const {
+      PanelManager,
+      AlertPanel,
+      GameText,
+      TodayEvent,
+      MsgHandler,
+      Mission,
+      GameWorld,
+      CountryTaskListPanel,
+      Tool,
+      WorldMessage,
+      nato,
+      Model,
+    } = window;
+    if (null == e || null == n || null == i) return !1;
+    var o = function (o: any) {
+        PanelManager.closeWaitForServer();
+        var a = o.getByte();
+        if (0 != a)
+          return void AlertPanel.alertNotify(
+            GameText.getText(GameText.TI_ERROR),
+            o.getString()
+          );
+        TodayEvent.checkSaveMissionID(i.id);
+        var r = { id: i.id, name: i.name };
+        Mission.saveTestMission.push(r), MsgHandler.processMissionNPCStatus(o);
+        var s = o.getBoolean();
+        if (0 != s) {
+          var l = o.getByte();
+          if (0 != l) return void AlertPanel.errorMessage(o.getString());
+          if (
+            (MsgHandler.processMissionReward(e, i.id, o),
+            GameWorld.checkNPCRelaMissions(!0),
+            PanelManager.isPanelShow(CountryTaskListPanel))
+          ) {
+            var _ = PanelManager.getPanel(CountryTaskListPanel);
+            _.update();
+          }
+        } else {
+          e.addMission(i);
+          if (
+            (0 == Tool.isNullText(i.simpleDesc) &&
+              WorldMessage.addPromptMsg(
+                Tool.manageString(GameText.STR_MISSION_BULLETIN, i.simpleDesc)
+              ),
+            GameWorld.checkNPCRelaMissions(!0),
+            i.doAcceptEndCheck(n),
+            PanelManager.isPanelShow(CountryTaskListPanel))
+          ) {
+            var _ = PanelManager.getPanel(CountryTaskListPanel);
+            _.update();
+          }
+        }
+      },
+      a = function () {
+        PanelManager.openWaitForServer();
+        var t = MsgHandler.createTaskAcceptMsg(n.getId(), i.getId());
+        // @ts-ignore
+        nato.Network.sendCmd(t, o, this);
+      };
+
+    i.isEscort()
+      ? window.__escortEmitter__.emit(EVENTS.ACCEPT_MISSION, i)
+      : window.__myEvent__.emit(EVENTS.ACCEPT_MISSION, i);
+    a();
+  };
+
+  // window.MsgHandler.processPlayerEventMsg = function (e: any) {
+  //   const {
+  //     GameText,
+  //     xworld,
+  //     Define,
+  //     xself,
+  //     xevent,
+  //     WorldEvent,
+  //     Model,
+  //     PanelManager,
+  //     AlertPanel,
+  //     nato,
+  //     PopUpManager,
+  //   } = window;
+  //   var n = e.getInt(),
+  //     i = e.getByte(),
+  //     o = e.getInt(),
+  //     a = e.getString(),
+  //     r =
+  //       (e.getString(),
+  //       e.getString(),
+  //       new Date().getTime() + e.getInt(),
+  //       GameText.STR_TITLE),
+  //     s = xworld.getModel(o);
+  //   switch (i) {
+  //     case Define.PLAYER_EVENT_TEAM_INVITE:
+  //       if (xself.isNovice) return;
+  //       if (((r = GameText.getText(GameText.TI_INVITE_TEAM)), null == s))
+  //         return;
+  //       xevent.dispatchEvent(
+  //         new WorldEvent(WorldEvent.AROUND__REFRESH_TEAM_INFO, this)
+  //       );
+  //       break;
+  //     case Define.PLAYER_EVENT_TEAM_APPLY:
+  //       if (((r = GameText.getText(GameText.TI_JOIN_TEAM)), null == s)) return;
+  //       xevent.dispatchEvent(
+  //         new WorldEvent(WorldEvent.AROUND__REFRESH_TEAM_INFO, this)
+  //       );
+  //       break;
+  //     case Define.PLAYER_EVENT_PKASK:
+  //       if (((r = GameText.getText(GameText.TI_PK)), null == s)) return;
+  //       break;
+  //     case Define.PLAYER_EVENT_JOINCOUNTRYASK:
+  //       r = GameText.getText(GameText.TI_INVITE_COUNTRY);
+  //       break;
+  //     case Define.PLAYER_EVENT_ESCORT:
+  //       if(window.autoEscortTools._isStarting) {
+  //         window.__escortEmitter__.emit(EVENTS.ACCEPT_ESCORT, n);
+  //         return;
+  //       }
+  //       r = GameText.STR_ESCORT_MISSION;
+  //       break;
+  //     case Define.PLAYER_EVENT_MASTER:
+  //       r = GameText.getText(GameText.TI_APPRENTICE);
+  //       break;
+  //     case Define.PLAYER_EVENT_JOINCOUNTRYHANDLE:
+  //       r = GameText.STR_JOINCOUNTRYHANDLE;
+  //       break;
+  //     case Define.PLAYER_EVENT_MERRY:
+  //       r = GameText.STR_PARTNER;
+  //   }
+  //   i == Define.PLAYER_EVENT_JOINCOUNTRYHANDLE
+  //     ? xself &&
+  //       (xself.setTabStatus(!0, Model.COUNTRY_APPLY),
+  //       PanelManager.updateWorldIconPoint())
+  //     : AlertPanel.alert(
+  //         r,
+  //         a,
+  //         function () {
+  //           var e = window.MsgHandler.createPlayerEvent(
+  //             n,
+  //             ProtocolDefine.PLAYER_EVENT_CHOOSE_YES
+  //           );
+  //           nato.Network.sendCmd(e);
+  //         },
+  //         this,
+  //         function () {
+  //           var e = window.MsgHandler.createPlayerEvent(
+  //             n,
+  //             ProtocolDefine.PLAYER_EVENT_CHOOSE_NO
+  //           );
+  //           nato.Network.sendCmd(e);
+  //         },
+  //         PopUpManager.CloseType.NONE
+  //       );
+  // };
 
   // 退出 Battle 后
   window.MsgHandler.processAfterBattlePoint = function (
@@ -172,6 +333,7 @@ export default function setupGameHook() {
             this.setGuide(BattleConst.TAG_IS_GUIDE_SKIP_BATTLE)));
 
     window.__myEvent__.emit(EVENTS.ENTER_BATTLE_MAP);
+    window.__escortEmitter__.emit(EVENTS.ENTER_BATTLE_MAP);
   };
 
   // @ts-ignore
@@ -268,6 +430,7 @@ export default function setupGameHook() {
     }
 
     window.__myEvent__.emit(EVENTS.EXIT_BATTLE_MAP);
+    window.__escortEmitter__.emit(EVENTS.EXIT_BATTLE_MAP);
   };
 
   window.xevent.addEventListener(WroldEvent.ITEM_SELL_END, () => {
@@ -310,7 +473,7 @@ export default function setupGameHook() {
               (r = new MenuActionData(e.eventButton[l], e.eventID[l])),
               s.push(r);
           e.refreshTime(n.getInt(), n.getInt());
-          window.__myEvent__.emit(EVENTS.ESCORT_EVENT_LIST, s);
+          window.__escortEmitter__.emit(EVENTS.ESCORT_EVENT_LIST, s);
           PanelManager.openSelectMenuPanel(
             e.eventContent,
             s,
@@ -324,6 +487,92 @@ export default function setupGameHook() {
     return (
       nato.Network.sendCmd(s, r, this), PanelManager.openWaitForServer(), !0
     );
+  };
+
+  // 退出护送任务
+  window.Escort.doEscortPostQuitMsgNoAlert = function () {
+    if (!window.GameWorld.getEscort()) return;
+
+    const {
+      MsgHandler,
+      GameText,
+      GameWorld,
+      PanelManager,
+      AlertPanel,
+      xself,
+      nato,
+    } = window;
+
+    var t = function (t: any) {
+        MsgHandler.isMessageHaveError(t) ||
+          (PanelManager.closeScene(!0),
+          GameWorld.clearEscort(),
+          MsgHandler.instance.processDataBlockFlagMsg(t),
+          PanelManager.updateWorldIconPoint(),
+          xself.checkHPMP(),
+          AlertPanel.alertNotify(
+            GameText.STR_ESCORT_MISSION_QUIT,
+            GameText.STR_ESCORT_MISSION_QUIT_SUCCESS
+          ));
+      },
+      e = function () {
+        var e = MsgHandler.createEscortPostQuit();
+        // @ts-ignore
+        nato.Network.sendCmd(e, t, this);
+      };
+
+    setTimeout(() => e());
+  };
+
+  // 结束
+  window.Escort.processEscostEndMsg = function (e: any, n: any) {
+    const {
+      GameWorld,
+      MsgHandler,
+      xself,
+      GameText,
+      Tool,
+      Escort,
+      AlertPanel,
+      WorldMessage,
+      TodayEvent,
+    } = window;
+    if (null != e) {
+      var i = "",
+        o = e.getBoolean(),
+        a = 0;
+      o
+        ? MsgHandler.processMissionReward(xself, -1, e)
+        : ((a = e.getByte()),
+          n.type == Escort.ESCORT_TURN_FAVOURER && (i = e.getString()));
+      var r = e.getByte();
+      0 == r &&
+        TodayEvent.curMissionID > 0 &&
+        TodayEvent.saveMissionIDInPlayerData(),
+        GameWorld.clearEscort(),
+        MsgHandler.instance.processDataBlockFlagMsg(e),
+        MsgHandler.createWorldDataReflashMsg();
+      var s =
+        (n.type == Escort.ESCORT_TURN_HUN
+          ? GameText.STR_ESCORT_ROB_SUCCESS
+          : GameText.STR_ESCORT_MISSION_SUCCESS) +
+        GameText.STR_ESCORT_MISSION_SUCCESS_INFO;
+      n.type == Escort.ESCORT_TURN_FAVOURER &&
+        (s += Tool.manageString(GameText.STR_ESCORT_TURN_FAVOURER, r + ""));
+      var l = GameText.STR_ESCORT_MISSION_FAIL;
+      n.type == Escort.ESCORT_TURN_HUN
+        ? (l +=
+            a == Escort.ESCORT_STATE_FINISH_SYSTEM
+              ? GameText.STR_ESCORT_STATE_FINISH_SYSTEM
+              : a == Escort.ESCORT_STATE_FINISH_CANCEL
+              ? GameText.STR_ESCORT_STATE_FINISH_CANCEL
+              : a)
+        : 0 == Tool.isNullText(i) && (l = i),
+        o
+          ? AlertPanel.alertNotify(GameText.STR_ESCORT_MISSION_END, s)
+          : WorldMessage.addTips(l);
+      window.__escortEmitter__.emit(EVENTS.ESCORT_ENDED);
+    }
   };
 
   window.AutoSell.sendToSellNoAlert = function (t: any) {

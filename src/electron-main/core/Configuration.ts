@@ -14,6 +14,7 @@ const defaultConfigurtion: IConfiguration = {
     autoExpandBag: false,
     sell_buildMaterial: false,
     sell_RareEquip: false,
+    autoEscort: false,
   },
   oaccounts: [],
   list: {
@@ -26,7 +27,6 @@ const defaultConfigurtion: IConfiguration = {
 export const enum ConfigurationEvents {
   SAVED = "saved",
 }
-
 
 export default class Configuration extends EventEmitter {
   configuration!: IConfiguration;
@@ -78,7 +78,7 @@ export default class Configuration extends EventEmitter {
         flag: "w+",
       },
       (err) => {
-        if(err) console.error(err);
+        if (err) console.error(err);
       }
     );
 

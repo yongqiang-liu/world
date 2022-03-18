@@ -26,6 +26,8 @@ export default class GameView {
 
   private _expandBag = false;
 
+  private _escort = false;
+
   private _useRepairRoll = false;
 
   private _sellOptions: SellOptions;
@@ -48,10 +50,16 @@ export default class GameView {
       equipWhite,
     };
 
-    if (!app.isPackaged) this.webContents.openDevTools();
+    this.openDevTools();
 
     this._view.setBackgroundColor("#3C3F41");
     this.initalize();
+  }
+
+  async openDevTools() {
+    await this.whenInitalized();
+
+    if (!app.isPackaged) this.webContents.openDevTools();
   }
 
   initalize() {
@@ -161,6 +169,18 @@ export default class GameView {
     this.send(IPCR.SET_USE_REPAIR_ROLL, this._useRepairRoll);
   }
 
+  // 自动护送任务
+  async setAutoEscort(v: boolean) {
+    await this.whenInitalized();
+    this._escort = v;
+    this.send(IPCR.AUTO_ESCORT, this._escort);
+  }
+
+  // 自动无双
+  async startWushuangEscort() {
+    this.send(IPCR.WUSHUANG_START);
+  }
+
   // 出售建筑道具
   async setSellBuildMaterial(v: boolean) {
     this.setSellOption({
@@ -263,8 +283,8 @@ export default class GameView {
   }
 
   reload() {
-    this.webContents.reloadIgnoringCache();
     this.changeState(GameViewState.UNINITALIZE);
+    this.webContents.reloadIgnoringCache();
   }
 
   get webContents() {
@@ -281,6 +301,10 @@ export default class GameView {
 
   send(channel: string, ...args: any[]) {
     this._view.webContents.send(channel, ...args);
+  }
+
+  async executeCommand(command: string, ...args: any[]) {
+    this.send(command, ...args);
   }
 
   loadURL(url: string, options?: Electron.LoadURLOptions) {

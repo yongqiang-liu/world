@@ -12,6 +12,7 @@ export interface ApplicationConfiguration {
   autoExpandBag: boolean;
   sell_buildMaterial: boolean;
   sell_RareEquip: boolean;
+  autoEscort: boolean;
 }
 
 export interface FilterList {
