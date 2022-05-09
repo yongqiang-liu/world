@@ -59,7 +59,7 @@ export default class GameView {
   async openDevTools() {
     await this.whenInitalized();
 
-    if (!app.isPackaged) this.webContents.openDevTools();
+    this.webContents.openDevTools();
   }
 
   initalize() {
@@ -169,11 +169,25 @@ export default class GameView {
     this.send(IPCR.SET_USE_REPAIR_ROLL, this._useRepairRoll);
   }
 
+  // 发送消息
+  async setAutoChat(v: boolean) {
+    await this.whenInitalized();
+
+    this.send(IPCR.AUTO_CHAT_MSG, v);
+  }
+
   // 自动护送任务
   async setAutoEscort(v: boolean) {
     await this.whenInitalized();
     this._escort = v;
     this.send(IPCR.AUTO_ESCORT, this._escort);
+  }
+
+  // 自动护送任务
+  async setSkipBattleAnime(v: boolean) {
+    await this.whenInitalized();
+
+    this.send(IPCR.AUTO_SKIP_BATTLE_ANIM, v);
   }
 
   // 自动无双

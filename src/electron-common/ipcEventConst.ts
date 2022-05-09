@@ -16,6 +16,8 @@ export const enum IPCR {
   AUTO_EXPAND_BAG = "auto:expand:bag",
   AUTO_ONLINE_REWARD = "auto:online:reward",
   AUTO_ESCORT = "auto:escort",
+  AUTO_SKIP_BATTLE_ANIM = 'auto:skip:battle:anim',
+  AUTO_CHAT_MSG = "auto:chat:msg",
 
   MICRO_REWARD = "micro:reward",
   WUSHUANG_START = "wushuang:start",
@@ -25,6 +27,7 @@ export const enum IPCR {
   GET_IS_GAME_STARTED = "get:game:started",
   GET_IS_REFRESH_MONSTER = "get:refresh:monster",
   GET_ACCOUNTS = "get:accounts",
+  GET_CHAT_MSG = "get:auto:chat:msg",
 
   SET_USE_REPAIR_ROLL = "set:repair:roll",
   SET_SELL_OPTIONS = "set:sell:options",
@@ -46,6 +49,7 @@ export const enum IPCM {
   RECEIVE_IS_AUTO_DAILY = "receive:auto:daily",
   RECEIVE_IS_GAME_STARTED = "receive:game:started",
   RECEIVE_IS_REFESH_MONSTER = "receive:refresh:monster",
+  RECEIVE_CHAT_MSG = "receive:auto:chat:msg",
 
   RECEIVE_ACCOUNTS = "receive:accounts",
 

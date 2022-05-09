@@ -14,9 +14,7 @@ const preloadPath = isPackaged
   ? path.join(__dirname, "../renderer")
   : path.join(rootPath, "release", "app", "dist", "renderer");
 
-export const worldH5DataPath = isPackaged
-  ? path.join(app.getPath("appData"), "worldh5")
-  : assetsPath;
+export const worldH5DataPath = path.join(app.getPath("appData"), "worldh5")
 
 if (!fs.existsSync(worldH5DataPath)) {
   fs.mkdirSync(worldH5DataPath);

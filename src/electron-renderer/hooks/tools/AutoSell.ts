@@ -7,7 +7,6 @@ import { Define } from "renderer/gameConst";
 import {
   gameStarted,
   transformFilter,
-  whenGameStarted,
 } from "renderer/gameFunctional";
 import { isRegExp } from "util";
 
@@ -31,7 +30,7 @@ export default class AutoSell {
 
       const { xself } = window;
 
-      if (xself?.bag.countFreePos() <= 7) {
+      if (xself?.bag.countFreePos() <= 4) {
         window.__myEvent__.emit(EVENTS.BAG_WILL_FULL);
       }
     }, TimeHelper.second(10));
@@ -53,6 +52,7 @@ export default class AutoSell {
 
   stop() {
     if (this._isStarting) {
+      this._interval = null;
       this._isStarting = false;
       window.__myEvent__.removeListener(EVENTS.BAG_WILL_FULL, this.sell);
       window.__myEvent__.removeListener(EVENTS.BAG_FULL, this.sell);

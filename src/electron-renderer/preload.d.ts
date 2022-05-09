@@ -1,10 +1,12 @@
 import EventEmitter from "events";
 import EscortMissionController from "./hooks/escortTool/escortMissionController";
+import AutoChatMsg from "./hooks/tools/AutoChatMsg";
 import ExpandBagTool from "./hooks/tools/AutoExpandBag";
 import AutoOnlineReward from "./hooks/tools/AutoOnlineReward";
 import AutoRepairEquip from "./hooks/tools/AutoRepairEquip";
 import AutoSell from "./hooks/tools/AutoSell";
 import DefaultFunction from "./hooks/tools/Default";
+import SkipBattleAnime from "./hooks/tools/SkipAnime";
 import TestRefreshGame from "./hooks/tools/TestRefreshGame";
 
 declare global {
@@ -15,6 +17,8 @@ declare global {
     autoOnlineReward: AutoOnlineReward;
     autoRepairEquip: AutoRepairEquip;
     autoSell: AutoSell;
+    skipBattleAnime: SkipBattleAnime;
+    autoChatMsg: AutoChatMsg;
     autoEscortTools: EscortMissionController;
     defaultFunction: DefaultFunction;
     doGetMoney: Function;
@@ -56,6 +60,8 @@ declare global {
     ColorUtils: any;
     WorldMessage: any;
     WorldEvent: any;
+    Achieve: any;
+    AchieveScene: any;
 
     City: any;
     Login: any;

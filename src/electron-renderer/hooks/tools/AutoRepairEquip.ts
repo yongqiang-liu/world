@@ -1,5 +1,8 @@
 import { TimeHelper } from "common/timer";
 import { EVENTS } from "common/eventConst";
+import { ipcRenderer } from "electron";
+import { IPCR } from "common/ipcEventConst";
+import { whenGameStarted } from "renderer/gameFunctional";
 
 export default class AutoRepairEquip {
   _isStarting = false;
@@ -12,14 +15,20 @@ export default class AutoRepairEquip {
 
   private useRepairRoll = false;
 
+  constructor() {
+    this.registerListener()
+  }
+
   setRepairRoll(v: boolean) {
     this.useRepairRoll = v;
   }
 
   start(d = 1000) {
     if (!this._isStarting && !this._interval) {
-      this._interval = window.setInterval(() => {
-        if (!this.requireEquipTimer) this.logic();
+      this._interval = window.setInterval(async () => {
+         await whenGameStarted()
+
+       this.logic();
       }, d);
       this._isStarting = true;
 
@@ -39,6 +48,7 @@ export default class AutoRepairEquip {
   private enterCity() {
     if (this.repairEquipTimer) clearTimeout(this.repairEquipTimer);
     this.requireEquipTimer = false;
+    this.repairEquipTimer = null;
   }
 
   private setRepairTimer() {
@@ -47,7 +57,7 @@ export default class AutoRepairEquip {
       this.repairEquipTimer = window.setTimeout(() => {
         this.requireEquipTimer = false;
         this.repairEquipTimer = null;
-      }, TimeHelper.minute(10));
+      }, TimeHelper.minute(2));
   }
 
   private doUseRepairRoll() {
@@ -58,13 +68,35 @@ export default class AutoRepairEquip {
     }
   }
 
-  private logic() {
-    if (window?.xself?.bag.getRepairEquipCount() <= 0) return;
+  getRepairEquipCount(c = 2) {
+    if(!window.xself) return false
 
-    if (window?.xworld.isInCityNow()) {
+    let t = window.PlayerBag
+    let e = 0
+    for (let n = t.EQUIP_POS_START; n < 30; n++)
+        if (n != t.PET_POS && n != t.SPIRIT_POS) {
+          let i = window.xself.bag.getItem(n);
+           if(i && i.isEquipClass() && (i.durability + 20 < i.durMax)) {
+            e++;
+           }  
+        }
+      
+    return e >= c 
+  }
+
+  registerListener() {
+    ipcRenderer.on(IPCR.REPAIR_EQUIP, () => {
+      this.logic();
+    })
+  }
+
+  private logic() {
+    if(!window?.xworld.isInCityNow() || !this.getRepairEquipCount()) return
+
+    if (!this.useRepairRoll) {
       window?.xworld?.doRepairEquipNoAlert();
       this.requireEquipTimer = true;
-    } else if (!window?.xworld.isInCityNow() && this.useRepairRoll) {
+    } {
       this.doUseRepairRoll();
       this.requireEquipTimer = true;
     }
