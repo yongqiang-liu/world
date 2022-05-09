@@ -17,7 +17,7 @@ export const GameViewConfig: BrowserViewConstructorOptions = {
     contextIsolation: false,
     spellcheck: false,
     enableWebSQL: false,
-    devTools: !app.isPackaged,
+    // devTools: !app.isPackaged,
     webSecurity: false,
     preload: resolvePreloadPath("preload.js"),
   },

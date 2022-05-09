@@ -1,7 +1,7 @@
 {
   "name": "world",
   "private": true,
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "世界OL日常脚本",
   "scripts": {
     "start": "yarn build:preload && cross-env TS_NODE_TRANSPILE_ONLY=true electron -r ts-node/register -r tsconfig-paths/register ./src/electron-main/main.ts",

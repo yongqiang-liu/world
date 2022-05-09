@@ -1,4 +1,4 @@
-import { BrowserWindow, Notification, ipcMain, app } from "electron";
+import { BrowserWindow, Notification, ipcMain, app, globalShortcut } from "electron";
 import { resolveAssets } from "./paths";
 import Configuration, { ConfigurationEvents } from "./Configuration";
 import GameView, { GameViewState } from "./GameView";
@@ -14,6 +14,8 @@ import {
   hookWindowMenuClick,
   MenuTemplate,
 } from "./menuHelper";
+import { existsSync, readFileSync, writeFileSync } from "fs";
+import path from "path";
 
 ipcMain.setMaxListeners(30);
 
@@ -36,11 +38,15 @@ export interface ViewState {
 
 // 再三思考决定采用 BrowserView 来实现窗口的堆叠
 export default class MainWidow extends BrowserWindow {
+  private autoChat: boolean[] = []
+
   private oneKeyDailyMission = false;
 
   private oneKeyRefreshMonster = false;
 
   private oneKeyEscort = false;
+
+  private skipBattleAnime = false;
 
   private actived_view = 0;
 
@@ -212,6 +218,17 @@ export default class MainWidow extends BrowserWindow {
             },
           },
           {
+            label: "跳过战斗动画",
+            type: "checkbox",
+            checked: !!this.skipBattleAnime,
+            click: () => {
+              this.skipBattleAnime = !this.skipBattleAnime;
+              this.views.map((view) => {
+                view.setSkipBattleAnime(this.skipBattleAnime);
+              })
+            }
+          },
+          {
             label: "自动护送",
             type: "checkbox",
             checked: !!this.config.app.autoEscort,
@@ -221,6 +238,15 @@ export default class MainWidow extends BrowserWindow {
                 view.setAutoEscort(this.config.app.autoEscort);
               });
             },
+          },
+          {
+            label: "自动喊话",
+            type: "checkbox",
+            checked: !!this.autoChat[this.actived_view],
+            click: () => {
+              this.autoChat[this.actived_view] = !this.autoChat[this.actived_view];
+              this.views[this.actived_view].setAutoChat(this.autoChat[this.actived_view]);
+            }
           },
           {
             label: "自动修理",
@@ -367,6 +393,12 @@ export default class MainWidow extends BrowserWindow {
       enable: this.enable,
       registerAccelerator: this.registerAccelerator,
     });
+
+    if(this.registerAccelerator) {
+      globalShortcut.register("CommandOrControl+Shift+I", () => {
+        this.activedView?.openDevTools();
+      })
+    }
 
     if (!this.isDestroyed()) this.setMenu(windowMenu);
   }
@@ -644,6 +676,23 @@ export default class MainWidow extends BrowserWindow {
         .filter((v) => v.id !== e.sender.id)
         .map((view) => view.executeCommand(command, ...args));
     });
+
+    ipcMain.on(IPCM.RECEIVE_CHAT_MSG, (e) => {
+      const view = this.getViewById(e.sender.id);
+
+      const desktopPath = app.getPath('desktop');
+
+      const chatTextPath = path.join(desktopPath, 'chat.txt');
+
+      if(existsSync(chatTextPath)) {
+        const chatText = readFileSync(chatTextPath, 'utf8');
+      
+        view?.send(IPCM.RECEIVE_CHAT_MSG, chatText);
+      } else {
+        view?.send(IPCM.RECEIVE_CHAT_MSG, '');
+        writeFileSync(chatTextPath, "", { flag: 'w+' })
+      }
+    })
 
     // 监听鼠标滚轮
     ipcMain.on(

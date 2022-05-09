@@ -65,13 +65,7 @@ function setupTray() {
 }
 
 function requsetSingleLock() {
-  const isSecond = app.requestSingleInstanceLock();
-
-  if (!isSecond) app.quit();
-
-  app.on("second-instance", () => {
-    mainWindow?.show();
-  });
+  
 }
 
 app

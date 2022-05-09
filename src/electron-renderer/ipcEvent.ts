@@ -1,4 +1,5 @@
 import { IPCM, IPCR } from "common/ipcEventConst";
+import { TimeHelper } from "common/timer";
 import { ipcRenderer } from "electron";
 import { gameStarted, openDailyBox } from "./gameFunctional";
 
@@ -71,8 +72,27 @@ function setupAutoFunction() {
   ipcRenderer.on(IPCR.AUTO_ONE_DAILY_MISSION, (_e, v: boolean) => {
     if (!gameStarted()) return;
 
-    if (v && !window.OneKeyDailyMission._isStarting)
+    if (v && !window.OneKeyDailyMission._isStarting) {
+      if(window.xself.getTitle() !== '努力升级') {
+        // 查看背包是否有努力升级称号
+        for(let i = 30; i < window.xself.bag.bagEnd; i++) {
+          const item = window.xself.bag.store[i];
+          if(item && item.id == 40645) {
+            window.ItemManager.doItem(item)
+          }
+        }
+
+        setTimeout(async() => {
+          const titleList = await window.defaultFunction.getTitleList()
+          const title = titleList.find(item => item[0] == 505)
+          if(title) {
+            window.defaultFunction.useTitle(505)
+          }
+        }, TimeHelper.second(2))
+      }
+
       window.OneKeyDailyMission.start();
+    }
 
     if (!v && window.OneKeyDailyMission._isStarting) {
       window.OneKeyDailyMission.stop();
@@ -166,6 +186,31 @@ function setupAutoFunction() {
       window.autoEscortTools.stop();
     }
   });
+
+  // 跳过战斗动画
+  ipcRenderer.on(IPCR.AUTO_SKIP_BATTLE_ANIM, (_e, v: boolean) => {
+    if (!gameStarted()) return;
+
+    if (v && !window.skipBattleAnime._isStarting) {
+      window.skipBattleAnime.start();
+    }
+
+    if (!v && window.autoSell._isStarting) {
+      window.skipBattleAnime.stop();
+    }
+  })
+
+  ipcRenderer.on(IPCR.AUTO_CHAT_MSG, (_e, v: boolean) => {
+    if (!gameStarted()) return;
+
+    if (v && !window.autoChatMsg._isStarting) {
+      window.autoChatMsg.start();
+    }
+
+    if (!v && window.autoSell._isStarting) {
+      window.autoChatMsg.stop();
+    }
+  })
 
   // 无双
   ipcRenderer.on(IPCR.WUSHUANG_START, () => {
