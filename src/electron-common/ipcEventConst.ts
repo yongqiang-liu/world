@@ -16,8 +16,9 @@ export const enum IPCR {
   AUTO_EXPAND_BAG = "auto:expand:bag",
   AUTO_ONLINE_REWARD = "auto:online:reward",
   AUTO_ESCORT = "auto:escort",
-  AUTO_SKIP_BATTLE_ANIM = 'auto:skip:battle:anim',
+  AUTO_SKIP_BATTLE_ANIM = "auto:skip:battle:anim",
   AUTO_CHAT_MSG = "auto:chat:msg",
+  THOUSANDBATTLE = "thousand:battle",
 
   MICRO_REWARD = "micro:reward",
   WUSHUANG_START = "wushuang:start",
@@ -65,7 +66,7 @@ export const enum IPCM {
   GAME_HOOK_ENDED = "game:hook:ended",
 
   RELOAD = "reload",
-  EXECUTE = 'execute',
+  EXECUTE = "execute",
   EXECUTE_OTHER = "execute:other",
 
   MOUSE_WHEEL = "mouse:wheel",

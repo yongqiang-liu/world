@@ -8,10 +8,27 @@ import AutoSell from "./hooks/tools/AutoSell";
 import DefaultFunction from "./hooks/tools/Default";
 import SkipBattleAnime from "./hooks/tools/SkipAnime";
 import TestRefreshGame from "./hooks/tools/TestRefreshGame";
+import ThousandBattle from "./hooks/tools/ThousandBattle";
+
+interface Config {
+  autoDaily: boolean;
+  autoRefreshMonster: boolean;
+  skipBattleAnim: boolean;
+  repairRoll: boolean;
+  autoSell: boolean;
+  autoChat: boolean;
+  onlineReward: boolean;
+  autoEscort: boolean;
+  repairEquip: boolean;
+  expandBag: boolean;
+  autoChatMsg: boolean;
+}
 
 declare global {
   interface Window {
+    config: Config;
     // Hooks
+    thousandBattle: ThousandBattle;
     expandBagTool: ExpandBagTool;
     testRefreshGame: TestRefreshGame;
     autoOnlineReward: AutoOnlineReward;

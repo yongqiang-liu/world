@@ -50,7 +50,7 @@ export default class GameView {
       equipWhite,
     };
 
-    this.openDevTools();
+    if (!app.isPackaged) this.openDevTools();
 
     this._view.setBackgroundColor("#3C3F41");
     this.initalize();
@@ -111,6 +111,18 @@ export default class GameView {
 
   changeState(state: GameViewState) {
     this._state = state;
+  }
+
+  async forbiddenCity() {
+    await this.whenInitalized();
+
+    this.send(IPCR.THOUSANDBATTLE, 1);
+  }
+
+  async podi() {
+    await this.whenInitalized();
+
+    this.send(IPCR.THOUSANDBATTLE, 2);
   }
 
   // 自动日常

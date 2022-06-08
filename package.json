@@ -20,10 +20,13 @@
   "author": "Seven",
   "dependencies": {
     "electron-updater": "^4.6.5",
-    "json5": "^2.2.0"
+    "js-ini": "^1.5.1",
+    "json5": "^2.2.0",
+    "node-schedule": "^2.1.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.21",
+    "@types/node-schedule": "^2.1.0",
     "cross-env": "^7.0.3",
     "electron": "15.3.0",
     "electron-builder": "^22.14.13",

@@ -1,4 +1,10 @@
-import { BrowserWindow, Notification, ipcMain, app, globalShortcut } from "electron";
+import {
+  BrowserWindow,
+  Notification,
+  ipcMain,
+  app,
+  globalShortcut,
+} from "electron";
 import { resolveAssets } from "./paths";
 import Configuration, { ConfigurationEvents } from "./Configuration";
 import GameView, { GameViewState } from "./GameView";
@@ -38,7 +44,7 @@ export interface ViewState {
 
 // 再三思考决定采用 BrowserView 来实现窗口的堆叠
 export default class MainWidow extends BrowserWindow {
-  private autoChat: boolean[] = []
+  private autoChat: boolean[] = [];
 
   private oneKeyDailyMission = false;
 
@@ -225,8 +231,8 @@ export default class MainWidow extends BrowserWindow {
               this.skipBattleAnime = !this.skipBattleAnime;
               this.views.map((view) => {
                 view.setSkipBattleAnime(this.skipBattleAnime);
-              })
-            }
+              });
+            },
           },
           {
             label: "自动护送",
@@ -244,9 +250,12 @@ export default class MainWidow extends BrowserWindow {
             type: "checkbox",
             checked: !!this.autoChat[this.actived_view],
             click: () => {
-              this.autoChat[this.actived_view] = !this.autoChat[this.actived_view];
-              this.views[this.actived_view].setAutoChat(this.autoChat[this.actived_view]);
-            }
+              this.autoChat[this.actived_view] =
+                !this.autoChat[this.actived_view];
+              this.views[this.actived_view].setAutoChat(
+                this.autoChat[this.actived_view]
+              );
+            },
           },
           {
             label: "自动修理",
@@ -359,12 +368,24 @@ export default class MainWidow extends BrowserWindow {
               this.activedView?.openDailyBox();
             },
           },
+          // {
+          //   label: "自动无双(单人可用)",
+          //   click: () => {
+          //     this.views.map((view) => {
+          //       view.startWushuangEscort();
+          //     });
+          //   },
+          // },
           {
-            label: "自动无双",
+            label: "紫禁城千场",
             click: () => {
-              this.views.map((view) => {
-                view.startWushuangEscort();
-              });
+              this.activedView?.forbiddenCity();
+            },
+          },
+          {
+            label: "破敌(120)",
+            click: () => {
+              this.activedView?.podi();
             },
           },
         ],
@@ -394,10 +415,10 @@ export default class MainWidow extends BrowserWindow {
       registerAccelerator: this.registerAccelerator,
     });
 
-    if(this.registerAccelerator) {
+    if (this.registerAccelerator) {
       globalShortcut.register("CommandOrControl+Shift+I", () => {
         this.activedView?.openDevTools();
-      })
+      });
     }
 
     if (!this.isDestroyed()) this.setMenu(windowMenu);
@@ -680,19 +701,19 @@ export default class MainWidow extends BrowserWindow {
     ipcMain.on(IPCM.RECEIVE_CHAT_MSG, (e) => {
       const view = this.getViewById(e.sender.id);
 
-      const desktopPath = app.getPath('desktop');
+      const desktopPath = app.getPath("desktop");
 
-      const chatTextPath = path.join(desktopPath, 'chat.txt');
+      const chatTextPath = path.join(desktopPath, "chat.txt");
 
-      if(existsSync(chatTextPath)) {
-        const chatText = readFileSync(chatTextPath, 'utf8');
-      
+      if (existsSync(chatTextPath)) {
+        const chatText = readFileSync(chatTextPath, "utf8");
+
         view?.send(IPCM.RECEIVE_CHAT_MSG, chatText);
       } else {
-        view?.send(IPCM.RECEIVE_CHAT_MSG, '');
-        writeFileSync(chatTextPath, "", { flag: 'w+' })
+        view?.send(IPCM.RECEIVE_CHAT_MSG, "");
+        writeFileSync(chatTextPath, "", { flag: "w+" });
       }
-    })
+    });
 
     // 监听鼠标滚轮
     ipcMain.on(
