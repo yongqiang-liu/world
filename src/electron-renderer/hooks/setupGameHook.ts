@@ -44,10 +44,9 @@ function setupMsgHandler() {
     window.__escortEmitter__.emit(EVENTS.UPDATE_BATTLE);
   });
 
-  // bindMsgHandler(ProtocolDefine.CG_FIGHT_ENTER_PLAYER_REMOTEBATTLE_EXIT, () => {
-  //   console.log("退出战斗: ");
-  //   window.__escortEmitter__.emit(EVENTS.EXIT_BATTLE_MAP);
-  // });
+  bindMsgHandler(ProtocolDefine.CG_FIGHT_ENTER_PLAYER_REMOTEBATTLE_EXIT, () => {
+    window.__myEvent__.emit(EVENTS.EXIT_BATTLE_MAP);
+  });
 
   // City
   bindMsgHandler(ProtocolDefine.CG_SCENE_GO_CITY, () => {
@@ -1001,6 +1000,50 @@ export default function setupGameHook() {
     }
     return !0;
   };
+
+  window.BattleInputHandler.prototype.getPlayerDesc = function (t: any) {
+    const { StringBuffer, Tool, GameText, ModelConst } = window
+
+  var e = new StringBuffer();
+  return (
+    e.append(
+      t.getName() +
+        "(" +
+        Tool.manageString(
+          GameText.getText(GameText.TI_LEVEL),
+          t.getLevel() + ""
+        ) +
+        ")\n"
+    ),
+    e.append(
+      GameText.STR_PLAYER_HP +
+        t.get(ModelConst.HP) +
+        "/" +
+        t.get(ModelConst.HPMAX) +
+        "  "
+    ),
+    e.append(
+      GameText.STR_PLAYER_MP +
+        t.get(ModelConst.MP) +
+        "/" +
+        t.get(ModelConst.MPMAX) +
+        "\n"
+    ),
+    e.append(
+      GameText.STR_ATTR_KEEPOUT_ATK_TIME + ":" + t.keepout_atk_time + "\n"
+    ),
+    e.append("法力护盾:" + t.get(ModelConst.DEF_FIELD) + "\t"+"洞察:" + t.get(ModelConst.INSIGHT) + "\n"),
+    e.append("抵抗:" + t.get(ModelConst.WIL) + "\t"+"格挡:" + t.get(ModelConst.BLOCK) + "\n"),
+    e.append("反击:" + t.get(ModelConst.BACK) + "\t"+"闪避:" + t.get(ModelConst.DODGE) + "\n"),
+    e.append("劈砍防御力:" + t.get(ModelConst.DEF_STR) + "\n"),
+    e.append("穿刺防御力:" + t.get(ModelConst.DEF_AGI) + "\n"),
+    e.append("魔法防御力:" + t.get(ModelConst.DEF_MAGIC) + "\n"),
+    e.append(this.getPlayerBufferMsg(t)),
+    null != t.formationSkill &&
+      e.append(t.formationSkill.getFormationInfo()),
+    e.toString()
+  );
+}
 
   setupMsgHandler();
 }

@@ -11,6 +11,7 @@ import TestRefreshGame from "./tools/TestRefreshGame";
 import EscortMissionController from "./escortTool/escortMissionController";
 import SkipBattleAnime from "./tools/SkipAnime";
 import AutoChatMsg from "./tools/AutoChatMsg";
+import ThousandBattle from "./tools/ThousandBattle";
 
 export function setupHooks() {
   ipcRenderer.send(IPCM.GAME_HOOK_STARTED);
@@ -29,6 +30,7 @@ export function setupHooks() {
   window.autoEscortTools = new EscortMissionController();
   window.skipBattleAnime = new SkipBattleAnime();
   window.autoChatMsg = new AutoChatMsg();
+  window.thousandBattle = new ThousandBattle();
 
   ipcRenderer.send(IPCM.GAME_HOOK_ENDED);
 }

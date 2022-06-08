@@ -3,6 +3,20 @@ import { TimeHelper } from "common/timer";
 import { ipcRenderer } from "electron";
 import { gameStarted, openDailyBox } from "./gameFunctional";
 
+window.config = {
+  autoDaily: false,
+  autoRefreshMonster: false,
+  skipBattleAnim: false,
+  repairRoll: false,
+  autoSell: false,
+  autoChat: false,
+  onlineReward: false,
+  autoEscort: false,
+  repairEquip: false,
+  expandBag: false,
+  autoChatMsg: false,
+};
+
 export function setupUnInitalizeFunction() {
   // 获取账号信息
   ipcRenderer.on(IPCR.GET_ACCOUNTS, () => {
@@ -68,34 +82,50 @@ export function setupUnInitalizeFunction() {
 }
 
 function setupAutoFunction() {
+  ipcRenderer.on(IPCR.THOUSANDBATTLE, (_e, v: number) => {
+    if (!gameStarted()) return;
+
+    if (v && !window.thousandBattle._isStarting) {
+      window.thousandBattle.start(v);
+      return;
+    }
+
+    if (window.thousandBattle._isStarting) {
+      window.thousandBattle.stop();
+      return;
+    }
+  });
+
   // 自动完成每日
   ipcRenderer.on(IPCR.AUTO_ONE_DAILY_MISSION, (_e, v: boolean) => {
     if (!gameStarted()) return;
 
     if (v && !window.OneKeyDailyMission._isStarting) {
-      if(window.xself.getTitle() !== '努力升级') {
+      if (window.xself.getTitle() !== "努力升级") {
         // 查看背包是否有努力升级称号
-        for(let i = 30; i < window.xself.bag.bagEnd; i++) {
+        for (let i = 30; i < window.xself.bag.bagEnd; i++) {
           const item = window.xself.bag.store[i];
-          if(item && item.id == 40645) {
-            window.ItemManager.doItem(item)
+          if (item && item.id == 40645) {
+            window.ItemManager.doItem(item);
           }
         }
 
-        setTimeout(async() => {
-          const titleList = await window.defaultFunction.getTitleList()
-          const title = titleList.find(item => item[0] == 505)
-          if(title) {
-            window.defaultFunction.useTitle(505)
+        setTimeout(async () => {
+          const titleList = await window.defaultFunction.getTitleList();
+          const title = titleList.find((item) => item[0] == 505);
+          if (title) {
+            window.defaultFunction.useTitle(505);
           }
-        }, TimeHelper.second(2))
+        }, TimeHelper.second(2));
       }
 
       window.OneKeyDailyMission.start();
+      window.config.autoDaily = true;
     }
 
     if (!v && window.OneKeyDailyMission._isStarting) {
       window.OneKeyDailyMission.stop();
+      window.config.autoDaily = false;
     }
 
     ipcRenderer.send(
@@ -110,10 +140,12 @@ function setupAutoFunction() {
 
     if (v && !window.testRefreshGame._isStarting) {
       window.testRefreshGame.start();
+      window.config.autoRefreshMonster = true;
     }
 
     if (!v && window.testRefreshGame._isStarting) {
       window.testRefreshGame.stop();
+      window.config.autoRefreshMonster = false;
     }
 
     ipcRenderer.send(
@@ -128,10 +160,12 @@ function setupAutoFunction() {
 
     if (v && !window.expandBagTool._isStarting) {
       window.expandBagTool.start();
+      window.config.expandBag = true;
     }
 
     if (!v && window.expandBagTool._isStarting) {
       window.expandBagTool.stop();
+      window.config.expandBag = false;
     }
   });
 
@@ -141,10 +175,12 @@ function setupAutoFunction() {
 
     if (v && !window.autoOnlineReward._isStarting) {
       window.autoOnlineReward.start();
+      window.config.onlineReward = true;
     }
 
     if (!v && window.autoOnlineReward._isStarting) {
       window.autoOnlineReward.stop();
+      window.config.onlineReward = false;
     }
   });
 
@@ -154,10 +190,12 @@ function setupAutoFunction() {
 
     if (v && !window.autoRepairEquip._isStarting) {
       window.autoRepairEquip.start();
+      window.config.repairEquip = true;
     }
 
     if (!v && window.autoRepairEquip._isStarting) {
       window.autoRepairEquip.stop();
+      window.config.repairEquip = false;
     }
   });
 
@@ -167,10 +205,12 @@ function setupAutoFunction() {
 
     if (v && !window.autoSell._isStarting) {
       window.autoSell.start();
+      window.config.autoSell = true;
     }
 
     if (!v && window.autoSell._isStarting) {
       window.autoSell.stop();
+      window.config.autoSell = false;
     }
   });
 
@@ -180,10 +220,12 @@ function setupAutoFunction() {
 
     if (v && !window.autoEscortTools._isStarting) {
       window.autoEscortTools.start();
+      window.config.autoEscort = true;
     }
 
     if (!v && window.autoSell._isStarting) {
       window.autoEscortTools.stop();
+      window.config.autoEscort = false;
     }
   });
 
@@ -193,24 +235,28 @@ function setupAutoFunction() {
 
     if (v && !window.skipBattleAnime._isStarting) {
       window.skipBattleAnime.start();
+      window.config.skipBattleAnim = true;
     }
 
     if (!v && window.autoSell._isStarting) {
       window.skipBattleAnime.stop();
+      window.config.skipBattleAnim = false;
     }
-  })
+  });
 
   ipcRenderer.on(IPCR.AUTO_CHAT_MSG, (_e, v: boolean) => {
     if (!gameStarted()) return;
 
     if (v && !window.autoChatMsg._isStarting) {
       window.autoChatMsg.start();
+      window.config.autoChatMsg = true;
     }
 
     if (!v && window.autoSell._isStarting) {
       window.autoChatMsg.stop();
+      window.config.autoChatMsg = false;
     }
-  })
+  });
 
   // 无双
   ipcRenderer.on(IPCR.WUSHUANG_START, () => {
