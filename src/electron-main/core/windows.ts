@@ -4,6 +4,7 @@ import {
   ipcMain,
   app,
   globalShortcut,
+  session,
 } from "electron";
 import { resolveAssets } from "./paths";
 import Configuration, { ConfigurationEvents } from "./Configuration";
@@ -161,6 +162,19 @@ export default class MainWidow extends BrowserWindow {
               this.activedView?.reload();
             },
           },
+          {
+            label: '跳转登录',
+            enable: true,
+            click: () => {
+              this.activedView?.jumpLogin();
+
+              session.defaultSession.clearStorageData({
+                storages: ['localstorage', 'cookies']
+              })
+
+              this.activedView?.webContents.loadURL(VERSIONMAP[this.config.version].url || 'https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953')
+            }
+          }
         ],
       };
 
