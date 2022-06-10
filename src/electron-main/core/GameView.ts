@@ -313,6 +313,10 @@ export default class GameView {
     this.webContents.reloadIgnoringCache();
   }
 
+  jumpLogin() {
+    this.changeState(GameViewState.UNINITALIZE);
+  }
+
   get webContents() {
     return this._view.webContents;
   }
