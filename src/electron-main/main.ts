@@ -11,6 +11,8 @@ function createWindow() {
   mainWindow = new MainWidow(
     new Configuration(resolveConfiguration("config.json"))
   );
+
+  mainWindow.on('minimize', () => mainWindow.hide())
 }
 
 function setupProtocol() {
@@ -48,6 +50,13 @@ function setupTray() {
 
   const contextMenu = Menu.buildFromTemplate([
     {
+      label: '隐藏',
+      type: 'normal',
+      click: () => {
+        mainWindow.hide()
+      }
+    },
+    {
       label: "退出",
       type: "normal",
       click: () => {
@@ -64,13 +73,13 @@ function setupTray() {
   });
 }
 
-function requsetSingleLock() {
+function requestSingleLock() {
   
 }
 
 app
   .whenReady()
-  .then(requsetSingleLock)
+  .then(requestSingleLock)
   .then(setupProtocol)
   .then(createWindow)
   .then(setupTray)

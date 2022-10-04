@@ -72,7 +72,7 @@ export function when<T>(
         resolve();
         clearInterval(t);
       } else if (target) {
-        resolve();
+        setTimeout(() => resolve(), 500)
         clearInterval(t);
       }
     }, TimeHelper.second(1));

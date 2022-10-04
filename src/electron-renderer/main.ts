@@ -9,7 +9,7 @@ import {
   whenGameWillReady,
 } from "./gameFunctional";
 import { setupHooks } from "./hooks";
-import { setupFunction, setupUnInitalizeFunction } from "./ipcEvent";
+import { setupFunction, setupUnInitializeFunction } from "./ipcEvent";
 
 ipcRenderer.setMaxListeners(30);
 window.__myEvent__ = new EventEmitter();
@@ -36,7 +36,7 @@ window.addEventListener("load", async () => {
     window.Escort.doEscortPostQuitMsgNoAlert();
   });
 
-  setupUnInitalizeFunction();
+  setupUnInitializeFunction();
 
   await whenGameWillReady();
 

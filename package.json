@@ -8,7 +8,7 @@
     "build": "yarn build:preload && yarn build:main",
     "build:main": "webpack --config ./build/webpack.main.ts",
     "build:preload": "webpack --config ./build/webpack.renderer.ts",
-    "package": "electron-builder build",
+    "package": "npm run build && electron-builder build",
     "release": "electron-builder build --publish always",
     "prerelease": "node scripts/prepackage.js && npm run clean && yarn build",
     "prepackage": "node scripts/prepackage.js && npm run clean && yarn build",

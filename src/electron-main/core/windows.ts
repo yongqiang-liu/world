@@ -15,7 +15,6 @@ import { debounce } from "common/functional";
 import { Account, IConfiguration } from "common/configuration";
 import { IPCM } from "common/ipcEventConst";
 import { MainWidowConfiguration } from "./windowConfig";
-import AutoUpdater from "./updater";
 import {
   buildFromTemplateWrapper,
   hookWindowMenuClick,
@@ -72,8 +71,6 @@ export default class MainWidow extends BrowserWindow {
   private enable = false;
 
   private registerAccelerator = false;
-
-  private readonly updater = new AutoUpdater(this);
 
   constructor(private readonly configuration: Configuration) {
     super(MainWidowConfiguration);
@@ -148,6 +145,8 @@ export default class MainWidow extends BrowserWindow {
                 !(oneKeyDailyMission || this.oneKeyDailyMission)
               );
             },
+            registerAccelerator: this.registerAccelerator,
+            accelerator: KEYMAP.F1
           },
           {
             label: "快速出售",
@@ -161,6 +160,8 @@ export default class MainWidow extends BrowserWindow {
             click: () => {
               this.activedView?.reload();
             },
+            registerAccelerator: this.registerAccelerator,
+            accelerator: KEYMAP.F5
           },
           {
             label: '跳转登录',
@@ -191,6 +192,8 @@ export default class MainWidow extends BrowserWindow {
                 view.setOneKeyDailyMission(this.oneKeyDailyMission);
               });
             },
+            registerAccelerator: this.registerAccelerator,
+            accelerator: KEYMAP.F2
           },
           {
             label: "自动护送任务",
@@ -402,6 +405,12 @@ export default class MainWidow extends BrowserWindow {
               this.activedView?.podi();
             },
           },
+          {
+            label: "最强妖兽",
+            click: () => {
+              this.activedView?.topOne();
+            },
+          },
         ],
       };
 
@@ -431,7 +440,7 @@ export default class MainWidow extends BrowserWindow {
 
     if (this.registerAccelerator) {
       globalShortcut.register("CommandOrControl+Shift+I", () => {
-        this.activedView?.openDevTools();
+        this.activedView?.webContents.openDevTools();
       });
     }
 

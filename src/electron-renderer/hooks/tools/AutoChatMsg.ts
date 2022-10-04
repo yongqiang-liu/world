@@ -54,6 +54,7 @@ export default class AutoChatMsg {
             let i = window.xself.bag.getItem(n);
             if(i && i.id === 40049) {
                 window.ItemManager.doItem(i)
+                return
             }
         }
     }

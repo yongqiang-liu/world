@@ -17,7 +17,7 @@ window.config = {
   autoChatMsg: false,
 };
 
-export function setupUnInitalizeFunction() {
+export function setupUnInitializeFunction() {
   // 获取账号信息
   ipcRenderer.on(IPCR.GET_ACCOUNTS, () => {
     let accounts: string | Array<any> =
