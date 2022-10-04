@@ -53,7 +53,7 @@ export default class GameView {
     if (!app.isPackaged) this.openDevTools();
 
     this._view.setBackgroundColor("#3C3F41");
-    this.initalize();
+    this.initialize();
   }
 
   async openDevTools() {
@@ -62,7 +62,7 @@ export default class GameView {
     this.webContents.openDevTools();
   }
 
-  initalize() {
+  initialize() {
     this._view.setBounds(this.bounds);
     this._view.setAutoResize({
       width: true,
@@ -123,6 +123,12 @@ export default class GameView {
     await this.whenInitalized();
 
     this.send(IPCR.THOUSANDBATTLE, 2);
+  }
+
+  async topOne() {
+    await this.whenInitalized();
+
+    this.send(IPCR.THOUSANDBATTLE, 3);
   }
 
   // 自动日常

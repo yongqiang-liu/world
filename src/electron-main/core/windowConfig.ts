@@ -1,5 +1,4 @@
 import {
-  app,
   BrowserViewConstructorOptions,
   BrowserWindowConstructorOptions,
 } from "electron";
@@ -33,7 +32,7 @@ export const MainWidowConfiguration: BrowserWindowConstructorOptions = {
     nodeIntegration: false,
     nodeIntegrationInWorker: false,
     nodeIntegrationInSubFrames: false,
-    backgroundThrottling: true,
+    backgroundThrottling: false,
     webviewTag: false,
     contextIsolation: false,
     spellcheck: false,

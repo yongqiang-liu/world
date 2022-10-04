@@ -1,4 +1,7 @@
 export const KEYMAP = {
+  F1: "F1",
+  F2: "F2",
+  F5: "F5",
   KEY_A: "A",
   KEY_D: "D",
   KEY_S: "S",
