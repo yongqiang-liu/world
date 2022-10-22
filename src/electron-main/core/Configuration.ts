@@ -3,7 +3,7 @@ import { deepProxy } from "common/functional";
 import EventEmitter from "events";
 import fs from "fs";
 
-const defaultConfigurtion: IConfiguration = {
+const defaultConfiguration: IConfiguration = {
   version: "天宇", // 天宇
   accounts: [],
   app: {
@@ -15,6 +15,8 @@ const defaultConfigurtion: IConfiguration = {
     sell_buildMaterial: false,
     sell_RareEquip: false,
     autoEscort: false,
+    rate3: false,
+    mode: 'merge'
   },
   oaccounts: [],
   list: {
@@ -45,8 +47,11 @@ export default class Configuration extends EventEmitter {
       this.configuration = JSON.parse(
         fs.readFileSync(this.configurationPath, "utf-8")
       );
+      if (!this.configuration.app.mode) {
+        this.configuration.app.mode = defaultConfiguration.app.mode
+      }
     } catch (error) {
-      this.configuration = defaultConfigurtion;
+      this.configuration = defaultConfiguration;
     }
 
     this.configuration = deepProxy(this.configuration, {
@@ -63,7 +68,7 @@ export default class Configuration extends EventEmitter {
   create() {
     fs.writeFileSync(
       this.configurationPath,
-      JSON.stringify(defaultConfigurtion),
+      JSON.stringify(defaultConfiguration),
       {
         flag: "w+",
       }
@@ -73,7 +78,7 @@ export default class Configuration extends EventEmitter {
   save() {
     fs.writeFile(
       this.configurationPath,
-      JSON.stringify(this.configuration || defaultConfigurtion),
+      JSON.stringify(this.configuration || defaultConfiguration),
       {
         flag: "w+",
       },

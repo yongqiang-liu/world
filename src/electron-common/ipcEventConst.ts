@@ -32,6 +32,7 @@ export const enum IPCR {
 
   SET_USE_REPAIR_ROLL = "set:repair:roll",
   SET_SELL_OPTIONS = "set:sell:options",
+  SET_OFFLINE_EXP_RATE3 = "set:offline:exp:rate3",
 
   AUTO_ENTER_GAME = "auto:enter:game",
 

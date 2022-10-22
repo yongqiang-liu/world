@@ -52,6 +52,9 @@ export default class DefaultFunction {
       if (
         window?.xself.get(window?.ModelConst.HP) <
         window?.xself.get(window.ModelConst.HPMAX)
+        || 
+        window?.xself.get(window?.ModelConst.MP) <
+        window?.xself.get(window.ModelConst.MPMAX)
       )
         window?.ItemManager?.doQuickAddHP(window.xself);
     });

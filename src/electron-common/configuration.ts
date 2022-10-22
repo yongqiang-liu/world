@@ -13,6 +13,8 @@ export interface ApplicationConfiguration {
   sell_buildMaterial: boolean;
   sell_RareEquip: boolean;
   autoEscort: boolean;
+  rate3: boolean
+  mode: 'merge' | 'split'
 }
 
 export interface FilterList {

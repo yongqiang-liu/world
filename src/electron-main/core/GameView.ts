@@ -1,18 +1,18 @@
 import { Account } from "common/configuration";
 import { IPCM, IPCR } from "common/ipcEventConst";
-import { SellOptions } from "common/Sell";
+import { SellOptions } from "common/sell";
 import { BrowserView, app, ipcMain, session } from "electron";
 import { GameViewConfig } from "./windowConfig";
 
 export const enum GameViewState {
-  UNINITALIZE = "uninitalize",
-  INITALIZED = "initalized",
+  UNINITIALIZED = "uninitialized",
+  INITIALIZED = "initialized",
 }
 
 export default class GameView {
-  private readonly _view = new BrowserView(GameViewConfig);
+  private _view = new BrowserView(GameViewConfig);
 
-  private _state: GameViewState = GameViewState.UNINITALIZE;
+  private _state: GameViewState = GameViewState.UNINITIALIZED;
 
   private _oneKeyDailyMission = false;
 
@@ -34,6 +34,8 @@ export default class GameView {
 
   private setOptionLock = false;
 
+  private _offlineExpRate3 = false
+
   constructor(
     private bounds: Electron.Rectangle,
     black: Array<string>,
@@ -41,6 +43,8 @@ export default class GameView {
     equipWhite: Array<string>
   ) {
     session.defaultSession.clearStorageData();
+    this._view.webContents.setBackgroundThrottling(false)
+    this._view.webContents.incrementCapturerCount(undefined, false, true)
 
     this._sellOptions = {
       buildMaterial: false,
@@ -49,8 +53,6 @@ export default class GameView {
       white,
       equipWhite,
     };
-
-    if (!app.isPackaged) this.openDevTools();
 
     this._view.setBackgroundColor("#3C3F41");
     this.initialize();
@@ -71,22 +73,6 @@ export default class GameView {
       horizontal: true,
     });
 
-    this.executeJavaScript(`
-      //  通过 Proxy 对 Proxy 本身做代理，然后赋值给 Proxy
-      window.Proxy = new window.Proxy(Proxy, {
-        //拦截 new 操作符，生成 Proxy 实例的时候来拦截
-        construct: function (target, argumentsList) {
-          //result是new Proxy()生成的原本的实例
-          const result = new target(...argumentsList);
-          //获取原本实例reslut的类型
-          const originToStringTag = Object.prototype.toString.call(result).slice(1,-1).split(' ')[1]
-          //改写result的[Symbol.toStringTag]属性，加上被代理的标志
-          result[Symbol.toStringTag] = 'Proxy-' + originToStringTag;
-          return result;
-        },
-      });
-    `);
-
     this.webContents.addListener("did-finish-load", async () => {
       this.setSellOption(this._sellOptions);
     });
@@ -98,10 +84,10 @@ export default class GameView {
 
   whenInitalized() {
     return new Promise<void>((resolve) => {
-      if (this._state === GameViewState.INITALIZED) resolve();
+      if (this._state === GameViewState.INITIALIZED) resolve();
 
       const t = setInterval(() => {
-        if (this._state === GameViewState.INITALIZED) {
+        if (this._state === GameViewState.INITIALIZED) {
           resolve();
           clearInterval(t);
         }
@@ -140,7 +126,7 @@ export default class GameView {
   }
 
   // 自动修理
-  async setRepairEquip(v: boolean) {
+  async setAutoRepairEquip(v: boolean) {
     await this.whenInitalized();
 
     this._repairEquip = v;
@@ -148,7 +134,7 @@ export default class GameView {
   }
 
   // 自动出售
-  async setSellProduct(v: boolean) {
+  async setAutoSellProduct(v: boolean) {
     await this.whenInitalized();
 
     this._sellProduct = v;
@@ -156,7 +142,7 @@ export default class GameView {
   }
 
   // 自动刷怪
-  async setRefreshMonster(v: boolean) {
+  async setAutoRefreshMonster(v: boolean) {
     await this.whenInitalized();
 
     this._refreshMonster = v;
@@ -164,7 +150,7 @@ export default class GameView {
   }
 
   // 自动领取在线奖励
-  async setOnlineReward(v: boolean) {
+  async setAutoOnlineReward(v: boolean) {
     await this.whenInitalized();
 
     this._onlineReward = v;
@@ -172,7 +158,7 @@ export default class GameView {
   }
 
   // 自动扩充背包
-  async setExpandBag(v: boolean) {
+  async setAutoExpandBag(v: boolean) {
     await this.whenInitalized();
 
     this._expandBag = v;
@@ -185,6 +171,13 @@ export default class GameView {
 
     this._useRepairRoll = v;
     this.send(IPCR.SET_USE_REPAIR_ROLL, this._useRepairRoll);
+  }
+
+  async setOfflineExpRate3(v: boolean) {
+    await this.whenInitalized();
+
+    this._offlineExpRate3 = v;
+    this.send(IPCR.SET_OFFLINE_EXP_RATE3, this._offlineExpRate3);
   }
 
   // 发送消息
@@ -298,7 +291,7 @@ export default class GameView {
   }
 
   getGameStarted() {
-    return this._state === GameViewState.INITALIZED;
+    return this._state === GameViewState.INITIALIZED;
   }
 
   async executeJavaScript(code: string) {
@@ -315,12 +308,12 @@ export default class GameView {
   }
 
   reload() {
-    this.changeState(GameViewState.UNINITALIZE);
+    this.changeState(GameViewState.UNINITIALIZED);
     this.webContents.reloadIgnoringCache();
   }
 
   jumpLogin() {
-    this.changeState(GameViewState.UNINITALIZE);
+    this.changeState(GameViewState.UNINITIALIZED);
   }
 
   get webContents() {
@@ -362,5 +355,7 @@ export default class GameView {
   destroy() {
     this._view.webContents.removeAllListeners("did-finish-load");
     this._view.webContents.removeAllListeners("did-fail-load");
+    // @ts-ignore
+    this._view = null
   }
 }

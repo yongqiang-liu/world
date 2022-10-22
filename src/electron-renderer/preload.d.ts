@@ -22,6 +22,7 @@ interface Config {
   repairEquip: boolean;
   expandBag: boolean;
   autoChatMsg: boolean;
+  offlineExpRate3: boolean
 }
 
 declare global {
@@ -72,6 +73,7 @@ declare global {
     ModelConst: any;
     GameText: any;
     ProtocolDefine: any;
+    OfflineExp: any
 
     PowerString: any;
     ColorUtils: any;
