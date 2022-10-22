@@ -7,11 +7,11 @@ const defaultConfiguration: IConfiguration = {
   version: "天宇", // 天宇
   accounts: [],
   app: {
-    autoOnline: false,
-    autoSellByBagWillFull: false,
+    autoOnline: true,
+    autoSellByBagWillFull: true,
     autoRepairEquip: false,
     repairRoll: false,
-    autoExpandBag: false,
+    autoExpandBag: true,
     sell_buildMaterial: false,
     sell_RareEquip: false,
     autoEscort: false,
