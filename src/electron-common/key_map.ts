@@ -23,7 +23,7 @@ export const KEY_MAP = {
   NUM_2: ["num2", "2"],
 };
 
-export function combineKey(...keys: string[]) {
+export function combineKeys(...keys: string[]) {
   let _keys: string[] = [];
 
   keys.map((v) => {
