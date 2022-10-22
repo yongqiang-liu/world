@@ -53,14 +53,7 @@ function setupTray() {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: '隐藏',
-      type: 'normal',
-      click: () => {
-        mainWindow.hide()
-      }
-    },
-    {
-      label: "退出",
+      label: "退出应用",
       type: "normal",
       click: () => {
         mainWindow.close()

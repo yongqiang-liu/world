@@ -3,6 +3,7 @@ import { delay, when } from "common/functional";
 import EventEmitter from "events";
 
 export default class ThousandBattle extends EventEmitter {
+  prevBattleId: number = 0
   battleCount = 0;
   battleMax = 0;  // 0 无限制
   battleStep = 120;
@@ -25,19 +26,18 @@ export default class ThousandBattle extends EventEmitter {
     window.autoRepairEquip.repairEquip();
   }
 
-  readonly _onBattleMax = Symbol("_onBattleEnd");
+  constructor() {
+    super()
+    window.__myEvent__.addListener(EVENTS.ENTER_BATTLE_MAP, this.recordPrevBattleId.bind(this));
+  }
 
-  async killDragon() {
-    this._isStarting = true;
-    this.battleMax = 1000;
-    const stepsId = [263, 907]
-    const battleIds = [1710]
-    this.stepsId = stepsId
-    this.battleIds = battleIds
+  private async recordPrevBattleId() {
+    await when(window.BattleInputHandler.instance.battle.monsterGroup)
+    await delay(100)
+    this.prevBattleId = window.BattleInputHandler.instance.battle.monsterGroup.groupId ?? 0
+  }
 
-    await this.commonStep()
-    await this.execJumpSteps(...stepsId)
-
+  private execute() {
     const start = () => {
       this.handleBattleEnter();
     };
@@ -48,8 +48,10 @@ export default class ThousandBattle extends EventEmitter {
 
     const step = async () => {
       this.stopBattle = true
-      await this.commonStep()
-      await this.execJumpSteps(...stepsId)
+      if (this.stepsId.length > 0) {
+        await this.commonStep()
+        await this.execJumpSteps(...this.stepsId)
+      }
       this.stopBattle = false
     }
 
@@ -60,45 +62,25 @@ export default class ThousandBattle extends EventEmitter {
     this.started = start;
     this.step = step
     setTimeout(async () => {
-      await this.ensureEnterBattle(...battleIds)
+      await this.step?.()
+      await this.ensureEnterBattle(...this.battleIds)
     });
+  }
+
+  async killDragon() {
+    this._isStarting = true;
+    this.battleMax = 1000;
+    this.stepsId = [263, 907]
+    this.battleIds = [1710]
+    this.execute()
   }
 
   async forbiddenCity() {
     this._isStarting = true;
     this.battleMax = 1000;
-    const stepsId = [824, 300]
-    const battleIds = [2315]
-    this.stepsId = stepsId
-    this.battleIds = battleIds
-
-    await this.commonStep()
-    await this.execJumpSteps(...stepsId)
-
-    const start = () => {
-      this.handleBattleEnter();
-    };
-
-    const ended = () => {
-      this.handleBattleEnd();
-    };
-
-    const step = async () => {
-      this.stopBattle = true
-      await this.commonStep()
-      await this.execJumpSteps(...stepsId)
-      this.stopBattle = false
-    }
-
-    window.__myEvent__.addListener(EVENTS.ENTER_BATTLE_MAP, start);
-    window.__myEvent__.addListener(EVENTS.EXIT_BATTLE_MAP, ended);
-
-    this.ended = ended;
-    this.started = start;
-    this.step = step
-    setTimeout(async () => {
-      await this.ensureEnterBattle(...battleIds)
-    });
+    this.stepsId = [824, 300]
+    this.battleIds = [2315]
+    this.execute()
   }
 
   async podi() {
@@ -106,93 +88,51 @@ export default class ThousandBattle extends EventEmitter {
     this.battleMax = 120;
     this.stepsId = []
     this.battleIds = [133]
-
-    setTimeout(() => this.toBattle(133));
-
-    const start = () => {
-      this.handleBattleEnter();
-    };
-
-    const ended = () => {
-      this.handleBattleEnd();
-    };
-
-    window.__myEvent__.addListener(EVENTS.ENTER_BATTLE_MAP, start);
-    window.__myEvent__.addListener(EVENTS.EXIT_BATTLE_MAP, ended);
-
-    this.ended = ended;
-    this.step = async () => {}
-    this.started = start;
+    this.execute()
   }
 
   async topOne() {
     this._isStarting = true;
     this.battleMax = 1000;
-    const stepsId = [5, 820, 819, 821, 822, 823]
-    const battleIds = [8, 9, 196]
-    this.stepsId = stepsId
-    this.battleIds = battleIds
-
-    await this.commonStep()
-
-    await this.execJumpSteps(...stepsId)
-
-    const start = () => {
-      this.handleBattleEnter();
-    };
-
-    const ended = () => {
-      this.handleBattleEnd();
-    };
-
-    const step = async () => {
-      this.stopBattle = true
-
-      await this.commonStep()
-
-      await this.execJumpSteps(...stepsId)
-
-      this.stopBattle = false
-    }
-
-    window.__myEvent__.addListener(EVENTS.ENTER_BATTLE_MAP, start);
-    window.__myEvent__.addListener(EVENTS.EXIT_BATTLE_MAP, ended);
-
-    this.ended = ended;
-    this.step = step
-    this.started = start;
-
-    setTimeout(async () => {
-      await this.ensureEnterBattle(...battleIds)
-    });
+    this.stepsId = [5, 820, 819, 821, 822, 823]
+    this.battleIds = [8, 9, 196]
+    this.execute()
   }
 
-  async handleBattleEnter() {
+  private async handleBattleEnter() {
     // 自动战斗
     if (!window.skipBattleAnime._isStarting) {
       window.skipBattleAnime.start();
     }
   }
 
-  async handleBattleEnd() {
+  private async handleBattleEnd() {
     this.battleCount++;
     if (window.skipBattleAnime._isStarting && !window.config.skipBattleAnim) {
       window.skipBattleAnime.stop();
     }
 
-    if(this.battleMax !== 0 && this.battleCount >= this.battleMax) {
+    if (this.battleMax !== 0 && this.battleCount >= this.battleMax) {
       this.stop();
     }
 
-    if(this.battleCount % this.battleStep === 0) {
+    if (this.battleCount % this.battleStep === 0) {
       await this.step?.()
     }
 
     await when(this, () => !this.stopBattle)
 
-    setTimeout(async() => {
+    setTimeout(async () => {
       await this.ensureEnterBattle(...this.battleIds)
     });
+  }
+
+  async executePrevBattle() {
+    this._isStarting = true;
+    this.battleMax = 1000;
+    this.stepsId = []
+    this.battleIds = [this.prevBattleId]
+    this.execute()
   }
 
   start(id: number) {
@@ -206,6 +146,9 @@ export default class ThousandBattle extends EventEmitter {
       case 3:
         this.topOne()
         break;
+      case 9999:
+        this.executePrevBattle()
+        break
     }
   }
 
@@ -230,7 +173,7 @@ export default class ThousandBattle extends EventEmitter {
     this.battleIds = []
   }
 
-  async toBattle(id: number) {
+  private async toBattle(id: number) {
     const { xworld } = window;
 
     if (!xworld.inBattle) {
@@ -240,7 +183,7 @@ export default class ThousandBattle extends EventEmitter {
     }
   }
 
-  async execJumpSteps(...ids: number[]) {
+  private async execJumpSteps(...ids: number[]) {
     for (let id of ids) {
       window.xworld.doJumpMap(id);
       await delay(100);
@@ -248,14 +191,14 @@ export default class ThousandBattle extends EventEmitter {
     }
   }
 
-  async ensureEnterBattle(...ids: number[]) {
+  private async ensureEnterBattle(...ids: number[]) {
     for (let id of ids) {
-      if(!window.xworld.inBattle)
+      if (!window.xworld.inBattle)
         await this.toBattle(id)
     }
   }
 
-  enterCity() {
+  private enterCity() {
     const { City, xself } = window;
 
     City.doEnterCity(xself.getId());
