@@ -12,6 +12,7 @@ import EscortMissionController from "./escortTool/escortMissionController";
 import SkipBattleAnime from "./tools/SkipAnime";
 import AutoChatMsg from "./tools/AutoChatMsg";
 import ThousandBattle from "./tools/ThousandBattle";
+import { AutoSkyArena } from "./tools/AutoSkyArena";
 
 export function setupHooks() {
   ipcRenderer.send(IPC_MAIN.GAME_HOOK_STARTED);
@@ -31,6 +32,7 @@ export function setupHooks() {
   window.skipBattleAnime = new SkipBattleAnime();
   window.autoChatMsg = new AutoChatMsg();
   window.thousandBattle = new ThousandBattle();
+  window.autoSkyArena = new AutoSkyArena()
 
   ipcRenderer.send(IPC_MAIN.GAME_HOOK_ENDED);
 }

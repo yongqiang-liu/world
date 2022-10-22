@@ -11,6 +11,8 @@ export const AUTO_CHAT = Symbol()
 export const AUTO_REPAIR = Symbol()
 export const AUTO_ONLINE_REWARD = Symbol()
 export const AUTO_EXPAND_PACKAGE = Symbol()
+export const AUTO_REFRESH_MONSTER = Symbol()
+export const AUTO_SKIP_BATTLE_ANIM = Symbol()
 
 export const OPTION_SELL_BUILD_MATERIAL = Symbol()
 export const OPTION_SELL_RARE_EQUIP = Symbol()
@@ -20,7 +22,6 @@ export const OPTION_OFFLINE_RATE3 = Symbol()
 export const SAVE_ACCOUNT = Symbol()
 export const CHANGE_WINDOW_MODE = Symbol()
 export const ADD_ACCOUNT = Symbol()
-export const REFRESH_MONSTER = Symbol()
 
 export const enum WindowState {
   UNINITIALIZED = "uninitialized",

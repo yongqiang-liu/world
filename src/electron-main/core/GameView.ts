@@ -23,6 +23,7 @@ export default class GameView {
   private _sellOptions: SellOptions;
   private setOptionLock = false;
   private _offlineExpRate3 = false
+  private _autoSkyArena = false
 
   constructor(
     private bounds: Electron.Rectangle,
@@ -126,6 +127,14 @@ export default class GameView {
 
     this._repairEquip = v;
     this.send(IPC_RENDERER.AUTO_REPAIR_EQUIP, this._repairEquip);
+  }
+
+  // 自动天空竞技场
+  async setAutoSkyArena(v: boolean) {
+    await this.whenInitialized();
+
+    this._autoSkyArena = v;
+    this.send(IPC_RENDERER.AUTO_SKY_ARENA, this._autoSkyArena);
   }
 
   // 自动出售
