@@ -10,12 +10,13 @@ import Configuration, { ConfigurationEvents } from "./Configuration";
 import GameView, { GameViewState } from "./GameView";
 import GameWindow from "./GameWindow";
 import { MenuTemplate } from "./menuHelper";
-import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REPAIR, AUTO_SELL, CHANGE_WINDOW_MODE, ONE_KEY_AUTO_MISSION, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL, REFRESH_MONSTER } from "./shared";
+import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REPAIR, AUTO_SELL, CHANGE_WINDOW_MODE, ONE_KEY_AUTO_MISSION, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL, AUTO_REFRESH_MONSTER, AUTO_SKIP_BATTLE_ANIM } from "./shared";
 import VERSION_MAP, { VERSION_KEY } from "../../electron-common/versions";
 import { ViewState } from "./shared";
 
 export class ApplicationWindow extends GameWindow {
   autoChat: boolean[] = [];
+  autoSkyArena: boolean[] = [];
   oneKeyDailyMission = false;
   oneKeyRefreshMonster = false;
   oneKeyEscort = false;
@@ -247,6 +248,16 @@ export class ApplicationWindow extends GameWindow {
     this.buildWindowMenu();
   }
 
+  private setViewOptionById(id: number, viewState: GameViewState) {
+    this.viewsState.map((state) => {
+      if (state.id === id) {
+        state.state = viewState;
+      }
+    });
+
+    this.buildWindowMenu();
+  }
+
   private registerListener() {
     // 自动更新配置
     this.configuration.on(ConfigurationEvents.SAVED, () => {
@@ -274,6 +285,15 @@ export class ApplicationWindow extends GameWindow {
 
     this.eventEmitter.on(ONE_KEY_SELL, () => {
       this.views.map(view => view.sellProduct())
+    })
+
+    this.eventEmitter.on(AUTO_SKIP_BATTLE_ANIM, () => {
+      const skip = this.skipBattleAnime.some(v => !!v)
+      for (let i = 0; i < this.views.length; i++) {
+        this.skipBattleAnime[i] = !skip
+        const view = this.views[i]
+        view.setSkipBattleAnime(this.skipBattleAnime[i])
+      }
     })
 
     this.eventEmitter.on(AUTO_SELL, () => {
@@ -321,7 +341,7 @@ export class ApplicationWindow extends GameWindow {
       this.views.map(view => view.setUseRepairRoll(this.config.app.repairRoll))
     })
 
-    this.eventEmitter.on(REFRESH_MONSTER, () => {
+    this.eventEmitter.on(AUTO_REFRESH_MONSTER, () => {
       this.oneKeyRefreshMonster = this.oneKeyRefreshMonster
       this.views.map(view => view.setAutoRefreshMonster(this.oneKeyRefreshMonster))
     })
@@ -343,16 +363,6 @@ export class ApplicationWindow extends GameWindow {
         "https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953");
       this.eventEmitter.emit(CHANGE_WINDOW_MODE, this.config.app.mode)
     })
-  }
-
-  private setViewOptionById(id: number, viewState: GameViewState) {
-    this.viewsState.map((state) => {
-      if (state.id === id) {
-        state.state = viewState;
-      }
-    });
-
-    this.buildWindowMenu();
   }
 
   private registerIPCListener() {

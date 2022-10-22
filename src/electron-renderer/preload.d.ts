@@ -5,6 +5,7 @@ import ExpandBagTool from "./hooks/tools/AutoExpandBag";
 import AutoOnlineReward from "./hooks/tools/AutoOnlineReward";
 import AutoRepairEquip from "./hooks/tools/AutoRepairEquip";
 import AutoSell from "./hooks/tools/AutoSell";
+import { AutoSkyArena } from "./hooks/tools/AutoSkyArena";
 import DefaultFunction from "./hooks/tools/Default";
 import SkipBattleAnime from "./hooks/tools/SkipAnime";
 import TestRefreshGame from "./hooks/tools/TestRefreshGame";
@@ -38,6 +39,7 @@ declare global {
     skipBattleAnime: SkipBattleAnime;
     autoChatMsg: AutoChatMsg;
     autoEscortTools: EscortMissionController;
+    autoSkyArena: AutoSkyArena;
     defaultFunction: DefaultFunction;
     doGetMoney: Function;
     doGetExp: Function;
@@ -113,5 +115,6 @@ declare global {
     CountryTaskListPanel: any;
     GuideHandler: any;
     AreaLineListPanel: any;
+    SkyArenaScene: any
   }
 }

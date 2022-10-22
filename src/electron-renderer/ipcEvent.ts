@@ -97,6 +97,21 @@ function setupAutoFunction() {
     }
   });
 
+  // 自动天空
+  ipcRenderer.on(IPC_RENDERER.AUTO_SKY_ARENA, (_e, v: boolean) => {
+    if (!gameStarted()) return;
+
+    if (v && !window.autoSkyArena._isStarting) {
+      window.autoSkyArena.start();
+      return;
+    }
+
+    if (window.autoSkyArena._isStarting) {
+      window.thousandBattle.stop();
+      return;
+    }
+  });
+
   // 自动完成每日
   ipcRenderer.on(IPC_RENDERER.AUTO_ONE_DAILY_MISSION, (_e, v: boolean) => {
     if (!gameStarted()) return;

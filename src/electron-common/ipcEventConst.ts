@@ -18,6 +18,7 @@ export const enum IPC_RENDERER {
   AUTO_ESCORT = "auto:escort",
   AUTO_SKIP_BATTLE_ANIM = "auto:skip:battle:anim",
   AUTO_CHAT_MSG = "auto:chat:msg",
+  AUTO_SKY_ARENA = 'auto:sky:arena',
   THOUSAND_BATTLE = "thousand:battle",
 
   MICRO_REWARD = "micro:reward",

@@ -7,7 +7,7 @@ import { MainWidowConfiguration } from "./windowConfig";
 import VERSION_MAP from "../../electron-common/versions";
 import { KEY_MAP } from "common/key_map";
 import EventEmitter from "events";
-import { ONE_KEY_AUTO_MISSION, REFRESH_MONSTER, ViewState } from "./shared";
+import { ONE_KEY_AUTO_MISSION, AUTO_REFRESH_MONSTER, ViewState, AUTO_SKIP_BATTLE_ANIM } from "./shared";
 import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REPAIR, AUTO_SELL, CHANGE_WINDOW_MODE, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL } from "./shared";
 import { ApplicationWindow } from "./window";
 
@@ -69,8 +69,49 @@ export default class GameWindow extends BrowserWindow {
       label: "常用功能",
       submenu: [
         {
-          label: '经验千场',
+          label: '日常相关',
           submenu: [
+            {
+              label: "自动日常",
+              type: "checkbox",
+              checked: oneKeyDailyMission || allOneKeyDailyMission,
+              accelerator: KEY_MAP.F1,
+              click: () => {
+                view?.setOneKeyDailyMission(
+                  !(oneKeyDailyMission || allOneKeyDailyMission)
+                );
+              },
+            },
+            {
+              label: '自动天空',
+              type: 'checkbox',
+              accelerator: KEY_MAP.F8,
+              checked: !!this.win.autoSkyArena[viewIndex],
+              click: () => {
+                this.win.autoSkyArena[viewIndex] = !!!this.win.autoSkyArena[viewIndex]
+                view?.setAutoSkyArena(this.win.autoSkyArena[viewIndex])
+              }
+            },
+            {
+              label: "开启日常箱子",
+              click: () => {
+                view?.openDailyBox();
+              },
+            },
+          ]
+        },
+        {
+          label: '战斗相关',
+          submenu: [
+            {
+              label: "跳过战斗动画",
+              type: "checkbox",
+              checked: !!this.win.skipBattleAnime[viewIndex],
+              click: () => {
+                this.win.skipBattleAnime[viewIndex] = !!!this.win.skipBattleAnime[viewIndex]
+                view.setSkipBattleAnime(this.win.skipBattleAnime[viewIndex])
+              },
+            },
             {
               label: "紫禁城千场",
               click: () => {
@@ -114,52 +155,29 @@ export default class GameWindow extends BrowserWindow {
           ]
         },
         {
-          label: "跳过战斗动画",
-          type: "checkbox",
-          checked: !!this.win.skipBattleAnime[viewIndex],
-          click: () => {
-            this.win.skipBattleAnime[viewIndex] = !!!this.win.skipBattleAnime[viewIndex]
-            view.setSkipBattleAnime(this.win.skipBattleAnime[viewIndex])
-          },
-        },
-        {
-          label: "开启日常箱子",
-          click: () => {
-            view?.openDailyBox();
-          },
-        },
-        {
-          label: "自动日常",
-          type: "checkbox",
-          checked: oneKeyDailyMission,
-          click: async () => {
-            view?.setOneKeyDailyMission(
-              !(oneKeyDailyMission)
-            );
-          },
-        },
-        {
-          label: "快速出售",
-          click: () => view?.sellProduct()
-        },
-        {
-          label: "刷新页面",
+          label: '页面相关',
           enable: true,
-          registerAccelerator: this.registerAccelerator,
-          accelerator: KEY_MAP.F5,
-          click: () => view?.reload()
-        },
-        {
-          label: '跳转登录',
-          enable: true,
-          click: () => {
-            view?.jumpLogin();
-            view.webContents.session.clearStorageData({
-              storages: ['localStorage', 'cookies']
-            })
-            view?.webContents.loadURL(VERSION_MAP[this.config.version].url || 'https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953')
-          }
-        },
+          submenu: [
+            {
+              label: "刷新页面",
+              enable: true,
+              registerAccelerator: this.registerAccelerator,
+              accelerator: KEY_MAP.F5,
+              click: () => view?.reload()
+            },
+            {
+              label: '跳转登录',
+              enable: true,
+              click: () => {
+                view?.jumpLogin();
+                view.webContents.session.clearStorageData({
+                  storages: ['localStorage', 'cookies']
+                })
+                view?.webContents.loadURL(VERSION_MAP[this.config.version].url || 'https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953')
+              }
+            },
+          ]
+        }
 
       ],
     };
@@ -216,12 +234,12 @@ export default class GameWindow extends BrowserWindow {
           label: "一键自动日常",
           type: "checkbox",
           checked: allOneKeyDailyMission,
-          registerAccelerator: this.registerAccelerator,
           accelerator: KEY_MAP.F2,
           click: () => this.emitter.emit(ONE_KEY_AUTO_MISSION)
         },
         {
           label: "一键出售垃圾",
+          accelerator: KEY_MAP.F4,
           click: () => this.emitter.emit(ONE_KEY_SELL),
         },
         {
@@ -232,6 +250,10 @@ export default class GameWindow extends BrowserWindow {
           label: "一键领取微端奖励",
           click: () => this.emitter.emit(ONE_KEY_REWARD)
         },
+        {
+          label: "快速出售",
+          click: () => view?.sellProduct()
+        },
       ],
     };
 
@@ -239,12 +261,23 @@ export default class GameWindow extends BrowserWindow {
       label: "自动化功能",
       submenu: [
         {
+          label: '自动跳过战斗动画',
+          type: "checkbox",
+          checked: this.win.skipBattleAnime[viewIndex],
+          click: () => this.emitter.emit(AUTO_SKIP_BATTLE_ANIM)
+        },
+        {
           label: "自动出售",
           type: "checkbox",
           checked: !!this.config.app.autoSellByBagWillFull,
           click: () => this.emitter.emit(AUTO_SELL)
         },
-
+        {
+          label: "自动修理",
+          type: "checkbox",
+          checked: !!this.config.app.autoRepairEquip,
+          click: () => this.emitter.emit(AUTO_REPAIR)
+        },
         {
           label: "自动护送",
           type: "checkbox",
@@ -261,16 +294,10 @@ export default class GameWindow extends BrowserWindow {
           },
         },
         {
-          label: "自动修理",
-          type: "checkbox",
-          checked: !!this.config.app.autoRepairEquip,
-          click: () => this.emitter.emit(AUTO_REPAIR)
-        },
-        {
-          label: "加速刷怪",
+          label: "自动刷怪",
           type: "checkbox",
           checked: this.win.oneKeyRefreshMonster,
-          click: () => this.emitter.emit(REFRESH_MONSTER)
+          click: () => this.emitter.emit(AUTO_REFRESH_MONSTER)
         },
         {
           label: "自动领取在线奖励",
@@ -279,7 +306,7 @@ export default class GameWindow extends BrowserWindow {
           click: () => this.emitter.emit(AUTO_ONLINE_REWARD)
         },
         {
-          label: "自动开启背包格子",
+          label: "自动开启背包",
           type: "checkbox",
           checked: !!this.config.app.autoExpandBag,
           click: () => this.emitter.emit(AUTO_EXPAND_PACKAGE)
