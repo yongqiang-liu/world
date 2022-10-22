@@ -28,7 +28,7 @@ export const enum EVENTS {
   ACCEPT_ESCORT = "accept:escort",
 }
 
-export const enum WroldEvent {
+export const enum WorldEvent {
   PLAYER_ACTIVE_SKILL_SELECTED = "player_active_skill_selected",
   AROUND_LOOK_PLAYER_INFO = "around_look_player_info",
   AROUND__REFRESH_TEAM_INFO = "around_refresh_team_info",
