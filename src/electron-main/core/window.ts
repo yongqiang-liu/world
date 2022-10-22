@@ -1,7 +1,7 @@
 import { Account } from "common/configuration";
 import { debounce } from "common/functional";
 import { IPC_MAIN } from "common/ipcEventConst";
-import { combineKey, KEY_MAP } from "common/key_map";
+import { combineKeys, KEY_MAP } from "common/key_map";
 import { ipcMain, app } from "electron";
 import EventEmitter from "events";
 import { existsSync, readFileSync, writeFileSync } from "fs";
@@ -117,7 +117,7 @@ export class ApplicationWindow extends GameWindow {
     menu.push({
       label: "添加小号",
       registerAccelerator: this.registerAccelerator,
-      accelerator: combineKey(KEY_MAP.CTRL, KEY_MAP.KEY_N),
+      accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_N),
       click: () => {
         this.eventEmitter.emit(ADD_ACCOUNT)
       },
@@ -126,7 +126,7 @@ export class ApplicationWindow extends GameWindow {
     menu.push({
       label: "删除小号",
       registerAccelerator: this.registerAccelerator,
-      accelerator: combineKey(KEY_MAP.CTRL, KEY_MAP.KEY_D),
+      accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_D),
       click: () => {
         let view = this.views[this.active_view];
         if (this.views.length !== 1 && view) {
