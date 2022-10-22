@@ -1,7 +1,7 @@
 /** @description 渲染进程 */
-export const enum IPCR {
-  INITALIZED = "initalized",
-  UNINITALIZE = "uninitalize",
+export const enum IPC_RENDERER {
+  INITIALIZED = "initialized",
+  UNINITIALIZED = "uninitialized",
 
   SELL_PRODUCT = "sell:product",
   REPAIR_EQUIP = "repair:equip",
@@ -10,7 +10,7 @@ export const enum IPCR {
   OPEN_DAILY_BOX = "open:daily:box",
 
   AUTO_REPAIR_EQUIP = "auto:repair:equip",
-  AUTO_ONE_DAILY_MISSION = "auto:daliy:mission",
+  AUTO_ONE_DAILY_MISSION = "auto:daily:mission",
   AUTO_ONE_DAILY_SELL = "auto:daily:sell",
   AUTO_REFRESH_MONSTER = "auto:refresh:monster",
   AUTO_EXPAND_BAG = "auto:expand:bag",
@@ -18,10 +18,9 @@ export const enum IPCR {
   AUTO_ESCORT = "auto:escort",
   AUTO_SKIP_BATTLE_ANIM = "auto:skip:battle:anim",
   AUTO_CHAT_MSG = "auto:chat:msg",
-  THOUSANDBATTLE = "thousand:battle",
+  THOUSAND_BATTLE = "thousand:battle",
 
   MICRO_REWARD = "micro:reward",
-  WUSHUANG_START = "wushuang:start",
 
   GET_VERSION_URL = "get:version:url",
   GET_IS_AUTO_DAILY = "get:auto:daily",
@@ -43,14 +42,14 @@ export const enum IPCR {
 
 // receive
 /** @description 主进程 */
-export const enum IPCM {
-  INITALIZED = "initalized",
-  UNINITALIZE = "uninitalize",
+export const enum IPC_MAIN {
+  INITIALIZED = "initialized",
+  UNINITIALIZED = "uninitialized",
 
   RECEIVE_VERSION_URL = "receive:version:url",
   RECEIVE_IS_AUTO_DAILY = "receive:auto:daily",
   RECEIVE_IS_GAME_STARTED = "receive:game:started",
-  RECEIVE_IS_REFESH_MONSTER = "receive:refresh:monster",
+  RECEIVE_IS_REFRESH_MONSTER = "receive:refresh:monster",
   RECEIVE_CHAT_MSG = "receive:auto:chat:msg",
 
   RECEIVE_ACCOUNTS = "receive:accounts",

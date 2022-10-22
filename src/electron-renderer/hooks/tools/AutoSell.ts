@@ -1,4 +1,4 @@
-import { IPCR } from "common/ipcEventConst";
+import { IPC_RENDERER } from "common/ipcEventConst";
 import { SellOptions } from "common/Sell";
 import { TimeHelper } from "common/timer";
 import { ipcRenderer } from "electron";
@@ -35,7 +35,7 @@ export default class AutoSell {
       }
     }, TimeHelper.second(10));
 
-    ipcRenderer.on(IPCR.SET_SELL_OPTIONS, (_e, options: SellOptions) => {
+    ipcRenderer.on(IPC_RENDERER.SET_SELL_OPTIONS, (_e, options: SellOptions) => {
       this._sellOptions = {
         ...this._sellOptions,
         ...options,

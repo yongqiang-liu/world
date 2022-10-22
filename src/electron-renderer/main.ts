@@ -1,5 +1,5 @@
 import { when } from "common/functional";
-import { IPCM, IPCR } from "common/ipcEventConst";
+import { IPC_MAIN, IPC_RENDERER } from "common/ipcEventConst";
 import { ipcRenderer } from "electron";
 import { EventEmitter } from "events";
 import { setupEvent } from "./events";
@@ -20,17 +20,17 @@ window.__escortEmitter__ = new EventEmitter();
 
 window.addEventListener("load", async () => {
   document.addEventListener("wheel", (e) => {
-    ipcRenderer.send(IPCM.MOUSE_WHEEL, e.deltaY);
+    ipcRenderer.send(IPC_MAIN.MOUSE_WHEEL, e.deltaY);
   });
 
   checkGameStart();
 
-  ipcRenderer.on(IPCR.SET_OFFLINE_EXP_RATE3, (_, v: boolean) => {
+  ipcRenderer.on(IPC_RENDERER.SET_OFFLINE_EXP_RATE3, (_, v: boolean) => {
     window.config.offlineExpRate3 = !!v
   })
 
   // 自动登录
-  ipcRenderer.on(IPCR.AUTO_ENTER_GAME, async () => {
+  ipcRenderer.on(IPC_RENDERER.AUTO_ENTER_GAME, async () => {
     await when(window.xworld, (xworld) => {
       return !!xworld;
     });
@@ -38,7 +38,7 @@ window.addEventListener("load", async () => {
     window.doEnterGame();
   });
 
-  ipcRenderer.on(IPCR.EXIT_ESCORT, () => {
+  ipcRenderer.on(IPC_RENDERER.EXIT_ESCORT, () => {
     window.Escort.doEscortPostQuitMsgNoAlert();
   });
 
