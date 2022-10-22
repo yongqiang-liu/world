@@ -76,6 +76,20 @@ export default function setupFunction() {
       );
   };
 
+  window.doLoginLottery = function () {
+    const timer = setInterval(() => {
+      if (!window.GameWorld.loginLotteryDraw)
+        window.LoginLotteryDraw.doEnter()
+      if (window.GameWorld.loginLotteryDraw) {
+        if (window.GameWorld.loginLotteryDraw.count > 0)
+          for (let i = 0; i < window.GameWorld.loginLotteryDraw.count; i++) {
+            window.LoginLotteryDraw.doPlay()
+          }
+        clearInterval(timer)
+      }
+    }, 100)
+  }
+
   // 自动领取无双任务
   window.doAcceptWushuangMission = function (): Promise<void> {
     return new Promise((resolve) => {

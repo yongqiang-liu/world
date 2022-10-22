@@ -45,6 +45,7 @@ declare global {
     doGetExp: Function;
     doAcceptWushuangMission: Function;
     doEnterGame: Function;
+    doLoginLottery: Function
 
     __myEvent__: EventEmitter;
     __escortEmitter__: EventEmitter;
@@ -54,6 +55,7 @@ declare global {
     xworld: any;
     nato: any;
 
+    LoginLotteryDraw: any
     Main: any;
     Player: any;
     Battle: any;
