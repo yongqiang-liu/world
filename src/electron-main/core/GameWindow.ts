@@ -46,7 +46,7 @@ export default class GameWindow extends BrowserWindow {
     this.buildWindowMenu()
   }
 
-  protected setApplicationWindow(win: ApplicationWindow) {
+  setApplicationWindow(win: ApplicationWindow) {
     this.win = win
   }
 
