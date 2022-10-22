@@ -15,6 +15,7 @@ window.config = {
   repairEquip: false,
   expandBag: false,
   autoChatMsg: false,
+  offlineExpRate3: false
 };
 
 export function setupUnInitializeFunction() {

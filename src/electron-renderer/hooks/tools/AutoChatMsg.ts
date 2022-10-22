@@ -11,9 +11,11 @@ export default class AutoChatMsg {
 
     chatCount = 0;
 
-    start() {
+    async start() {
         if (!this._isStarting) {
             this._isStarting = true;
+            this.text = await this.getChatText();
+            this.logic()
             this._interval = setInterval(async () => {
                 this.text = await this.getChatText();
 
@@ -25,7 +27,7 @@ export default class AutoChatMsg {
                 }
 
                 this.logic()
-            }, TimeHelper.minute(1));
+            }, TimeHelper.minute(10));
         }
     }
 

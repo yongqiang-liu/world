@@ -16,12 +16,18 @@ window.__myEvent__ = new EventEmitter();
 window.__myEvent__.setMaxListeners(50);
 window.__escortEmitter__ = new EventEmitter();
 
-window.addEventListener("load", async () => {
-  checkGameStart();
 
+
+window.addEventListener("load", async () => {
   document.addEventListener("wheel", (e) => {
     ipcRenderer.send(IPCM.MOUSE_WHEEL, e.deltaY);
   });
+
+  checkGameStart();
+
+  ipcRenderer.on(IPCR.SET_OFFLINE_EXP_RATE3, (_, v: boolean) => {
+    window.config.offlineExpRate3 = !!v
+  })
 
   // 自动登录
   ipcRenderer.on(IPCR.AUTO_ENTER_GAME, async () => {

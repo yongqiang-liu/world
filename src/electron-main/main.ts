@@ -1,24 +1,22 @@
 import { app, Tray, Menu, session, protocol } from "electron";
 import fs from "fs";
 import Configuration from "./core/Configuration";
-import MainWidow from "./core/windows";
 import { resolveConfiguration, resolveAssets } from "./core/paths";
 import ExceptionHandler from "./core/ExceptionHandler";
+import { ApplicationWindow } from "./core/window";
 
 let mainWindow: Electron.BrowserWindow, tray: Electron.Tray;
 
 function createWindow() {
-  mainWindow = new MainWidow(
+  mainWindow = new ApplicationWindow(
     new Configuration(resolveConfiguration("config.json"))
   );
-
-  mainWindow.on('minimize', () => mainWindow.hide())
 }
 
 function setupProtocol() {
   protocol.registerBufferProtocol("world", (_, cb) => {
-    if (fs.existsSync(resolveAssets("world.js"))) {
-      const world = fs.readFileSync(resolveAssets("world.js"));
+    if (fs.existsSync(resolveAssets(_.url.slice(7)))) {
+      const world = fs.readFileSync(resolveAssets(_.url.slice(7)));
       cb({
         headers: {
           "Content-Type": '"application/javascript"',
@@ -38,6 +36,11 @@ function setupProtocol() {
       cb({
         cancel: false,
         redirectURL: "world://world.js",
+      });
+    } else if (/https?:\/\/worldh5\.gamehz\.cn\/version\/world\/publish\/channel\/res\/egretlib\.js*/.test(details.url)) {
+      cb({
+        cancel: false,
+        redirectURL: "world://egretlib.js",
       });
     } else {
       cb({});
