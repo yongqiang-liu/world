@@ -286,7 +286,7 @@ export default class GameWindow extends BrowserWindow {
           checked: !!this.win.autoChat[viewIndex],
           click: () => {
             this.win.autoChat[viewIndex] = !!!this.win.autoChat[viewIndex]
-            this.view.setAutoChat(this.win.autoChat[viewIndex])
+            view.setAutoChat(this.win.autoChat[viewIndex])
           },
         },
         {
