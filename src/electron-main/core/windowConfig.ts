@@ -4,6 +4,8 @@ import {
 } from "electron";
 import { resolvePreloadPath } from "./paths";
 
+export const TITLE_BAR_HEIGHT = 56
+
 export const GameViewConfig: BrowserViewConstructorOptions = {
   webPreferences: {
     safeDialogs: true,
@@ -25,7 +27,7 @@ export const GameViewConfig: BrowserViewConstructorOptions = {
 export const MainWidowConfiguration: BrowserWindowConstructorOptions = {
   title: "世界H5",
   width: 500,
-  height: 724,
+  height: 732 + TITLE_BAR_HEIGHT,
   webPreferences: {
     safeDialogs: true,
     nativeWindowOpen: false,

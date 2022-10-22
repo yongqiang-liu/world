@@ -4,7 +4,7 @@ import Configuration from "./Configuration";
 import GameView, { GameViewState } from "./GameView";
 import { buildFromTemplateWrapper, hookWindowMenuClick, MenuTemplate } from "./menuHelper";
 import { MainWidowConfiguration } from "./windowConfig";
-import VERSION_MAP from "./versions";
+import VERSION_MAP from "../../electron-common/versions";
 import { KEY_MAP } from "common/key_map";
 import EventEmitter from "events";
 import { ONE_KEY_AUTO_MISSION, REFRESH_MONSTER, ViewState } from "./shared";
@@ -30,14 +30,14 @@ export default class GameWindow extends BrowserWindow {
     this.timer = setInterval(() => this.buildWindowMenu(), 100)
   }
 
-  initialMerge() {
+  initializeMerge() {
     this.mode = 'merge'
     this.center()
     this.show()
     this.buildWindowMenu()
   }
 
-  initialSplit(view: GameView, state: ViewState) {
+  initializeSplit(view: GameView, state: ViewState) {
     this.view = view
     this.state = state
     this.mode = 'split'
@@ -120,7 +120,7 @@ export default class GameWindow extends BrowserWindow {
           enable: true,
           click: () => {
             view?.jumpLogin();
-            session.defaultSession.clearStorageData({
+            view.webContents.session.clearStorageData({
               storages: ['localStorage', 'cookies']
             })
             view?.webContents.loadURL(VERSION_MAP[this.config.version].url || 'https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953')

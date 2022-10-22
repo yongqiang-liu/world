@@ -1,6 +1,8 @@
 export interface Account {
-  account?: string;
-  passwd?: string;
+  username?: string;
+  password?: string;
+  account?: string
+  passwd?: string
   url: string;
 }
 
@@ -27,7 +29,6 @@ export interface IConfiguration {
   version: string;
   accounts: Array<Account>;
   app: ApplicationConfiguration;
-  oaccounts: Array<Account>;
   list: FilterList;
   [key: string | symbol]: any;
 }

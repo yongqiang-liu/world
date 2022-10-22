@@ -11,7 +11,7 @@ import GameView, { GameViewState } from "./GameView";
 import GameWindow from "./GameWindow";
 import { MenuTemplate } from "./menuHelper";
 import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REPAIR, AUTO_SELL, CHANGE_WINDOW_MODE, ONE_KEY_AUTO_MISSION, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL, REFRESH_MONSTER } from "./shared";
-import VERSION_MAP from "./versions";
+import VERSION_MAP, { VERSION_KEY } from "../../electron-common/versions";
 import { ViewState } from "./shared";
 
 export class ApplicationWindow extends GameWindow {
@@ -39,20 +39,12 @@ export class ApplicationWindow extends GameWindow {
     this.accounts = this.config.accounts
     this.setApplicationWindow(this)
     this.registerListener()
-    this.initial()
+    this.initialize()
   }
 
-  initial() {
+  initialize() {
     this.accounts.map((v) => {
-      const view = this.createView(v?.url ?? (VERSION_MAP[this.config.version].url || "https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953"));
-      view.webContents.addListener('did-finish-load', () => {
-        view.executeJavaScript(
-          `window.localStorage.setItem('world-1000-1100-accountList', '${JSON.stringify(
-            this.config.oaccounts || []
-          )}')`
-        );
-      })
-      return view
+      this.createView(v?.url ?? (VERSION_MAP[this.config.version].url || "https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953"));
     });
 
     if (this.views.length === 0) {
@@ -61,12 +53,12 @@ export class ApplicationWindow extends GameWindow {
     }
 
     if (this.config.app.mode === 'merge')
-      this.initialMerge()
+      this.initializeMerge()
     else
-      this.initialSplit()
+      this.initializeSplit()
   }
 
-  initialMerge() {
+  initializeMerge() {
     for (let i = 0; i < this.views.length; i++) {
       let window = this.windows[i]
       const view = this.views[i]
@@ -79,10 +71,10 @@ export class ApplicationWindow extends GameWindow {
       this.setTopView(i)
     }
 
-    super.initialMerge()
+    super.initializeMerge()
   }
 
-  initialSplit() {
+  initializeSplit() {
     for (let i = 0; i < this.views.length; i++) {
       const view = this.views[i]
       this.removeBrowserView(view.view)
@@ -101,13 +93,16 @@ export class ApplicationWindow extends GameWindow {
       }
 
       if (window !== this)
-        window.initialSplit(view, state)
+        window.initializeSplit(view, state)
       else
-        super.initialSplit(view, state)
+        super.initializeSplit(view, state)
 
-      window.setBounds({
-        x: (i * 10) + i * window.getBounds().width
-      }, true)
+      if (this.views.length <= 1)
+        window.center()
+      else
+        window.setBounds({
+          x: (i * 10) + i * window.getBounds().width
+        }, true)
     }
   }
 
@@ -185,13 +180,7 @@ export class ApplicationWindow extends GameWindow {
       this.config.list.equipWhite || []
     );
 
-    view.webContents.addListener('did-finish-load', () => {
-      view.executeJavaScript(
-        `window.localStorage.setItem('world-1000-1100-accountList', '${JSON.stringify(
-          this.config.oaccounts || []
-        )}')`
-      );
-    })
+    view.loadURL(url)
 
     const state: ViewState = {
       id: view.id,
@@ -202,7 +191,6 @@ export class ApplicationWindow extends GameWindow {
     }
     this.viewsState.push(state)
     this.views.push(view)
-    view.loadURL(url)
 
     return view
   }
@@ -255,6 +243,7 @@ export class ApplicationWindow extends GameWindow {
   private registerListener() {
     // 自动更新配置
     this.configuration.on(ConfigurationEvents.SAVED, () => {
+      this.accounts = this.config.accounts
       this.updateViewConfiguration();
     });
 
@@ -334,10 +323,10 @@ export class ApplicationWindow extends GameWindow {
       this.config.app.mode = mode ?? 'merge'
       switch (this.config.app.mode) {
         case 'merge':
-          this.initialMerge()
+          this.initializeMerge()
           break
         case 'split':
-          this.initialSplit()
+          this.initializeSplit()
           break
       }
     })
@@ -358,27 +347,24 @@ export class ApplicationWindow extends GameWindow {
       // 该 BrowserView 的功能初始化完毕
       const view = this.getViewById(e.sender.id);
       view?.changeState(GameViewState.INITIALIZED);
+    });
+
+    ipcMain.on(IPC_MAIN.GAME_WILL_READY, async (e, url: string) => {
+      const view = this.getViewById(e.sender.id);
 
       for (let index = 0; index < this.views.length; index++) {
         const v = this.views[index];
-        const url = await v.getVersionURL();
+        const url = (await v.getVersionURL()) ?? VERSION_MAP[this.config.version].url;
 
         if (index < this.config.accounts.length) {
-          this.config.accounts[index].url =
-            url || VERSION_MAP[this.config.version].url;
+          this.config.accounts[index].url = url;
+          this.config.version = url.includes('mbToken') ? VERSION_KEY.TIANYU : url.includes('game_key') ? VERSION_KEY.XIAOQI : VERSION_KEY.GUANFANG
         } else {
           this.configuration.configuration.accounts.push({
-            url: url || VERSION_MAP[this.config.version].url,
+            url,
           });
         }
       }
-
-      if (this.views.length > 0)
-        this.config.oaccounts = await this.views[0].getAccounts();
-    });
-
-    ipcMain.on(IPC_MAIN.GAME_WILL_READY, (e, url: string) => {
-      const view = this.getViewById(e.sender.id);
 
       setTimeout(() => {
         view?.loadURL(url);
@@ -415,17 +401,14 @@ export class ApplicationWindow extends GameWindow {
     });
 
     // 监听鼠标滚轮
-    ipcMain.on(
-      IPC_MAIN.MOUSE_WHEEL,
-      debounce((_e: any, d: number) => {
-        if (d > 0) {
-          this.setTopView(this.active_view + 1);
-        }
+    ipcMain.on(IPC_MAIN.MOUSE_WHEEL, debounce((_e: any, d: number) => {
+      if (d > 0) {
+        this.setTopView(this.active_view + 1);
+      }
 
-        if (d < 0) {
-          this.setTopView(this.active_view - 1);
-        }
-      }, 100)
-    );
+      if (d < 0) {
+        this.setTopView(this.active_view - 1);
+      }
+    }, 100));
   }
 }

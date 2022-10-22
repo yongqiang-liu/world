@@ -7,7 +7,7 @@ export interface Version {
   url: string;
 }
 
-const enum VERSIONNAMES {
+export const enum VERSION_KEY {
   XIAOQI = "小七",
   TIANYU = "天宇",
   GUANFANG = "官方",
@@ -20,20 +20,20 @@ export interface VersionMap {
 const VersionMap: VersionMap = {};
 
 (function () {
-  function Define(name: VERSIONNAMES, url: string) {
+  function Define(name: VERSION_KEY, url: string) {
     VersionMap[name] = {
       name,
       url,
     };
   }
 
-  Define(VERSIONNAMES.XIAOQI, "http://www.x7sy.com/h5game_play/182.html");
+  Define(VERSION_KEY.XIAOQI, "http://www.x7sy.com/h5game_play/182.html");
   Define(
-    VERSIONNAMES.TIANYU,
+    VERSION_KEY.TIANYU,
     "https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953"
   );
   Define(
-    VERSIONNAMES.GUANFANG,
+    VERSION_KEY.GUANFANG,
     "https://worldh5.gamehz.cn/version/world/publish/channel/res/index.html"
   );
 })();
