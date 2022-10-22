@@ -62,7 +62,8 @@ export class ApplicationWindow extends GameWindow {
     for (let i = 0; i < this.views.length; i++) {
       let window = this.windows[i]
       const view = this.views[i]
-      window.removeBrowserView(view.view)
+      if (window && !window.isDestroyed())
+        window.removeBrowserView(view.view)
       if (window && window.id !== this.id) {
         window.destroy()
         this.windows.splice(i, 1)

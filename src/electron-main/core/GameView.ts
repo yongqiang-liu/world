@@ -106,6 +106,12 @@ export default class GameView {
     this.send(IPC_RENDERER.THOUSAND_BATTLE, 3);
   }
 
+  async repeatBattle() {
+    await this.whenInitialized();
+
+    this.send(IPC_RENDERER.THOUSAND_BATTLE, 9999)
+  }
+
   // 自动日常
   async setOneKeyDailyMission(v: boolean) {
     await this.whenInitialized();

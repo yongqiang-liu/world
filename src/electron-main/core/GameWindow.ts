@@ -46,7 +46,7 @@ export default class GameWindow extends BrowserWindow {
     this.buildWindowMenu()
   }
 
-  setApplicationWindow(win: ApplicationWindow) {
+  protected setApplicationWindow(win: ApplicationWindow) {
     this.win = win
   }
 
@@ -89,6 +89,10 @@ export default class GameWindow extends BrowserWindow {
                 view?.topOne();
               },
             },
+            {
+              label: "重复战斗",
+              click: () => view?.repeatBattle()
+            }
           ]
         },
         {
@@ -344,7 +348,7 @@ export default class GameWindow extends BrowserWindow {
     });
   }
 
-  async buildWindowMenu() {
+  protected async buildWindowMenu() {
     await this.prebuildWindowMenu();
 
     const windowMenu = buildFromTemplateWrapper(this.windowMenus, {
