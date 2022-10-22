@@ -24,10 +24,10 @@ export default class GameWindow extends BrowserWindow {
   private timer: NodeJS.Timer | null = null
   private battleConfig: IBattleConfiguration
 
-  constructor(configuration: Configuration, private readonly emitter: EventEmitter) {
+  constructor(private readonly _configuration: Configuration, private readonly emitter: EventEmitter) {
     super(MainWidowConfiguration);
-    this.config = configuration.configuration;
-    this.battleConfig = configuration.battleConfiguration
+    this.config = _configuration.configuration;
+    this.battleConfig = _configuration.battleConfiguration
     this.setMenu(null);
     this.registerWindowListener()
     this.timer = setInterval(() => {
@@ -130,6 +130,10 @@ export default class GameWindow extends BrowserWindow {
               label: '自定义战斗',
               enable: true,
               click: () => shell.openPath(battleConfigurationPath)
+            },
+            {
+              label: '重载战斗文件',
+              click: () => this._configuration.loadBattle()
             }
           ]
         },
