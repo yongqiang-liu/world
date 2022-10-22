@@ -43,6 +43,7 @@ export default class DefaultFunction {
       window.doGetMoney();
       // 自动领取经验
       window.doGetExp();
+      window.doLoginLottery();
     }, TimeHelper.second(10));
   }
 
