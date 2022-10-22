@@ -1,5 +1,5 @@
 import { IConfiguration } from "common/configuration";
-import { BrowserWindow, session } from "electron";
+import { BrowserWindow } from "electron";
 import Configuration from "./Configuration";
 import GameView, { GameViewState } from "./GameView";
 import { buildFromTemplateWrapper, hookWindowMenuClick, MenuTemplate } from "./menuHelper";
@@ -27,14 +27,16 @@ export default class GameWindow extends BrowserWindow {
     this.config = configuration.configuration;
     this.setMenu(null);
     this.registerWindowListener()
-    this.timer = setInterval(() => this.buildWindowMenu(), 100)
+    this.timer = setInterval(() => {
+      this.buildWindowMenu()
+    }, 100)
   }
 
   initializeMerge() {
     this.mode = 'merge'
     this.center()
-    this.show()
     this.buildWindowMenu()
+    this.show()
   }
 
   initializeSplit(view: GameView, state: ViewState) {
@@ -57,10 +59,56 @@ export default class GameWindow extends BrowserWindow {
     const view = this.mode === 'merge' ? this.win.views[viewIndex] : this.view
     const oneKeyDailyMission: boolean = !!view?.getAutoDaily();
     const allOneKeyDailyMission = this.win.views.map((view) => view.getAutoDaily()).some(v => v)
+    const started = view.getGameStarted()
+    if (started)
+      this.enable = true;
+    else
+      this.enable = false;
 
     this.windowMenus[index++] = {
-      label: "功能",
+      label: "常用功能",
       submenu: [
+        {
+          label: '经验千场',
+          submenu: [
+            {
+              label: "紫禁城千场",
+              click: () => {
+                view?.forbiddenCity();
+              },
+            },
+            {
+              label: "破敌(120)",
+              click: () => {
+                view?.podi();
+              },
+            },
+            {
+              label: "最强妖兽",
+              click: () => {
+                view?.topOne();
+              },
+            },
+          ]
+        },
+        {
+          label: '窗口模式',
+          enable: true,
+          submenu: [
+            {
+              label: '融合模式',
+              type: 'checkbox',
+              checked: this.mode === 'merge',
+              click: () => this.emitter.emit(CHANGE_WINDOW_MODE, 'merge')
+            },
+            {
+              label: '分离模式',
+              type: 'checkbox',
+              checked: this.mode === 'split',
+              click: () => this.emitter.emit(CHANGE_WINDOW_MODE, 'split')
+            }
+          ]
+        },
         {
           label: "跳过战斗动画",
           type: "checkbox",
@@ -74,24 +122,6 @@ export default class GameWindow extends BrowserWindow {
           label: "开启日常箱子",
           click: () => {
             view?.openDailyBox();
-          },
-        },
-        {
-          label: "紫禁城千场",
-          click: () => {
-            view?.forbiddenCity();
-          },
-        },
-        {
-          label: "破敌(120)",
-          click: () => {
-            view?.podi();
-          },
-        },
-        {
-          label: "最强妖兽",
-          click: () => {
-            view?.topOne();
           },
         },
         {
@@ -126,11 +156,7 @@ export default class GameWindow extends BrowserWindow {
             view?.webContents.loadURL(VERSION_MAP[this.config.version].url || 'https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953')
           }
         },
-        {
-          label: this.mode === 'merge' ? '分裂窗口' : '合并窗口',
-          enable: true,
-          click: () => this.emitter.emit(CHANGE_WINDOW_MODE, this.mode === 'merge' ? 'split' : 'merge')
-        }
+
       ],
     };
 
@@ -361,7 +387,18 @@ export default class GameWindow extends BrowserWindow {
     this.buildWindowMenu();
   }
 
+  protected onClose(e: Electron.Event) {
+    if (this.id === this.win.id) {
+      e.preventDefault()
+      this.hide()
+    }
+    else
+      this.destroy()
+  }
+
   private registerWindowListener() {
+    this.on('close', this.onClose)
+
     this.on("focus", () => {
       this.setRegisterAccelerator(true);
     });
@@ -376,7 +413,6 @@ export default class GameWindow extends BrowserWindow {
 
     this.on("maximize", () => {
       this.setRegisterAccelerator(true);
-      this.focus();
     });
   }
 

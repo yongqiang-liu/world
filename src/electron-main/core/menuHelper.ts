@@ -36,7 +36,8 @@ export interface MenuTemplate {
 function calcTemplateType(template: MenuTemplate): MenuTypes {
   const submenu = template.submenu;
 
-  if (submenu && submenu.length > 0) return "submenu";
+  if (submenu && submenu.length > 0)
+    return "submenu";
 
   if (template.type) return template.type;
 
@@ -50,11 +51,12 @@ function transformTemplate2MenuItemConstructorOptions(
   const submenu = template.submenu
     ? template.submenu.map((menu) => {
         return transformTemplate2MenuItemConstructorOptions(menu, {
-          enable: !!template.enable,
+          enable: template.enable ? template.enable : options.enable,
           registerAccelerator: !!template.registerAccelerator,
         });
       })
     : undefined;
+  
   return {
     id: template.id,
     label: template.label,

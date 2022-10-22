@@ -62,6 +62,7 @@ export class ApplicationWindow extends GameWindow {
     for (let i = 0; i < this.views.length; i++) {
       let window = this.windows[i]
       const view = this.views[i]
+      window.removeBrowserView(view.view)
       if (window && window.id !== this.id) {
         window.destroy()
         this.windows.splice(i, 1)
@@ -77,19 +78,16 @@ export class ApplicationWindow extends GameWindow {
   initializeSplit() {
     for (let i = 0; i < this.views.length; i++) {
       const view = this.views[i]
-      this.removeBrowserView(view.view)
       let window = this.windows[i]
       const state = this.viewsState[i]
       this.active_view = i
       if (!window) {
         window = new GameWindow(this.configuration, this.eventEmitter)
+        window.once('closed', () => {
+          this.windows.splice(i, 1)
+        })
         window.setApplicationWindow(this)
         this.windows.push(window)
-      }
-
-      if (window) {
-        window.addBrowserView(view.view)
-        window.setTopBrowserView(view.view)
       }
 
       if (window !== this)
@@ -97,12 +95,20 @@ export class ApplicationWindow extends GameWindow {
       else
         super.initializeSplit(view, state)
 
-      if (this.views.length <= 1)
-        window.center()
-      else
-        window.setBounds({
-          x: (i * 10) + i * window.getBounds().width
-        }, true)
+      if (window) {
+        window.addBrowserView(view.view)
+        window.setTopBrowserView(view.view)
+      }
+
+      setTimeout(() => {
+        if (this.views.length <= 1)
+          window.center()
+        else
+          window.setBounds({
+            x: (i * 5) + i * window.getBounds().width
+          }, true)
+        window.show()
+      }, 50)
     }
   }
 
@@ -319,7 +325,7 @@ export class ApplicationWindow extends GameWindow {
       this.views.map(view => view.setAutoRefreshMonster(this.oneKeyRefreshMonster))
     })
 
-    this.eventEmitter.on(CHANGE_WINDOW_MODE, (mode: 'merge' | 'split') => {
+    this.eventEmitter.on(CHANGE_WINDOW_MODE, (mode?: 'merge' | 'split') => {
       this.config.app.mode = mode ?? 'merge'
       switch (this.config.app.mode) {
         case 'merge':
@@ -338,6 +344,16 @@ export class ApplicationWindow extends GameWindow {
     })
   }
 
+  private setViewOptionById(id: number, viewState: GameViewState) {
+    this.viewsState.map((state) => {
+      if (state.id === id) {
+        state.state = viewState;
+      }
+    });
+
+    this.buildWindowMenu();
+  }
+
   private registerIPCListener() {
     ipcMain.handle(IPC_MAIN.INVOKE_VERSION_INFO, () => {
       return VERSION_MAP[this.config.version];
@@ -347,11 +363,7 @@ export class ApplicationWindow extends GameWindow {
       // 该 BrowserView 的功能初始化完毕
       const view = this.getViewById(e.sender.id);
       view?.changeState(GameViewState.INITIALIZED);
-    });
-
-    ipcMain.on(IPC_MAIN.GAME_WILL_READY, async (e, url: string) => {
-      const view = this.getViewById(e.sender.id);
-
+      this.setViewOptionById(e.sender.id, GameViewState.INITIALIZED);
       for (let index = 0; index < this.views.length; index++) {
         const v = this.views[index];
         const url = (await v.getVersionURL()) ?? VERSION_MAP[this.config.version].url;
@@ -365,6 +377,10 @@ export class ApplicationWindow extends GameWindow {
           });
         }
       }
+    });
+
+    ipcMain.on(IPC_MAIN.GAME_WILL_READY, async (e, url: string) => {
+      const view = this.getViewById(e.sender.id);
 
       setTimeout(() => {
         view?.loadURL(url);
@@ -410,5 +426,11 @@ export class ApplicationWindow extends GameWindow {
         this.setTopView(this.active_view - 1);
       }
     }, 100));
+  }
+
+  close(): void {
+    this.removeListener('close', super.onClose)
+    super.close()
+    super.destroy()
   }
 }
