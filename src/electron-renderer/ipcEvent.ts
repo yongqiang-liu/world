@@ -1,3 +1,4 @@
+import { IRawBattleConfiguration } from "common/configuration";
 import { IPC_MAIN, IPC_RENDERER } from "common/ipcEventConst";
 import { TimeHelper } from "common/timer";
 import { ipcRenderer } from "electron";
@@ -83,17 +84,22 @@ export function setupUnInitializeFunction() {
 }
 
 function setupAutoFunction() {
-  ipcRenderer.on(IPC_RENDERER.THOUSAND_BATTLE, (_e, v: number) => {
+  ipcRenderer.on(IPC_RENDERER.THOUSAND_BATTLE, (_e, v: IRawBattleConfiguration) => {
     if (!gameStarted()) return;
 
-    if (v && !window.thousandBattle._isStarting) {
+    if (v && window.thousandBattle._isStarting && v.id === window.thousandBattle.id) {
+      window.thousandBattle.stop()
+      return
+    }
+
+    if (v && window.thousandBattle._isStarting && v.id !== window.thousandBattle.id) {
+      window.thousandBattle.stop();
       window.thousandBattle.start(v);
       return;
     }
 
-    if (window.thousandBattle._isStarting) {
-      window.thousandBattle.stop();
-      return;
+    if (v && !window.thousandBattle._isStarting) {
+      window.thousandBattle.start(v);
     }
   });
 

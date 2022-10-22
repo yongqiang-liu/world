@@ -1,5 +1,5 @@
-import { IConfiguration } from "common/configuration";
-import { BrowserWindow } from "electron";
+import { IBattleConfiguration, IConfiguration } from "common/configuration";
+import { BrowserWindow, shell } from "electron";
 import Configuration from "./Configuration";
 import GameView, { GameViewState } from "./GameView";
 import { buildFromTemplateWrapper, hookWindowMenuClick, MenuTemplate } from "./menuHelper";
@@ -10,6 +10,7 @@ import EventEmitter from "events";
 import { ONE_KEY_AUTO_MISSION, AUTO_REFRESH_MONSTER, ViewState, AUTO_SKIP_BATTLE_ANIM } from "./shared";
 import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REPAIR, AUTO_SELL, CHANGE_WINDOW_MODE, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL } from "./shared";
 import { ApplicationWindow } from "./window";
+import { battleConfigurationPath } from "./paths";
 
 export default class GameWindow extends BrowserWindow {
   protected windowMenus: MenuTemplate[] = [];
@@ -21,10 +22,12 @@ export default class GameWindow extends BrowserWindow {
   private win!: ApplicationWindow
   private mode: 'merge' | 'split' = 'merge'
   private timer: NodeJS.Timer | null = null
+  private battleConfig: IBattleConfiguration
 
   constructor(configuration: Configuration, private readonly emitter: EventEmitter) {
     super(MainWidowConfiguration);
     this.config = configuration.configuration;
+    this.battleConfig = configuration.battleConfiguration
     this.setMenu(null);
     this.registerWindowListener()
     this.timer = setInterval(() => {
@@ -48,6 +51,16 @@ export default class GameWindow extends BrowserWindow {
 
   setApplicationWindow(win: ApplicationWindow) {
     this.win = win
+  }
+
+  private createBattleMenu(view: GameView) {
+    return this.battleConfig.battle.map<MenuTemplate>((config) => {
+      return {
+        id: `${config.name}:${config.id}`,
+        label: config.name,
+        click: () => view.battle(config)
+      }
+    })
   }
 
   private async prebuildWindowMenu() {
@@ -112,27 +125,10 @@ export default class GameWindow extends BrowserWindow {
                 view.setSkipBattleAnime(this.win.skipBattleAnime[viewIndex])
               },
             },
+            ...this.createBattleMenu(view),
             {
-              label: "紫禁城千场",
-              click: () => {
-                view?.forbiddenCity();
-              },
-            },
-            {
-              label: "破敌(120)",
-              click: () => {
-                view?.podi();
-              },
-            },
-            {
-              label: "最强妖兽",
-              click: () => {
-                view?.topOne();
-              },
-            },
-            {
-              label: "重复战斗",
-              click: () => view?.repeatBattle()
+              label: '自定义战斗',
+              click: () => shell.openPath(battleConfigurationPath)
             }
           ]
         },
