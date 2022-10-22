@@ -1,4 +1,4 @@
-import { EVENTS, WroldEvent } from "common/eventConst";
+import { EVENTS, WorldEvent } from "common/eventConst";
 import { ProtocolDefine } from "renderer/gameConst";
 
 function setupMsgHandler() {
@@ -432,8 +432,8 @@ export default function setupGameHook() {
     window.__escortEmitter__.emit(EVENTS.EXIT_BATTLE_MAP);
   };
 
-  window.xevent.addEventListener(WroldEvent.ITEM_SELL_END, () => {
-    window.__myEvent__.emit(WroldEvent.ITEM_SELL_END);
+  window.xevent.addEventListener(WorldEvent.ITEM_SELL_END, () => {
+    window.__myEvent__.emit(WorldEvent.ITEM_SELL_END);
   });
 
   window.Escort.doEscortMove = function (e: any, n: any) {
