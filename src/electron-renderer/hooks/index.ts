@@ -1,4 +1,4 @@
-import { IPCM } from "common/ipcEventConst";
+import { IPC_MAIN } from "common/ipcEventConst";
 import { ipcRenderer } from "electron";
 import ExpandBagTool from "./tools/AutoExpandBag";
 import AutoOnlineReward from "./tools/AutoOnlineReward";
@@ -14,7 +14,7 @@ import AutoChatMsg from "./tools/AutoChatMsg";
 import ThousandBattle from "./tools/ThousandBattle";
 
 export function setupHooks() {
-  ipcRenderer.send(IPCM.GAME_HOOK_STARTED);
+  ipcRenderer.send(IPC_MAIN.GAME_HOOK_STARTED);
 
   setupGameHook();
 
@@ -32,5 +32,5 @@ export function setupHooks() {
   window.autoChatMsg = new AutoChatMsg();
   window.thousandBattle = new ThousandBattle();
 
-  ipcRenderer.send(IPCM.GAME_HOOK_ENDED);
+  ipcRenderer.send(IPC_MAIN.GAME_HOOK_ENDED);
 }

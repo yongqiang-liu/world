@@ -1,4 +1,4 @@
-import { IPCM, IPCR } from "common/ipcEventConst";
+import { IPC_MAIN, IPC_RENDERER } from "common/ipcEventConst";
 import { TimeHelper } from "common/timer";
 import { ipcRenderer } from "electron";
 
@@ -30,7 +30,7 @@ export async function wushuangController(this: any) {
 
           members.map((member: any) => {
             if (member.id == window.xself.getId()) {
-              ipcRenderer.send(IPCM.RELOAD);
+              ipcRenderer.send(IPC_MAIN.RELOAD);
             }
           });
         }
@@ -81,7 +81,7 @@ export async function wushuangController(this: any) {
       this.moveLock = true;
       // 这个时候需要发送一个自动登录的指令
       setTimeout(() => {
-        ipcRenderer.send(IPCM.EXECUTE_OTHER, IPCR.AUTO_ENTER_GAME);
+        ipcRenderer.send(IPC_MAIN.EXECUTE_OTHER, IPC_RENDERER.AUTO_ENTER_GAME);
         localStorage.setItem("status", "login");
       }, TimeHelper.second(1));
       channel.addEventListener("message", (event: any) => {

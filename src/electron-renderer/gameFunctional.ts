@@ -1,5 +1,5 @@
 import { delay, fromEmitter } from "common/functional";
-import { IPCM } from "common/ipcEventConst";
+import { IPC_MAIN } from "common/ipcEventConst";
 import { TimeHelper } from "common/timer";
 import { ipcRenderer } from "electron";
 import { EVENTS } from "../electron-common/eventConst";
@@ -15,7 +15,7 @@ export function gameStarted() {
 export function checkGameStart() {
   if (!window.location.href.includes("worldh5")) {
     const t = setInterval(async () => {
-      const version = await ipcRenderer.invoke(IPCM.INVOKE_VERSION_INFO);
+      const version = await ipcRenderer.invoke(IPC_MAIN.INVOKE_VERSION_INFO);
 
       if (version.name == "天宇") {
         const wrapIframe = <HTMLIFrameElement>(
@@ -33,7 +33,7 @@ export function checkGameStart() {
 
           const iframe = cpgame.getElementsByTagName("iframe")[0];
           if (iframe && iframe.src.includes("worldh5")) {
-            ipcRenderer.send(IPCM.GAME_WILL_READY, `${iframe.src}`);
+            ipcRenderer.send(IPC_MAIN.GAME_WILL_READY, `${iframe.src}`);
             clearInterval(t);
           }
         }
@@ -42,7 +42,7 @@ export function checkGameStart() {
 
         if (game) {
           if (game && game.src.includes("worldh5")) {
-            ipcRenderer.send(IPCM.GAME_WILL_READY, `${game.src}`);
+            ipcRenderer.send(IPC_MAIN.GAME_WILL_READY, `${game.src}`);
             clearInterval(t);
           }
         }

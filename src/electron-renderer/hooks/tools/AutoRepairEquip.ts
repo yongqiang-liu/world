@@ -1,7 +1,7 @@
 import { TimeHelper } from "common/timer";
 import { EVENTS } from "common/eventConst";
 import { ipcRenderer } from "electron";
-import { IPCR } from "common/ipcEventConst";
+import { IPC_RENDERER } from "common/ipcEventConst";
 import { whenGameStarted } from "renderer/gameFunctional";
 
 export default class AutoRepairEquip {
@@ -85,7 +85,7 @@ export default class AutoRepairEquip {
   }
 
   registerListener() {
-    ipcRenderer.on(IPCR.REPAIR_EQUIP, () => {
+    ipcRenderer.on(IPC_RENDERER.REPAIR_EQUIP, () => {
       this.logic();
     })
   }

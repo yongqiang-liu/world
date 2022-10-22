@@ -5,7 +5,7 @@ import GameView, { GameViewState } from "./GameView";
 import { buildFromTemplateWrapper, hookWindowMenuClick, MenuTemplate } from "./menuHelper";
 import { MainWidowConfiguration } from "./windowConfig";
 import VERSION_MAP from "./versions";
-import { KEY_MAP } from "common/keymap";
+import { KEY_MAP } from "common/key_map";
 import EventEmitter from "events";
 import { ONE_KEY_AUTO_MISSION, REFRESH_MONSTER, ViewState } from "./shared";
 import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REPAIR, AUTO_SELL, CHANGE_WINDOW_MODE, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL } from "./shared";
@@ -30,14 +30,14 @@ export default class GameWindow extends BrowserWindow {
     this.timer = setInterval(() => this.buildWindowMenu(), 100)
   }
 
-  initMerge() {
+  initialMerge() {
     this.mode = 'merge'
     this.center()
     this.show()
     this.buildWindowMenu()
   }
 
-  initSplit(view: GameView, state: ViewState) {
+  initialSplit(view: GameView, state: ViewState) {
     this.view = view
     this.state = state
     this.mode = 'split'
@@ -121,7 +121,7 @@ export default class GameWindow extends BrowserWindow {
           click: () => {
             view?.jumpLogin();
             session.defaultSession.clearStorageData({
-              storages: ['localstorage', 'cookies']
+              storages: ['localStorage', 'cookies']
             })
             view?.webContents.loadURL(VERSION_MAP[this.config.version].url || 'https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953')
           }
@@ -381,7 +381,7 @@ export default class GameWindow extends BrowserWindow {
   }
 
   destroy(): void {
-    clearInterval(this.timer)
+    clearInterval(this.timer!)
     super.destroy()
   }
 }

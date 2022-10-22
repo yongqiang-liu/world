@@ -1,5 +1,5 @@
 import { Account } from "common/configuration";
-import { IPCM, IPCR } from "common/ipcEventConst";
+import { IPC_MAIN, IPC_RENDERER } from "common/ipcEventConst";
 import { SellOptions } from "common/sell";
 import { BrowserView, app, ipcMain, session } from "electron";
 import { GameViewConfig } from "./windowConfig";
@@ -59,7 +59,7 @@ export default class GameView {
   }
 
   async openDevTools() {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
     this.webContents.openDevTools();
   }
@@ -82,7 +82,7 @@ export default class GameView {
     });
   }
 
-  whenInitalized() {
+  whenInitialized() {
     return new Promise<void>((resolve) => {
       if (this._state === GameViewState.INITIALIZED) resolve();
 
@@ -100,110 +100,105 @@ export default class GameView {
   }
 
   async forbiddenCity() {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
-    this.send(IPCR.THOUSANDBATTLE, 1);
+    this.send(IPC_RENDERER.THOUSAND_BATTLE, 1);
   }
 
   async podi() {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
-    this.send(IPCR.THOUSANDBATTLE, 2);
+    this.send(IPC_RENDERER.THOUSAND_BATTLE, 2);
   }
 
   async topOne() {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
-    this.send(IPCR.THOUSANDBATTLE, 3);
+    this.send(IPC_RENDERER.THOUSAND_BATTLE, 3);
   }
 
   // 自动日常
   async setOneKeyDailyMission(v: boolean) {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
     this._oneKeyDailyMission = v;
-    this.send(IPCR.AUTO_ONE_DAILY_MISSION, this._oneKeyDailyMission);
+    this.send(IPC_RENDERER.AUTO_ONE_DAILY_MISSION, this._oneKeyDailyMission);
   }
 
   // 自动修理
   async setAutoRepairEquip(v: boolean) {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
     this._repairEquip = v;
-    this.send(IPCR.AUTO_REPAIR_EQUIP, this._repairEquip);
+    this.send(IPC_RENDERER.AUTO_REPAIR_EQUIP, this._repairEquip);
   }
 
   // 自动出售
   async setAutoSellProduct(v: boolean) {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
     this._sellProduct = v;
-    this.send(IPCR.AUTO_ONE_DAILY_SELL, this._sellProduct);
+    this.send(IPC_RENDERER.AUTO_ONE_DAILY_SELL, this._sellProduct);
   }
 
   // 自动刷怪
   async setAutoRefreshMonster(v: boolean) {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
     this._refreshMonster = v;
-    this.send(IPCR.AUTO_REFRESH_MONSTER, this._refreshMonster);
+    this.send(IPC_RENDERER.AUTO_REFRESH_MONSTER, this._refreshMonster);
   }
 
   // 自动领取在线奖励
   async setAutoOnlineReward(v: boolean) {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
     this._onlineReward = v;
-    this.send(IPCR.AUTO_ONLINE_REWARD, this._onlineReward);
+    this.send(IPC_RENDERER.AUTO_ONLINE_REWARD, this._onlineReward);
   }
 
   // 自动扩充背包
   async setAutoExpandBag(v: boolean) {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
     this._expandBag = v;
-    this.send(IPCR.AUTO_EXPAND_BAG, this._expandBag);
+    this.send(IPC_RENDERER.AUTO_EXPAND_BAG, this._expandBag);
   }
 
   // 使用修理卷修理
   async setUseRepairRoll(v: boolean) {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
     this._useRepairRoll = v;
-    this.send(IPCR.SET_USE_REPAIR_ROLL, this._useRepairRoll);
+    this.send(IPC_RENDERER.SET_USE_REPAIR_ROLL, this._useRepairRoll);
   }
 
   async setOfflineExpRate3(v: boolean) {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
     this._offlineExpRate3 = v;
-    this.send(IPCR.SET_OFFLINE_EXP_RATE3, this._offlineExpRate3);
+    this.send(IPC_RENDERER.SET_OFFLINE_EXP_RATE3, this._offlineExpRate3);
   }
 
   // 发送消息
   async setAutoChat(v: boolean) {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
-    this.send(IPCR.AUTO_CHAT_MSG, v);
+    this.send(IPC_RENDERER.AUTO_CHAT_MSG, v);
   }
 
   // 自动护送任务
   async setAutoEscort(v: boolean) {
-    await this.whenInitalized();
+    await this.whenInitialized();
     this._escort = v;
-    this.send(IPCR.AUTO_ESCORT, this._escort);
+    this.send(IPC_RENDERER.AUTO_ESCORT, this._escort);
   }
 
   // 自动护送任务
   async setSkipBattleAnime(v: boolean) {
-    await this.whenInitalized();
+    await this.whenInitialized();
 
-    this.send(IPCR.AUTO_SKIP_BATTLE_ANIM, v);
-  }
-
-  // 自动无双
-  async startWushuangEscort() {
-    this.send(IPCR.WUSHUANG_START);
+    this.send(IPC_RENDERER.AUTO_SKIP_BATTLE_ANIM, v);
   }
 
   // 出售建筑道具
@@ -228,10 +223,10 @@ export default class GameView {
     if (this.setOptionLock) return;
 
     this.setOptionLock = true;
-    await this.whenInitalized();
+    await this.whenInitialized();
 
     this.send(
-      IPCR.SET_SELL_OPTIONS,
+      IPC_RENDERER.SET_SELL_OPTIONS,
       JSON.parse(JSON.stringify(this._sellOptions))
     );
     this.setOptionLock = false;
@@ -239,26 +234,26 @@ export default class GameView {
 
   // 开启日常箱子
   async openDailyBox() {
-    await this.whenInitalized();
-    this.send(IPCR.OPEN_DAILY_BOX);
+    await this.whenInitialized();
+    this.send(IPC_RENDERER.OPEN_DAILY_BOX);
   }
 
   // 修理装备
   async repairEquip() {
-    await this.whenInitalized();
-    this.send(IPCR.REPAIR_EQUIP);
+    await this.whenInitialized();
+    this.send(IPC_RENDERER.REPAIR_EQUIP);
   }
 
   // 出售垃圾
   async sellProduct() {
-    await this.whenInitalized();
-    this.send(IPCR.SELL_PRODUCT);
+    await this.whenInitialized();
+    this.send(IPC_RENDERER.SELL_PRODUCT);
   }
 
   // 领取微端奖励
   async microReward() {
-    await this.whenInitalized();
-    this.send(IPCR.MICRO_REWARD);
+    await this.whenInitialized();
+    this.send(IPC_RENDERER.MICRO_REWARD);
   }
 
   //
@@ -272,21 +267,21 @@ export default class GameView {
 
   getAccounts(): Promise<Account[]> {
     return new Promise((resolve) => {
-      ipcMain.once(IPCM.RECEIVE_ACCOUNTS, (_e, accounts) => {
+      ipcMain.once(IPC_MAIN.RECEIVE_ACCOUNTS, (_e, accounts) => {
         resolve(accounts);
       });
 
-      this.send(IPCR.GET_ACCOUNTS);
+      this.send(IPC_RENDERER.GET_ACCOUNTS);
     });
   }
 
   getVersionURL(): Promise<string> {
     return new Promise((resolve) => {
-      ipcMain.once(IPCM.RECEIVE_VERSION_URL, (_e, url: string) => {
+      ipcMain.once(IPC_MAIN.RECEIVE_VERSION_URL, (_e, url: string) => {
         resolve(url);
       });
 
-      this.send(IPCR.GET_VERSION_URL);
+      this.send(IPC_RENDERER.GET_VERSION_URL);
     });
   }
 

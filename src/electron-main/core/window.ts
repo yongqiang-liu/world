@@ -1,7 +1,7 @@
 import { Account } from "common/configuration";
 import { debounce } from "common/functional";
-import { IPCM } from "common/ipcEventConst";
-import { combineKey, KEY_MAP } from "common/keymap";
+import { IPC_MAIN } from "common/ipcEventConst";
+import { combineKey, KEY_MAP } from "common/key_map";
 import { ipcMain, app } from "electron";
 import EventEmitter from "events";
 import { existsSync, readFileSync, writeFileSync } from "fs";
@@ -39,10 +39,10 @@ export class ApplicationWindow extends GameWindow {
     this.accounts = this.config.accounts
     this.setApplicationWindow(this)
     this.registerListener()
-    this.init()
+    this.initial()
   }
 
-  async init() {
+  initial() {
     this.accounts.map((v) => {
       const view = this.createView(v?.url ?? (VERSION_MAP[this.config.version].url || "https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953"));
       view.webContents.addListener('did-finish-load', () => {
@@ -61,12 +61,12 @@ export class ApplicationWindow extends GameWindow {
     }
 
     if (this.config.app.mode === 'merge')
-      this.initMerge()
+      this.initialMerge()
     else
-      this.initSplit()
+      this.initialSplit()
   }
 
-  initMerge() {
+  initialMerge() {
     for (let i = 0; i < this.views.length; i++) {
       let window = this.windows[i]
       const view = this.views[i]
@@ -79,10 +79,10 @@ export class ApplicationWindow extends GameWindow {
       this.setTopView(i)
     }
 
-    super.initMerge()
+    super.initialMerge()
   }
 
-  initSplit() {
+  initialSplit() {
     for (let i = 0; i < this.views.length; i++) {
       const view = this.views[i]
       this.removeBrowserView(view.view)
@@ -101,9 +101,9 @@ export class ApplicationWindow extends GameWindow {
       }
 
       if (window !== this)
-        window.initSplit(view, state)
+        window.initialSplit(view, state)
       else
-        super.initSplit(view, state)
+        super.initialSplit(view, state)
 
       window.setBounds({
         x: (i * 10) + i * window.getBounds().width
@@ -156,7 +156,23 @@ export class ApplicationWindow extends GameWindow {
     return menu;
   }
 
-  createView(url: string) {
+  getViewById(id: number) {
+    for (let i = 0; i < this.views.length; i++) {
+      const view = this.views[i];
+
+      if (view.id === id) {
+        return view;
+      }
+    }
+
+    return null;
+  }
+
+  getViewIndexById(id: number) {
+    return this.views.findIndex(v => v.id === id)
+  }
+
+  private createView(url: string) {
     const view = new GameView(
       {
         x: 0,
@@ -191,7 +207,7 @@ export class ApplicationWindow extends GameWindow {
     return view
   }
 
-  updateViewConfiguration() {
+  private updateViewConfiguration() {
     this.views.map((view) => {
       view.setAutoSellProduct(!!this.config.app.autoSellByBagWillFull);
       view.setAutoRepairEquip(!!this.config.app.autoRepairEquip);
@@ -205,7 +221,7 @@ export class ApplicationWindow extends GameWindow {
     });
   }
 
-  setTopView(top: number) {
+  private setTopView(top: number) {
     if (top > this.views.length - 1) {
       top = 0;
     }
@@ -236,37 +252,10 @@ export class ApplicationWindow extends GameWindow {
     this.buildWindowMenu();
   }
 
-  getViewById(id: number) {
-    for (let i = 0; i < this.views.length; i++) {
-      const view = this.views[i];
-
-      if (view.id === id) {
-        return view;
-      }
-    }
-
-    return null;
-  }
-
-  getViewIndexById(id: number) {
-    return this.views.findIndex(v => v.id === id)
-  }
-
-  setViewOptionById(id: number, viewState: GameViewState) {
-    this.viewsState.map((state) => {
-      if (state.id === id) {
-        state.state = viewState;
-      }
-    });
-
-    this.buildWindowMenu();
-  }
-
   private registerListener() {
     // 自动更新配置
     this.configuration.on(ConfigurationEvents.SAVED, () => {
       this.updateViewConfiguration();
-      this.windows.map(win => win.buildWindowMenu())
     });
 
     this.registerEmitterListener()
@@ -345,10 +334,10 @@ export class ApplicationWindow extends GameWindow {
       this.config.app.mode = mode ?? 'merge'
       switch (this.config.app.mode) {
         case 'merge':
-          this.initMerge()
+          this.initialMerge()
           break
         case 'split':
-          this.initSplit()
+          this.initialSplit()
           break
       }
     })
@@ -361,15 +350,14 @@ export class ApplicationWindow extends GameWindow {
   }
 
   private registerIPCListener() {
-    ipcMain.handle(IPCM.INVOKE_VERSION_INFO, () => {
+    ipcMain.handle(IPC_MAIN.INVOKE_VERSION_INFO, () => {
       return VERSION_MAP[this.config.version];
     });
 
-    ipcMain.on(IPCM.SETUP_FUNCTION_ENDED, async (e) => {
+    ipcMain.on(IPC_MAIN.SETUP_FUNCTION_ENDED, async (e) => {
       // 该 BrowserView 的功能初始化完毕
       const view = this.getViewById(e.sender.id);
       view?.changeState(GameViewState.INITIALIZED);
-      this.setViewOptionById(e.sender.id, GameViewState.INITIALIZED);
 
       for (let index = 0; index < this.views.length; index++) {
         const v = this.views[index];
@@ -389,7 +377,7 @@ export class ApplicationWindow extends GameWindow {
         this.config.oaccounts = await this.views[0].getAccounts();
     });
 
-    ipcMain.on(IPCM.GAME_WILL_READY, (e, url: string) => {
+    ipcMain.on(IPC_MAIN.GAME_WILL_READY, (e, url: string) => {
       const view = this.getViewById(e.sender.id);
 
       setTimeout(() => {
@@ -397,19 +385,19 @@ export class ApplicationWindow extends GameWindow {
       }, 1000);
     });
 
-    ipcMain.on(IPCM.RELOAD, (e) => {
+    ipcMain.on(IPC_MAIN.RELOAD, (e) => {
       const view = this.getViewById(e.sender.id);
 
       view?.reload();
     });
 
-    ipcMain.on(IPCM.EXECUTE_OTHER, (e, command: string, ...args: any[]) => {
+    ipcMain.on(IPC_MAIN.EXECUTE_OTHER, (e, command: string, ...args: any[]) => {
       this.views
         .filter((v) => v.id !== e.sender.id)
         .map((view) => view.executeCommand(command, ...args));
     });
 
-    ipcMain.on(IPCM.RECEIVE_CHAT_MSG, (e) => {
+    ipcMain.on(IPC_MAIN.RECEIVE_CHAT_MSG, (e) => {
       const view = this.getViewById(e.sender.id);
 
       const desktopPath = app.getPath("desktop");
@@ -419,16 +407,16 @@ export class ApplicationWindow extends GameWindow {
       if (existsSync(chatTextPath)) {
         const chatText = readFileSync(chatTextPath, "utf8");
 
-        view?.send(IPCM.RECEIVE_CHAT_MSG, chatText);
+        view?.send(IPC_MAIN.RECEIVE_CHAT_MSG, chatText);
       } else {
-        view?.send(IPCM.RECEIVE_CHAT_MSG, "");
+        view?.send(IPC_MAIN.RECEIVE_CHAT_MSG, "");
         writeFileSync(chatTextPath, "", { flag: "w+" });
       }
     });
 
     // 监听鼠标滚轮
     ipcMain.on(
-      IPCM.MOUSE_WHEEL,
+      IPC_MAIN.MOUSE_WHEEL,
       debounce((_e: any, d: number) => {
         if (d > 0) {
           this.setTopView(this.active_view + 1);

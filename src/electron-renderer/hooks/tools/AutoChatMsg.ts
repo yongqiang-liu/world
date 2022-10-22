@@ -1,4 +1,4 @@
-import { IPCM } from "common/ipcEventConst";
+import { IPC_MAIN } from "common/ipcEventConst";
 import { TimeHelper } from "common/timer";
 import { ipcRenderer } from "electron";
 
@@ -33,13 +33,13 @@ export default class AutoChatMsg {
 
     getChatText() {
         return new Promise<string>((resolve) => {
-            ipcRenderer.once(IPCM.RECEIVE_CHAT_MSG, (_, text) => {
+            ipcRenderer.once(IPC_MAIN.RECEIVE_CHAT_MSG, (_, text) => {
                 if(typeof text === "string"){
                     resolve(text ?? "");
                 }
             })
 
-            ipcRenderer.send(IPCM.RECEIVE_CHAT_MSG)
+            ipcRenderer.send(IPC_MAIN.RECEIVE_CHAT_MSG)
         })
     }
 
