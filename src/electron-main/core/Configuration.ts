@@ -18,7 +18,6 @@ const defaultConfiguration: IConfiguration = {
     rate3: false,
     mode: 'merge'
   },
-  oaccounts: [],
   list: {
     black: ["豹皮", "腐鹰羽毛", "月狼之石"],
     white: [],

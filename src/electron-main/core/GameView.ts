@@ -11,29 +11,17 @@ export const enum GameViewState {
 
 export default class GameView {
   private _view = new BrowserView(GameViewConfig);
-
   private _state: GameViewState = GameViewState.UNINITIALIZED;
-
   private _oneKeyDailyMission = false;
-
   private _repairEquip = false;
-
   private _sellProduct = false;
-
   private _refreshMonster = false;
-
   private _onlineReward = false;
-
   private _expandBag = false;
-
   private _escort = false;
-
   private _useRepairRoll = false;
-
   private _sellOptions: SellOptions;
-
   private setOptionLock = false;
-
   private _offlineExpRate3 = false
 
   constructor(
@@ -84,7 +72,8 @@ export default class GameView {
 
   whenInitialized() {
     return new Promise<void>((resolve) => {
-      if (this._state === GameViewState.INITIALIZED) resolve();
+      if (this._state === GameViewState.INITIALIZED)
+        resolve();
 
       const t = setInterval(() => {
         if (this._state === GameViewState.INITIALIZED) {
