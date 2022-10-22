@@ -16,8 +16,6 @@ window.__myEvent__ = new EventEmitter();
 window.__myEvent__.setMaxListeners(50);
 window.__escortEmitter__ = new EventEmitter();
 
-
-
 window.addEventListener("load", async () => {
   document.addEventListener("wheel", (e) => {
     ipcRenderer.send(IPC_MAIN.MOUSE_WHEEL, e.deltaY);
@@ -49,6 +47,7 @@ window.addEventListener("load", async () => {
   setupHooks();
 
   await whenGameStarted();
+
   console.log("进入游戏并选择角色...");
 
   setupEvent();

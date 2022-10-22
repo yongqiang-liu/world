@@ -32,3 +32,17 @@ export interface IConfiguration {
   list: FilterList;
   [key: string | symbol]: any;
 }
+
+export interface IRawBattleConfiguration {
+  id: number
+  name: string
+  max?: number
+  stepsId: number[]
+  battleIds: number[]
+  battleStep?: number
+  usePrevBattleId?: boolean
+}
+
+export interface IBattleConfiguration {
+  battle: IRawBattleConfiguration[]
+}

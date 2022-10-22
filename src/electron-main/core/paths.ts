@@ -15,6 +15,7 @@ const preloadPath = isPackaged
   : path.join(rootPath, "release", "app", "dist", "renderer");
 
 export const worldH5DataPath = path.join(app.getPath("userData"), "worldh5")
+export const battleConfigurationPath = path.join(worldH5DataPath, 'battle.json5')
 
 if (!fs.existsSync(worldH5DataPath)) {
   fs.mkdirSync(worldH5DataPath);

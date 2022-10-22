@@ -1,4 +1,4 @@
-import { Account } from "common/configuration";
+import { Account, IBattleConfiguration, IRawBattleConfiguration } from "common/configuration";
 import { IPC_MAIN, IPC_RENDERER } from "common/ipcEventConst";
 import { SellOptions } from "common/sell";
 import { BrowserView, app, ipcMain, session } from "electron";
@@ -89,28 +89,10 @@ export default class GameView {
     this._state = state;
   }
 
-  async forbiddenCity() {
+  async battle(config: IRawBattleConfiguration) {
     await this.whenInitialized();
 
-    this.send(IPC_RENDERER.THOUSAND_BATTLE, 1);
-  }
-
-  async podi() {
-    await this.whenInitialized();
-
-    this.send(IPC_RENDERER.THOUSAND_BATTLE, 2);
-  }
-
-  async topOne() {
-    await this.whenInitialized();
-
-    this.send(IPC_RENDERER.THOUSAND_BATTLE, 3);
-  }
-
-  async repeatBattle() {
-    await this.whenInitialized();
-
-    this.send(IPC_RENDERER.THOUSAND_BATTLE, 9999)
+    this.send(IPC_RENDERER.THOUSAND_BATTLE, config);
   }
 
   // 自动日常

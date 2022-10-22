@@ -1,16 +1,18 @@
+import { IRawBattleConfiguration } from "common/configuration";
 import { EVENTS } from "common/eventConst";
 import { delay, when } from "common/functional";
 import EventEmitter from "events";
 
 export default class ThousandBattle extends EventEmitter {
-  prevBattleId: number = 0
-  battleCount = 0;
-  battleMax = 0;  // 0 无限制
-  battleStep = 120;
+  id: number = -1
+  private prevBattleId: number = 0
+  private battleCount = 0;
+  private battleMax = 0;  // 0 无限制
+  private battleStep = 120;
   _isStarting = false;
-  stopBattle = false;
-  stepsId: number[] = []
-  battleIds: number[] = []
+  private stopBattle = false;
+  private stepsId: number[] = []
+  private battleIds: number[] = []
 
   started: (() => void) | null = null
   step: (() => Promise<void>) | null = null
@@ -67,38 +69,6 @@ export default class ThousandBattle extends EventEmitter {
     });
   }
 
-  async killDragon() {
-    this._isStarting = true;
-    this.battleMax = 1000;
-    this.stepsId = [263, 907]
-    this.battleIds = [1710]
-    this.execute()
-  }
-
-  async forbiddenCity() {
-    this._isStarting = true;
-    this.battleMax = 1000;
-    this.stepsId = [824, 300]
-    this.battleIds = [2315]
-    this.execute()
-  }
-
-  async podi() {
-    this._isStarting = true;
-    this.battleMax = 120;
-    this.stepsId = []
-    this.battleIds = [133]
-    this.execute()
-  }
-
-  async topOne() {
-    this._isStarting = true;
-    this.battleMax = 1000;
-    this.stepsId = [5, 820, 819, 821, 822, 823]
-    this.battleIds = [8, 9, 196]
-    this.execute()
-  }
-
   private async handleBattleEnter() {
     // 自动战斗
     if (!window.skipBattleAnime._isStarting) {
@@ -135,26 +105,22 @@ export default class ThousandBattle extends EventEmitter {
     this.execute()
   }
 
-  start(id: number) {
-    switch (id) {
-      case 1:
-        this.forbiddenCity();
-        break;
-      case 2:
-        this.podi();
-        break;
-      case 3:
-        this.topOne()
-        break;
-      case 9999:
-        this.executePrevBattle()
-        break
+  start(config: IRawBattleConfiguration) {
+    this._isStarting = true
+    this.id = config.id ?? -1
+    this.battleIds = config.battleIds ?? []
+    this.stepsId = config.stepsId ?? []
+    this.battleMax = config.max ?? 1000
+    this.battleStep = config.battleStep ?? 120
+    if (config.usePrevBattleId) {
+      this.battleIds = [this.prevBattleId]
     }
+    this.execute()
   }
 
   stop() {
     this._isStarting = false;
-
+    this.id = -1
     this.battleCount = 0;
     this.battleMax = 0;
 
@@ -169,8 +135,11 @@ export default class ThousandBattle extends EventEmitter {
     this.started = null
     this.step = null
     this.ended = null
+    this.battleMax = 1000
+    this.battleStep = 120
     this.stepsId = []
     this.battleIds = []
+    this.enterCity()
   }
 
   private async toBattle(id: number) {
