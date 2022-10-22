@@ -63,6 +63,7 @@ function setupTray() {
       label: "退出",
       type: "normal",
       click: () => {
+        mainWindow.close()
         app.quit();
       },
     },
