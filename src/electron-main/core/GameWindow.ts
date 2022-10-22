@@ -128,6 +128,7 @@ export default class GameWindow extends BrowserWindow {
             ...this.createBattleMenu(view),
             {
               label: '自定义战斗',
+              enable: true,
               click: () => shell.openPath(battleConfigurationPath)
             }
           ]
