@@ -436,8 +436,10 @@ export default function setupGameHook() {
       nato.Network.sendCmd(e)
     }
 
-    window.__myEvent__.emit(EVENTS.EXIT_BATTLE_MAP)
-    window.__escortEmitter__.emit(EVENTS.EXIT_BATTLE_MAP)
+    setTimeout(() => {
+      window.__myEvent__.emit(EVENTS.EXIT_BATTLE_MAP)
+      window.__escortEmitter__.emit(EVENTS.EXIT_BATTLE_MAP)
+    }, 100)
   }
 
   window.xevent.addEventListener(WorldEvent.ITEM_SELL_END, () => {

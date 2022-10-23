@@ -2,12 +2,12 @@
  * Base webpack config used across other specific configs
  */
 
-import webpack from "webpack";
-import webpackPaths from "./webpack.paths";
-import path from "path";
+import path from 'path'
+import webpack from 'webpack'
+import webpackPaths from './webpack.paths'
 
 export default {
-  stats: "errors-only",
+  stats: 'errors-only',
 
   module: {
     rules: [
@@ -15,7 +15,7 @@ export default {
         test: /\.[jt]s?$/,
         exclude: /node_modules/,
         use: {
-          loader: "ts-loader",
+          loader: 'ts-loader',
           options: {
             // Remove this line to enable type checking in webpack builds
             transpileOnly: true,
@@ -28,7 +28,7 @@ export default {
   output: {
     path: webpackPaths.srcPath,
     library: {
-      type: "commonjs2",
+      type: 'commonjs2',
     },
   },
 
@@ -41,13 +41,13 @@ export default {
       main: path.join(webpackPaths.mainPath),
       renderer: path.join(webpackPaths.rendererPath),
     },
-    extensions: [".js", ".jsx", ".json", ".ts", ".tsx"],
-    modules: ["node_modules"],
+    extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+    modules: ['node_modules'],
   },
 
   plugins: [
     new webpack.EnvironmentPlugin({
-      NODE_ENV: "production",
+      NODE_ENV: 'production',
     }),
   ],
-} as webpack.Configuration;
+} as webpack.Configuration
