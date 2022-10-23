@@ -1,18 +1,18 @@
-import path from "path";
-import webpack from "webpack";
-import { merge } from "webpack-merge";
-import TerserPlugin from "terser-webpack-plugin";
-import baseConfig from "./webpack.base";
-import webpackPaths from "./webpack.paths";
+import path from 'path'
+import webpack from 'webpack'
+import { merge } from 'webpack-merge'
+import TerserPlugin from 'terser-webpack-plugin'
+import baseConfig from './webpack.base'
+import webpackPaths from './webpack.paths'
 
 const config: webpack.Configuration = {
   devtool: false,
-  mode: "production",
-  target: "electron-main",
-  entry: path.join(webpackPaths.mainPath, "main.ts"),
+  mode: 'production',
+  target: 'electron-main',
+  entry: path.join(webpackPaths.mainPath, 'main.ts'),
   output: {
     path: webpackPaths.distMainPath,
-    filename: "main.js",
+    filename: 'main.js',
   },
 
   optimization: {
@@ -26,7 +26,7 @@ const config: webpack.Configuration = {
 
   plugins: [
     new webpack.EnvironmentPlugin({
-      NODE_ENV: "production",
+      NODE_ENV: 'production',
       DEBUG_PROD: false,
       START_MINIMIZED: false,
     }),
@@ -36,6 +36,6 @@ const config: webpack.Configuration = {
     __dirname: false,
     __filename: false,
   },
-};
+}
 
-export default merge<webpack.Configuration>(baseConfig, config);
+export default merge<webpack.Configuration>(baseConfig, config)

@@ -96,7 +96,7 @@ export default class DefaultFunction {
           return !1
         const i = e.getByte()
         if (i < 0)
-          return void AlertPanel.alertCommon(e.getString())
+          return AlertPanel.alertCommon(e.getString())
         const o = e.getString()
         const a = e.getShort()
         const r = e.getShort()
