@@ -5,9 +5,9 @@ import GameView, { GameViewState } from "./GameView";
 import { buildFromTemplateWrapper, hookWindowMenuClick, MenuTemplate } from "./menuHelper";
 import { MainWidowConfiguration } from "./windowConfig";
 import VERSION_MAP from "../../electron-common/versions";
-import { KEY_MAP } from "common/key_map";
+import { combineKeys, KEY_MAP } from "common/key_map";
 import EventEmitter from "events";
-import { ONE_KEY_AUTO_MISSION, AUTO_REFRESH_MONSTER, ViewState, AUTO_SKIP_BATTLE_ANIM } from "./shared";
+import { ONE_KEY_AUTO_MISSION, AUTO_REFRESH_MONSTER, ViewState, AUTO_SKIP_BATTLE_ANIM, DELETE_ACCOUNT } from "./shared";
 import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REPAIR, AUTO_SELL, CHANGE_WINDOW_MODE, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL } from "./shared";
 import { ApplicationWindow } from "./window";
 import { battleConfigurationPath } from "./paths";
@@ -201,7 +201,7 @@ export default class GameWindow extends BrowserWindow {
 
           this.windowMenus[index++] = {
             label: `小号( ${viewIndex + 1}/${this.win.views.length} )`,
-            submenu: this.win.createAccountMenu(),
+            submenu: this.createAccountMenuByMerge(view),
             enable: true,
           };
         }
@@ -220,9 +220,9 @@ export default class GameWindow extends BrowserWindow {
           index++
 
           this.windowMenus[index++] = {
-            label: '添加小号',
+            label: `小号( ${viewIndex + 1}/${this.win.views.length} )`,
             enable: true,
-            click: () => this.emitter.emit(ADD_ACCOUNT)
+            submenu: this.createAccountMenuBySplit(view),
           };
         }
         break
@@ -388,6 +388,53 @@ export default class GameWindow extends BrowserWindow {
       this.setMenu(windowMenu);
   }
 
+  private createAccountMenuByMerge(view: GameView) {
+    const menu: MenuTemplate[] = [];
+
+    menu.push({
+      label: "添加小号",
+      accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_N),
+      click: () => this.emitter.emit(ADD_ACCOUNT)
+    });
+
+    menu.push({
+      label: "删除小号",
+      accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_D),
+      click: () => this.emitter.emit(DELETE_ACCOUNT, view)
+    });
+
+    this.win.views.map((_, index) => {
+      menu.push({
+        label: `小号(${index + 1})`,
+        click: () => {
+          this.win.setTopView(index);
+        },
+      });
+    });
+
+    return menu;
+  }
+
+  private createAccountMenuBySplit(view: GameView): MenuTemplate[] {
+    const menu: MenuTemplate[] = []
+
+    menu.push({
+      label: '添加小号',
+      accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_N),
+      click: () => this.emitter.emit(ADD_ACCOUNT)
+    })
+
+    menu.push({
+      label: '删除小号',
+      accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_D),
+      click: () => {
+        this.emitter.emit(DELETE_ACCOUNT, view.id)
+      }
+    })
+
+    return menu
+  }
+
   protected createVersionMenu() {
     const menu: MenuTemplate[] = [];
 
@@ -420,10 +467,15 @@ export default class GameWindow extends BrowserWindow {
   }
 
   protected onClose(e: Electron.Event) {
-    if (this.id === this.win.id) {
-      e.preventDefault()
-      this.hide()
-    }
+    if (this.id === this.win.id)
+      if (this.mode === 'merge')
+        this.win?.close()
+      else {
+        if (this.win.windows.length !== 1) {
+          e.preventDefault()
+          this.hide()
+        }
+      }
     else
       this.destroy()
   }
