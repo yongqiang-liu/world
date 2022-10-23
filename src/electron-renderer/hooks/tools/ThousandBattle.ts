@@ -1,16 +1,16 @@
-import { IRawBattleConfiguration } from "common/configuration";
-import { EVENTS } from "common/eventConst";
-import { delay, when } from "common/functional";
-import EventEmitter from "events";
+import EventEmitter from 'events'
+import type { IRawBattleConfiguration } from 'common/configuration'
+import { EVENTS } from 'common/eventConst'
+import { delay, when } from 'common/functional'
 
 export default class ThousandBattle extends EventEmitter {
-  id: number = -1
-  private prevBattleId: number = 0
-  private battleCount = 0;
-  private battleMax = 0;  // 0 无限制
-  private battleStep = 120;
-  _isStarting = false;
-  private stopBattle = false;
+  id = -1
+  private prevBattleId = 0
+  private battleCount = 0
+  private battleMax = 0 // 0 无限制
+  private battleStep = 120
+  _isStarting = false
+  private stopBattle = false
   private stepsId: number[] = []
   private battleIds: number[] = []
 
@@ -18,19 +18,19 @@ export default class ThousandBattle extends EventEmitter {
   step: (() => Promise<void>) | null = null
   ended: (() => void) | null = null
   commonStep = async () => {
-    await when(window, () => !window.xworld.isJumpingMap);
-    //回城
-    this.enterCity();
+    await when(window, () => !window.xworld.isJumpingMap)
+    // 回城
+    this.enterCity()
 
-    await when(window, () => !window.xworld.isJumpingMap);
+    await when(window, () => !window.xworld.isJumpingMap)
 
-    //修理装备
-    window.autoRepairEquip.repairEquip();
+    // 修理装备
+    window.autoRepairEquip.repairEquip()
   }
 
   constructor() {
     super()
-    window.__myEvent__.addListener(EVENTS.ENTER_BATTLE_MAP, this.recordPrevBattleId.bind(this));
+    window.__myEvent__.addListener(EVENTS.ENTER_BATTLE_MAP, this.recordPrevBattleId.bind(this))
   }
 
   private async recordPrevBattleId() {
@@ -41,12 +41,12 @@ export default class ThousandBattle extends EventEmitter {
 
   private execute() {
     const start = () => {
-      this.handleBattleEnter();
-    };
+      this.handleBattleEnter()
+    }
 
     const ended = () => {
-      this.handleBattleEnd();
-    };
+      this.handleBattleEnd()
+    }
 
     const step = async () => {
       this.stopBattle = true
@@ -57,49 +57,45 @@ export default class ThousandBattle extends EventEmitter {
       this.stopBattle = false
     }
 
-    window.__myEvent__.addListener(EVENTS.ENTER_BATTLE_MAP, start);
-    window.__myEvent__.addListener(EVENTS.EXIT_BATTLE_MAP, ended);
+    window.__myEvent__.addListener(EVENTS.ENTER_BATTLE_MAP, start)
+    window.__myEvent__.addListener(EVENTS.EXIT_BATTLE_MAP, ended)
 
-    this.ended = ended;
-    this.started = start;
+    this.ended = ended
+    this.started = start
     this.step = step
     setTimeout(async () => {
       await this.step?.()
       await this.ensureEnterBattle(...this.battleIds)
-    });
+    })
   }
 
   private async handleBattleEnter() {
     // 自动战斗
-    if (!window.skipBattleAnime._isStarting) {
-      window.skipBattleAnime.start();
-    }
+    if (!window.skipBattleAnime._isStarting)
+      window.skipBattleAnime.start()
   }
 
   private async handleBattleEnd() {
-    this.battleCount++;
-    if (window.skipBattleAnime._isStarting && !window.config.skipBattleAnim) {
-      window.skipBattleAnime.stop();
-    }
+    this.battleCount++
+    if (window.skipBattleAnime._isStarting && !window.config.skipBattleAnim)
+      window.skipBattleAnime.stop()
 
-    if (this.battleMax !== 0 && this.battleCount >= this.battleMax) {
-      this.stop();
-    }
+    if (this.battleMax !== 0 && this.battleCount >= this.battleMax)
+      this.stop()
 
-    if (this.battleCount % this.battleStep === 0) {
+    if (this.battleCount % this.battleStep === 0)
       await this.step?.()
-    }
 
     await when(this, () => !this.stopBattle)
 
     setTimeout(async () => {
       await this.ensureEnterBattle(...this.battleIds)
-    });
+    })
   }
 
   async executePrevBattle() {
-    this._isStarting = true;
-    this.battleMax = 1000;
+    this._isStarting = true
+    this.battleMax = 1000
     this.stepsId = []
     this.battleIds = [this.prevBattleId]
     this.execute()
@@ -112,26 +108,26 @@ export default class ThousandBattle extends EventEmitter {
     this.stepsId = config.stepsId ?? []
     this.battleMax = config.max ?? 1000
     this.battleStep = config.battleStep ?? 120
-    if (config.usePrevBattleId) {
+    if (config.usePrevBattleId)
       this.battleIds = [this.prevBattleId]
-    }
+
     this.execute()
   }
 
   stop() {
-    this._isStarting = false;
+    this._isStarting = false
     this.id = -1
-    this.battleCount = 0;
-    this.battleMax = 0;
+    this.battleCount = 0
+    this.battleMax = 0
 
     window.__myEvent__.removeListener(
       EVENTS.ENTER_BATTLE_MAP,
-      this.started!
-    );
+      this.started!,
+    )
     window.__myEvent__.removeListener(
       EVENTS.EXIT_BATTLE_MAP,
-      this.ended!
-    );
+      this.ended!,
+    )
     this.started = null
     this.step = null
     this.ended = null
@@ -143,33 +139,33 @@ export default class ThousandBattle extends EventEmitter {
   }
 
   private async toBattle(id: number) {
-    const { xworld } = window;
+    const { xworld } = window
 
     if (!xworld.inBattle) {
-      xworld.toBattle(id);
+      xworld.toBattle(id)
 
       await delay(500)
     }
   }
 
   private async execJumpSteps(...ids: number[]) {
-    for (let id of ids) {
-      window.xworld.doJumpMap(id);
-      await delay(100);
-      await when(window, () => !window.xworld.isJumpingMap);
+    for (const id of ids) {
+      window.xworld.doJumpMap(id)
+      await delay(100)
+      await when(window, () => !window.xworld.isJumpingMap)
     }
   }
 
   private async ensureEnterBattle(...ids: number[]) {
-    for (let id of ids) {
+    for (const id of ids) {
       if (!window.xworld.inBattle)
         await this.toBattle(id)
     }
   }
 
   private enterCity() {
-    const { City, xself } = window;
+    const { City, xself } = window
 
-    City.doEnterCity(xself.getId());
+    City.doEnterCity(xself.getId())
   }
 }

@@ -1,27 +1,27 @@
-import { when } from "common/functional";
-import { IPC_MAIN, IPC_RENDERER } from "common/ipcEventConst";
-import { ipcRenderer } from "electron";
-import { EventEmitter } from "events";
-import { setupEvent } from "./events";
+import { EventEmitter } from 'events'
+import { when } from 'common/functional'
+import { IPC_MAIN, IPC_RENDERER } from 'common/ipcEventConst'
+import { ipcRenderer } from 'electron'
+import { setupEvent } from './events'
 import {
   checkGameStart,
   whenGameStarted,
   whenGameWillReady,
-} from "./gameFunctional";
-import { setupHooks } from "./hooks";
-import { setupFunction, setupUnInitializeFunction } from "./ipcEvent";
+} from './gameFunctional'
+import { setupHooks } from './hooks'
+import { setupFunction, setupUnInitializeFunction } from './ipcEvent'
 
-ipcRenderer.setMaxListeners(30);
-window.__myEvent__ = new EventEmitter();
-window.__myEvent__.setMaxListeners(50);
-window.__escortEmitter__ = new EventEmitter();
+ipcRenderer.setMaxListeners(30)
+window.__myEvent__ = new EventEmitter()
+window.__myEvent__.setMaxListeners(50)
+window.__escortEmitter__ = new EventEmitter()
 
-window.addEventListener("load", async () => {
-  document.addEventListener("wheel", (e) => {
-    ipcRenderer.send(IPC_MAIN.MOUSE_WHEEL, e.deltaY);
-  });
+window.addEventListener('load', async () => {
+  document.addEventListener('wheel', (e) => {
+    ipcRenderer.send(IPC_MAIN.MOUSE_WHEEL, e.deltaY)
+  })
 
-  checkGameStart();
+  checkGameStart()
 
   ipcRenderer.on(IPC_RENDERER.SET_OFFLINE_EXP_RATE3, (_, v: boolean) => {
     window.config.offlineExpRate3 = !!v
@@ -30,27 +30,27 @@ window.addEventListener("load", async () => {
   // 自动登录
   ipcRenderer.on(IPC_RENDERER.AUTO_ENTER_GAME, async () => {
     await when(window.xworld, (xworld) => {
-      return !!xworld;
-    });
+      return !!xworld
+    })
 
-    window.doEnterGame();
-  });
+    window.doEnterGame()
+  })
 
   ipcRenderer.on(IPC_RENDERER.EXIT_ESCORT, () => {
-    window.Escort.doEscortPostQuitMsgNoAlert();
-  });
+    window.Escort.doEscortPostQuitMsgNoAlert()
+  })
 
-  setupUnInitializeFunction();
+  setupUnInitializeFunction()
 
-  await whenGameWillReady();
+  await whenGameWillReady()
 
-  setupHooks();
+  setupHooks()
 
-  await whenGameStarted();
+  await whenGameStarted()
 
-  console.log("进入游戏并选择角色...");
+  console.log('进入游戏并选择角色...')
 
-  setupEvent();
+  setupEvent()
 
-  setupFunction();
-});
+  setupFunction()
+})
