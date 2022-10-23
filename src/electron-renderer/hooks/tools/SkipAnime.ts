@@ -1,6 +1,6 @@
 export default class SkipBattleAnime {
   _isStarting = false
-  time = 3000
+  time = 1300
 
   private _logicCount = 0
 
