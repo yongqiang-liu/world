@@ -10,7 +10,7 @@ import Configuration, { ConfigurationEvents } from "./Configuration";
 import GameView, { GameViewState } from "./GameView";
 import GameWindow from "./GameWindow";
 import { MenuTemplate } from "./menuHelper";
-import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REPAIR, AUTO_SELL, CHANGE_WINDOW_MODE, ONE_KEY_AUTO_MISSION, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL, AUTO_REFRESH_MONSTER, AUTO_SKIP_BATTLE_ANIM } from "./shared";
+import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REPAIR, AUTO_SELL, CHANGE_WINDOW_MODE, ONE_KEY_AUTO_MISSION, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL, AUTO_REFRESH_MONSTER, AUTO_SKIP_BATTLE_ANIM, DELETE_ACCOUNT } from "./shared";
 import VERSION_MAP, { VERSION_KEY } from "../../electron-common/versions";
 import { ViewState } from "./shared";
 
@@ -98,7 +98,7 @@ export class ApplicationWindow extends GameWindow {
         super.initializeSplit(view, state)
 
       if (window) {
-        window.addBrowserView(view.view)
+        window.setBrowserView(view.view)
         window.setTopBrowserView(view.view)
       }
 
@@ -112,51 +112,6 @@ export class ApplicationWindow extends GameWindow {
         window.show()
       }, 50)
     }
-  }
-
-  createAccountMenu() {
-    const menu: MenuTemplate[] = [];
-
-    menu.push({
-      label: "添加小号",
-      registerAccelerator: this.registerAccelerator,
-      accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_N),
-      click: () => {
-        this.eventEmitter.emit(ADD_ACCOUNT)
-      },
-    });
-
-    menu.push({
-      label: "删除小号",
-      registerAccelerator: this.registerAccelerator,
-      accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_D),
-      click: () => {
-        let view = this.views[this.active_view];
-        if (this.views.length !== 1 && view) {
-          this.removeBrowserView(view.view);
-        } else if (view) {
-          view.reload();
-        }
-
-        this.views.splice(this.active_view, 1);
-        this.viewsState.splice(this.active_view, 1);
-        this.config.accounts.splice(this.active_view, 1);
-        view?.destroy()
-        this.active_view = this.views.length - 1;
-        this.configuration.save();
-      },
-    });
-
-    this.views.map((_, index) => {
-      menu.push({
-        label: `小号(${index + 1})`,
-        click: () => {
-          this.setTopView(index);
-        },
-      });
-    });
-
-    return menu;
   }
 
   getViewById(id: number) {
@@ -173,6 +128,10 @@ export class ApplicationWindow extends GameWindow {
 
   getViewIndexById(id: number) {
     return this.views.findIndex(v => v.id === id)
+  }
+
+  getWindowByViewId(id: number) {
+    return this.windows.find(win => win.getBrowserView()?.webContents.id === id)
   }
 
   private createView(url: string) {
@@ -203,6 +162,31 @@ export class ApplicationWindow extends GameWindow {
     return view
   }
 
+  private deleteView(id: number) {
+    let op: GameView | GameWindow | null | undefined
+    if (this.config.app.mode === 'merge') {
+      op = this.getViewById(id)
+      if (!op) return
+      this.removeBrowserView(op.view)
+      op.destroy()
+      this.views.splice(this.active_view, 1)
+      this.viewsState.splice(this.active_view, 1)
+      this.config.accounts.splice(this.active_view, 1);
+      this.active_view = this.views.length - 1;
+      this.configuration.save()
+    }
+    if (this.config.app.mode === 'split') {
+      op = this.getWindowByViewId(id)
+      if (!op) return
+      op.close()
+      this.views.splice(this.active_view, 1)
+      this.viewsState.splice(this.active_view, 1)
+      this.config.accounts.splice(this.active_view, 1);
+      this.active_view = this.views.length - 1;
+      this.configuration.save()
+    }
+  }
+
   private updateViewConfiguration() {
     this.views.map((view) => {
       view.setAutoSellProduct(!!this.config.app.autoSellByBagWillFull);
@@ -217,7 +201,7 @@ export class ApplicationWindow extends GameWindow {
     });
   }
 
-  private setTopView(top: number) {
+  setTopView(top: number) {
     if (top > this.views.length - 1) {
       top = 0;
     }
@@ -229,6 +213,9 @@ export class ApplicationWindow extends GameWindow {
     switch (this.config.app.mode) {
       case 'merge':
         {
+          if (this.isDestroyed())
+            return
+
           const view = this.views[top];
           this.setTopBrowserView(view.view);
           this.active_view = top;
@@ -237,6 +224,9 @@ export class ApplicationWindow extends GameWindow {
       case 'split':
         {
           const window = this.windows[top];
+
+          if (window.isDestroyed())
+            return
 
           window?.show();
           this.active_view = top;
@@ -362,6 +352,10 @@ export class ApplicationWindow extends GameWindow {
       this.createView(VERSION_MAP[this.config.version].url ||
         "https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953");
       this.eventEmitter.emit(CHANGE_WINDOW_MODE, this.config.app.mode)
+    })
+
+    this.eventEmitter.on(DELETE_ACCOUNT, (id: number) => {
+      this.deleteView(id)
     })
   }
 
