@@ -1,4 +1,4 @@
-import { GameViewState } from "./GameView"
+import type { GameViewState } from './GameView'
 
 export const ONE_KEY_AUTO_MISSION = Symbol()
 export const ONE_KEY_SELL = Symbol()
@@ -25,18 +25,18 @@ export const ADD_ACCOUNT = Symbol()
 export const DELETE_ACCOUNT = Symbol()
 
 export const enum WindowState {
-  UNINITIALIZED = "uninitialized",
-  MIN = "minimize",
-  MAX = "maximize",
-  HIDE = "hide",
-  FOCUS = "focus",
-  INITIALIZED = "initialized",
+  UNINITIALIZED = 'uninitialized',
+  MIN = 'minimize',
+  MAX = 'maximize',
+  HIDE = 'hide',
+  FOCUS = 'focus',
+  INITIALIZED = 'initialized',
 }
 
 export interface ViewOptions { }
 
 export interface ViewState {
-  id: number;
-  state: GameViewState;
-  options: ViewOptions;
+  id: number
+  state: GameViewState
+  options: ViewOptions
 }

@@ -1,22 +1,25 @@
-import { IBattleConfiguration, IConfiguration } from "common/configuration";
-import { BrowserWindow, shell } from "electron";
-import Configuration from "./Configuration";
-import GameView, { GameViewState } from "./GameView";
-import { buildFromTemplateWrapper, hookWindowMenuClick, MenuTemplate } from "./menuHelper";
-import { MainWidowConfiguration } from "./windowConfig";
-import VERSION_MAP from "../../electron-common/versions";
-import { combineKeys, KEY_MAP } from "common/key_map";
-import EventEmitter from "events";
-import { ONE_KEY_AUTO_MISSION, AUTO_REFRESH_MONSTER, ViewState, AUTO_SKIP_BATTLE_ANIM, DELETE_ACCOUNT } from "./shared";
-import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REPAIR, AUTO_SELL, CHANGE_WINDOW_MODE, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL } from "./shared";
-import { ApplicationWindow } from "./window";
-import { battleConfigurationPath } from "./paths";
+import type EventEmitter from 'events'
+import type { IBattleConfiguration, IConfiguration } from 'common/configuration'
+import { BrowserWindow, shell } from 'electron'
+import { KEY_MAP, combineKeys } from 'common/key_map'
+import VERSION_MAP from '../../electron-common/versions'
+import type Configuration from './Configuration'
+import type GameView from './GameView'
+import { GameViewState } from './GameView'
+import type { MenuTemplate } from './menuHelper'
+import { buildFromTemplateWrapper, hookWindowMenuClick } from './menuHelper'
+import { MainWidowConfiguration } from './windowConfig'
+import type { ViewState } from './shared'
+import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REFRESH_MONSTER, AUTO_REPAIR, AUTO_SELL, AUTO_SKIP_BATTLE_ANIM, CHANGE_WINDOW_MODE, DELETE_ACCOUNT, ONE_KEY_AUTO_MISSION, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL } from './shared'
+
+import type { ApplicationWindow } from './window'
+import { battleConfigurationPath } from './paths'
 
 export default class GameWindow extends BrowserWindow {
-  protected windowMenus: MenuTemplate[] = [];
-  protected config: IConfiguration;
-  protected enable = false;
-  protected registerAccelerator = false;
+  protected windowMenus: MenuTemplate[] = []
+  protected config: IConfiguration
+  protected enable = false
+  protected registerAccelerator = false
   private state!: ViewState
   private view!: GameView
   private win!: ApplicationWindow
@@ -25,10 +28,10 @@ export default class GameWindow extends BrowserWindow {
   private battleConfig: IBattleConfiguration
 
   constructor(private readonly _configuration: Configuration, private readonly emitter: EventEmitter) {
-    super(MainWidowConfiguration);
-    this.config = _configuration.configuration;
+    super(MainWidowConfiguration)
+    this.config = _configuration.configuration
     this.battleConfig = _configuration.battleConfiguration
-    this.setMenu(null);
+    this.setMenu(null)
     this.registerWindowListener()
     this.timer = setInterval(() => {
       this.buildWindowMenu()
@@ -58,7 +61,7 @@ export default class GameWindow extends BrowserWindow {
       return {
         id: `${config.name}:${config.id}`,
         label: config.name,
-        click: () => view.battle(config)
+        click: () => view.battle(config),
       }
     })
   }
@@ -70,29 +73,29 @@ export default class GameWindow extends BrowserWindow {
     let index = 0
     const viewIndex = this.mode === 'merge' ? this.win?.active_view ?? 0 : this.win.getViewIndexById(this.view.id)
     const view = this.mode === 'merge' ? this.win.views[viewIndex] : this.view
-    const oneKeyDailyMission: boolean = !!view?.getAutoDaily();
-    const allOneKeyDailyMission = this.win.views.map((view) => view.getAutoDaily()).some(v => v)
+    const oneKeyDailyMission = !!view?.getAutoDaily()
+    const allOneKeyDailyMission = this.win.views.map(view => view.getAutoDaily()).some(v => v)
     const started = view.getGameStarted()
     if (started)
-      this.enable = true;
+      this.enable = true
     else
-      this.enable = false;
+      this.enable = false
 
     this.windowMenus[index++] = {
-      label: "常用功能",
+      label: '常用功能',
       submenu: [
         {
           label: '日常相关',
           submenu: [
             {
-              label: "自动日常",
-              type: "checkbox",
+              label: '自动日常',
+              type: 'checkbox',
               checked: oneKeyDailyMission || allOneKeyDailyMission,
               accelerator: KEY_MAP.F1,
               click: () => {
                 view?.setOneKeyDailyMission(
-                  !(oneKeyDailyMission || allOneKeyDailyMission)
-                );
+                  !(oneKeyDailyMission || allOneKeyDailyMission),
+                )
               },
             },
             {
@@ -101,27 +104,27 @@ export default class GameWindow extends BrowserWindow {
               accelerator: KEY_MAP.F8,
               checked: !!this.win.autoSkyArena[viewIndex],
               click: () => {
-                this.win.autoSkyArena[viewIndex] = !!!this.win.autoSkyArena[viewIndex]
+                this.win.autoSkyArena[viewIndex] = !this.win.autoSkyArena[viewIndex]
                 view?.setAutoSkyArena(this.win.autoSkyArena[viewIndex])
-              }
-            },
-            {
-              label: "开启日常箱子",
-              click: () => {
-                view?.openDailyBox();
               },
             },
-          ]
+            {
+              label: '开启日常箱子',
+              click: () => {
+                view?.openDailyBox()
+              },
+            },
+          ],
         },
         {
           label: '战斗相关',
           submenu: [
             {
-              label: "跳过战斗动画",
-              type: "checkbox",
+              label: '跳过战斗动画',
+              type: 'checkbox',
               checked: !!this.win.skipBattleAnime[viewIndex],
               click: () => {
-                this.win.skipBattleAnime[viewIndex] = !!!this.win.skipBattleAnime[viewIndex]
+                this.win.skipBattleAnime[viewIndex] = !this.win.skipBattleAnime[viewIndex]
                 view.setSkipBattleAnime(this.win.skipBattleAnime[viewIndex])
               },
             },
@@ -129,13 +132,13 @@ export default class GameWindow extends BrowserWindow {
             {
               label: '自定义战斗',
               enable: true,
-              click: () => shell.openPath(battleConfigurationPath)
+              click: () => shell.openPath(battleConfigurationPath),
             },
             {
               label: '重载战斗文件',
-              click: () => this._configuration.loadBattle()
-            }
-          ]
+              click: () => this._configuration.loadBattle(),
+            },
+          ],
         },
         {
           label: '窗口模式',
@@ -145,53 +148,53 @@ export default class GameWindow extends BrowserWindow {
               label: '融合模式',
               type: 'checkbox',
               checked: this.mode === 'merge',
-              click: () => this.emitter.emit(CHANGE_WINDOW_MODE, 'merge')
+              click: () => this.emitter.emit(CHANGE_WINDOW_MODE, 'merge'),
             },
             {
               label: '分离模式',
               type: 'checkbox',
               checked: this.mode === 'split',
-              click: () => this.emitter.emit(CHANGE_WINDOW_MODE, 'split')
-            }
-          ]
+              click: () => this.emitter.emit(CHANGE_WINDOW_MODE, 'split'),
+            },
+          ],
         },
         {
           label: '页面相关',
           enable: true,
           submenu: [
             {
-              label: "刷新页面",
+              label: '刷新页面',
               enable: true,
               registerAccelerator: this.registerAccelerator,
               accelerator: KEY_MAP.F5,
-              click: () => view?.reload()
+              click: () => view?.reload(),
             },
             {
               label: '跳转登录',
               enable: true,
               click: () => {
-                view?.jumpLogin();
+                view?.jumpLogin()
                 view.webContents.session.clearStorageData({
-                  storages: ['localStorage', 'cookies']
+                  storages: ['localStorage', 'cookies'],
                 })
                 view?.webContents.loadURL(VERSION_MAP[this.config.version].url || 'https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953')
-              }
+              },
             },
-          ]
-        }
+          ],
+        },
 
       ],
-    };
+    }
 
     switch (this.mode) {
       case 'merge':
         {
-          const { state } = this.win.viewsState[viewIndex];
+          const { state } = this.win.viewsState[viewIndex]
 
           if (state === GameViewState.INITIALIZED)
-            this.enable = true;
+            this.enable = true
           else
-            this.enable = false;
+            this.enable = false
 
           // common
           index++
@@ -203,7 +206,7 @@ export default class GameWindow extends BrowserWindow {
             label: `小号( ${viewIndex + 1}/${this.win.views.length} )`,
             submenu: this.createAccountMenuByMerge(view),
             enable: true,
-          };
+          }
         }
         break
       case 'split':
@@ -223,120 +226,120 @@ export default class GameWindow extends BrowserWindow {
             label: `小号( ${viewIndex + 1}/${this.win.views.length} )`,
             enable: true,
             submenu: this.createAccountMenuBySplit(view),
-          };
+          }
         }
         break
     }
 
     this.windowMenus[1] = {
-      label: "快捷功能",
+      label: '快捷功能',
       submenu: [
         {
-          label: "一键自动日常",
-          type: "checkbox",
+          label: '一键自动日常',
+          type: 'checkbox',
           checked: allOneKeyDailyMission,
           accelerator: KEY_MAP.F2,
-          click: () => this.emitter.emit(ONE_KEY_AUTO_MISSION)
+          click: () => this.emitter.emit(ONE_KEY_AUTO_MISSION),
         },
         {
-          label: "一键出售垃圾",
+          label: '一键出售垃圾',
           accelerator: KEY_MAP.F4,
           click: () => this.emitter.emit(ONE_KEY_SELL),
         },
         {
-          label: "一键修理装备",
-          click: () => this.emitter.emit(ONE_KEY_REPAIR)
+          label: '一键修理装备',
+          click: () => this.emitter.emit(ONE_KEY_REPAIR),
         },
         {
-          label: "一键领取微端奖励",
-          click: () => this.emitter.emit(ONE_KEY_REWARD)
+          label: '一键领取微端奖励',
+          click: () => this.emitter.emit(ONE_KEY_REWARD),
         },
         {
-          label: "快速出售",
-          click: () => view?.sellProduct()
+          label: '快速出售',
+          click: () => view?.sellProduct(),
         },
       ],
-    };
+    }
 
     this.windowMenus[2] = {
-      label: "自动化功能",
+      label: '自动化功能',
       submenu: [
         {
           label: '自动跳过战斗动画',
-          type: "checkbox",
+          type: 'checkbox',
           checked: this.win.skipBattleAnime[viewIndex],
-          click: () => this.emitter.emit(AUTO_SKIP_BATTLE_ANIM)
+          click: () => this.emitter.emit(AUTO_SKIP_BATTLE_ANIM),
         },
         {
-          label: "自动出售",
-          type: "checkbox",
+          label: '自动出售',
+          type: 'checkbox',
           checked: !!this.config.app.autoSellByBagWillFull,
-          click: () => this.emitter.emit(AUTO_SELL)
+          click: () => this.emitter.emit(AUTO_SELL),
         },
         {
-          label: "自动修理",
-          type: "checkbox",
+          label: '自动修理',
+          type: 'checkbox',
           checked: !!this.config.app.autoRepairEquip,
-          click: () => this.emitter.emit(AUTO_REPAIR)
+          click: () => this.emitter.emit(AUTO_REPAIR),
         },
         {
-          label: "自动护送",
-          type: "checkbox",
+          label: '自动护送',
+          type: 'checkbox',
           checked: !!this.config.app.autoEscort,
-          click: () => this.emitter.emit(AUTO_ESCORT)
+          click: () => this.emitter.emit(AUTO_ESCORT),
         },
         {
-          label: "自动喊话",
-          type: "checkbox",
+          label: '自动喊话',
+          type: 'checkbox',
           checked: !!this.win.autoChat[viewIndex],
           click: () => {
-            this.win.autoChat[viewIndex] = !!!this.win.autoChat[viewIndex]
+            this.win.autoChat[viewIndex] = !this.win.autoChat[viewIndex]
             view.setAutoChat(this.win.autoChat[viewIndex])
           },
         },
         {
-          label: "自动刷怪",
-          type: "checkbox",
+          label: '自动刷怪',
+          type: 'checkbox',
           checked: this.win.oneKeyRefreshMonster,
-          click: () => this.emitter.emit(AUTO_REFRESH_MONSTER)
+          click: () => this.emitter.emit(AUTO_REFRESH_MONSTER),
         },
         {
-          label: "自动领取在线奖励",
-          type: "checkbox",
+          label: '自动领取在线奖励',
+          type: 'checkbox',
           checked: !!this.config.app.autoOnline,
-          click: () => this.emitter.emit(AUTO_ONLINE_REWARD)
+          click: () => this.emitter.emit(AUTO_ONLINE_REWARD),
         },
         {
-          label: "自动开启背包",
-          type: "checkbox",
+          label: '自动开启背包',
+          type: 'checkbox',
           checked: !!this.config.app.autoExpandBag,
-          click: () => this.emitter.emit(AUTO_EXPAND_PACKAGE)
+          click: () => this.emitter.emit(AUTO_EXPAND_PACKAGE),
         },
       ],
-    };
+    }
 
     this.windowMenus[index++] = {
-      label: "附加选项",
+      label: '附加选项',
       submenu: [
         {
-          label: "出售建筑材料",
-          type: "checkbox",
+          label: '出售建筑材料',
+          type: 'checkbox',
           checked: !!this.config.app.sell_buildMaterial,
           click: () => {
             this.emitter.emit(OPTION_SELL_BUILD_MATERIAL)
           },
         },
         {
-          label: "出售稀有装备",
-          type: "checkbox",
+          label: '出售稀有装备',
+          type: 'checkbox',
           checked: !!this.config.app.sell_RareEquip,
           click: () => {
             this.emitter.emit(OPTION_SELL_RARE_EQUIP)
           },
         },
         {
-          label: "使用修理卷",
-          type: "checkbox",
+          label: '使用修理卷',
+          type: 'checkbox',
           checked: !!this.config.app.repairRoll,
           click: () => {
             this.emitter.emit(OPTION_USE_REPAIR_ROLL)
@@ -348,71 +351,71 @@ export default class GameWindow extends BrowserWindow {
           checked: !!this.config.app.rate3,
           click: () => {
             this.emitter.emit(OPTION_OFFLINE_RATE3)
-          }
-        }
+          },
+        },
       ],
-    };
+    }
 
     this.windowMenus[index++] = {
-      label: "切换版本",
+      label: '切换版本',
       enable: true,
       submenu: this.createVersionMenu(),
-    };
+    }
 
     this.windowMenus[index++] = {
-      label: view?.webContents.isDevToolsOpened() ? "关闭控制台" : '打开控制台',
+      label: view?.webContents.isDevToolsOpened() ? '关闭控制台' : '打开控制台',
       enable: true,
       registerAccelerator: this.registerAccelerator,
       accelerator: KEY_MAP.F12,
       click: async () => {
         view?.webContents.toggleDevTools()
       },
-    };
+    }
 
     this.windowMenus = hookWindowMenuClick(this.windowMenus, async () => {
-      console.time("builded window menu cost time: ");
-      await this.buildWindowMenu();
-      console.timeEnd("builded window menu cost time: ");
-    });
+      console.time('builded window menu cost time: ')
+      await this.buildWindowMenu()
+      console.timeEnd('builded window menu cost time: ')
+    })
   }
 
   protected async buildWindowMenu() {
-    await this.prebuildWindowMenu();
+    await this.prebuildWindowMenu()
 
     const windowMenu = buildFromTemplateWrapper(this.windowMenus, {
       enable: this.enable,
       registerAccelerator: this.registerAccelerator,
-    });
+    })
 
     if (!this.isDestroyed())
-      this.setMenu(windowMenu);
+      this.setMenu(windowMenu)
   }
 
   private createAccountMenuByMerge(view: GameView) {
-    const menu: MenuTemplate[] = [];
+    const menu: MenuTemplate[] = []
 
     menu.push({
-      label: "添加小号",
+      label: '添加小号',
       accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_N),
-      click: () => this.emitter.emit(ADD_ACCOUNT)
-    });
+      click: () => this.emitter.emit(ADD_ACCOUNT),
+    })
 
     menu.push({
-      label: "删除小号",
+      label: '删除小号',
       accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_D),
-      click: () => this.emitter.emit(DELETE_ACCOUNT, view)
-    });
+      click: () => this.emitter.emit(DELETE_ACCOUNT, view),
+    })
 
-    this.win.views.map((_, index) => {
+    this.win.views.forEach((_, index) => {
       menu.push({
         label: `小号(${index + 1})`,
         click: () => {
-          this.win.setTopView(index);
+          this.win.setTopView(index)
         },
-      });
-    });
+      })
+    })
 
-    return menu;
+    return menu
   }
 
   private createAccountMenuBySplit(view: GameView): MenuTemplate[] {
@@ -421,7 +424,7 @@ export default class GameWindow extends BrowserWindow {
     menu.push({
       label: '添加小号',
       accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_N),
-      click: () => this.emitter.emit(ADD_ACCOUNT)
+      click: () => this.emitter.emit(ADD_ACCOUNT),
     })
 
     menu.push({
@@ -429,75 +432,73 @@ export default class GameWindow extends BrowserWindow {
       accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_D),
       click: () => {
         this.emitter.emit(DELETE_ACCOUNT, view.id)
-      }
+      },
     })
 
     return menu
   }
 
   protected createVersionMenu() {
-    const menu: MenuTemplate[] = [];
+    const menu: MenuTemplate[] = []
 
-    const keys = Object.keys(VERSION_MAP);
+    const keys = Object.keys(VERSION_MAP)
     for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-      const v = VERSION_MAP[key];
+      const key = keys[i]
+      const v = VERSION_MAP[key]
       menu.push({
         label: v.name,
-        type: "checkbox",
+        type: 'checkbox',
         checked: this.config.version === v.name,
         click: () => {
-          this.config.version = v.name;
-          if (!this.view.getGameStarted()) {
-            this.view.loadURL(VERSION_MAP[this.config.version].url);
-          }
+          this.config.version = v.name
+          if (!this.view.getGameStarted())
+            this.view.loadURL(VERSION_MAP[this.config.version].url)
 
           if (this.config.accounts[i])
-            this.config.accounts[i].url = VERSION_MAP[this.config.version].url;
-        }
+            this.config.accounts[i].url = VERSION_MAP[this.config.version].url
+        },
       })
     }
 
-    return menu;
+    return menu
   }
 
   protected setRegisterAccelerator(v: boolean) {
-    this.registerAccelerator = v;
-    this.buildWindowMenu();
+    this.registerAccelerator = v
+    this.buildWindowMenu()
   }
 
   protected onClose(e: Electron.Event) {
-    if (this.id === this.win.id)
-      if (this.mode === 'merge')
-        this.win?.close()
+    if (this.id === this.win.id) {
+      if (this.mode === 'merge') { this.win?.close() }
       else {
         if (this.win.windows.length !== 1) {
           e.preventDefault()
           this.hide()
         }
       }
-    else
-      this.destroy()
+    }
+    else { this.destroy() }
   }
 
   private registerWindowListener() {
     this.on('close', this.onClose)
 
-    this.on("focus", () => {
-      this.setRegisterAccelerator(true);
-    });
+    this.on('focus', () => {
+      this.setRegisterAccelerator(true)
+    })
 
-    this.on("hide", () => {
-      this.setRegisterAccelerator(false);
-    });
+    this.on('hide', () => {
+      this.setRegisterAccelerator(false)
+    })
 
-    this.on("minimize", () => {
-      this.setRegisterAccelerator(false);
-    });
+    this.on('minimize', () => {
+      this.setRegisterAccelerator(false)
+    })
 
-    this.on("maximize", () => {
-      this.setRegisterAccelerator(true);
-    });
+    this.on('maximize', () => {
+      this.setRegisterAccelerator(true)
+    })
   }
 
   destroy(): void {

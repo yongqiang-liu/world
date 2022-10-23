@@ -1,8 +1,8 @@
-import {
+import type {
   BrowserViewConstructorOptions,
   BrowserWindowConstructorOptions,
-} from "electron";
-import { resolvePreloadPath } from "./paths";
+} from 'electron'
+import { resolvePreloadPath } from './paths'
 
 export const TITLE_BAR_HEIGHT = 56
 
@@ -20,12 +20,12 @@ export const GameViewConfig: BrowserViewConstructorOptions = {
     enableWebSQL: false,
     // devTools: !app.isPackaged,
     webSecurity: false,
-    preload: resolvePreloadPath("preload.js"),
+    preload: resolvePreloadPath('preload.js'),
   },
-};
+}
 
 export const MainWidowConfiguration: BrowserWindowConstructorOptions = {
-  title: "世界H5",
+  title: '世界H5',
   width: 500,
   height: 732 + TITLE_BAR_HEIGHT,
   webPreferences: {
@@ -45,4 +45,4 @@ export const MainWidowConfiguration: BrowserWindowConstructorOptions = {
   show: true,
   transparent: true,
   autoHideMenuBar: false,
-};
+}
