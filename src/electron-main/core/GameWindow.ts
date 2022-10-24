@@ -165,9 +165,12 @@ export default class GameWindow extends BrowserWindow {
             {
               label: '刷新页面',
               enable: true,
-              registerAccelerator: this.registerAccelerator,
               accelerator: KEY_MAP.F5,
-              click: () => view?.reload(),
+              click: () => {
+                view?.reload()
+                this.win.autoChat[viewIndex] = false
+                this.win.autoSkyArena[viewIndex] = false
+              },
             },
             {
               label: '跳转登录',
@@ -330,7 +333,7 @@ export default class GameWindow extends BrowserWindow {
           },
         },
         {
-          label: '出售稀有装备',
+          label: '出售稀有装备(<50)',
           type: 'checkbox',
           checked: !!this.config.app.sell_RareEquip,
           click: () => {

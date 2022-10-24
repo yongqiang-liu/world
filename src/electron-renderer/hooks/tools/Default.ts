@@ -35,6 +35,13 @@ export default class DefaultFunction {
 
     await whenGameStarted()
 
+    window.__myEvent__.on('battle:rate:error', () => {
+      window.forbidBattle = true
+      setTimeout(() => {
+        window.forbidBattle = false
+      }, TimeHelper.second(10))
+    })
+
     // 称号
 
     setTimeout(() => {
