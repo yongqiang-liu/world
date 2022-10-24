@@ -134,19 +134,9 @@ export class AutoExecMission {
   }
 
   checkDailyMissionFinish() {
-    const dailyMissionId = [
-      [3061, 3065, 3069],
-      [3060, 3064, 3068],
-      [3062, 3066, 3070],
-      [3063, 3067, 3071],
-      [3072, 3074],
-      [3073, 3075],
-      // [634],
-    ]
-
-    return dailyMissionId.map((dailyMission) => {
-      return dailyMission.map(id => window.Mission.isMissionFinish(window.xself, id)).some(v => v)
+    return window.OneKeyDailyMission.Task_cityList.map((dailyMission: number[]) => {
+      return dailyMission.map((id: number) => window.Mission.isMissionFinish(window.xself, id)).some(v => v)
     })
-      .every(v => v)
+      .every((v: boolean) => v)
   }
 }
