@@ -368,7 +368,6 @@ export default class GameWindow extends BrowserWindow {
     this.windowMenus[index++] = {
       label: view?.webContents.isDevToolsOpened() ? '关闭控制台' : '打开控制台',
       enable: true,
-      registerAccelerator: this.registerAccelerator,
       accelerator: KEY_MAP.F12,
       click: async () => {
         view?.webContents.toggleDevTools()
@@ -406,7 +405,7 @@ export default class GameWindow extends BrowserWindow {
     menu.push({
       label: '删除小号',
       accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.KEY_D),
-      click: () => this.emitter.emit(DELETE_ACCOUNT, view),
+      click: () => this.emitter.emit(DELETE_ACCOUNT, view.id),
     })
 
     this.win.views.forEach((_, index) => {
