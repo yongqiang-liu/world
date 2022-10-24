@@ -1,6 +1,7 @@
 import EventEmitter from "events";
 import EscortMissionController from "./hooks/escortTool/escortMissionController";
 import AutoChatMsg from "./hooks/tools/AutoChatMsg";
+import { AutoExecMission } from "./hooks/tools/AutoExecMission";
 import ExpandBagTool from "./hooks/tools/AutoExpandBag";
 import AutoOnlineReward from "./hooks/tools/AutoOnlineReward";
 import AutoRepairEquip from "./hooks/tools/AutoRepairEquip";
@@ -29,7 +30,9 @@ interface Config {
 declare global {
   interface Window {
     config: Config;
+    forbidBattle: boolean
     // Hooks
+    autoExecMission: AutoExecMission;
     thousandBattle: ThousandBattle;
     expandBagTool: ExpandBagTool;
     testRefreshGame: TestRefreshGame;

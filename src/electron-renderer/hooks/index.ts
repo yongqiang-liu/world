@@ -13,6 +13,7 @@ import SkipBattleAnime from './tools/SkipAnime'
 import AutoChatMsg from './tools/AutoChatMsg'
 import ThousandBattle from './tools/ThousandBattle'
 import { AutoSkyArena } from './tools/AutoSkyArena'
+import { AutoExecMission } from './tools/AutoExecMission'
 
 export function setupHooks() {
   ipcRenderer.send(IPC_MAIN.GAME_HOOK_STARTED)
@@ -21,6 +22,8 @@ export function setupHooks() {
 
   setupFunction()
 
+  window.forbidBattle = false
+  window.autoExecMission = new AutoExecMission()
   window.defaultFunction = new DefaultFunction()
   window.defaultFunction.start()
   window.expandBagTool = new ExpandBagTool()

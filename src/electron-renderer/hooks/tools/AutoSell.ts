@@ -21,7 +21,7 @@ export default class AutoSell {
     equipWhite: [],
   }
 
-  // @ts-expect-error
+  // @ts-expect-error interval type ok
   private _interval: number | null = null
 
   constructor() {

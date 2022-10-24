@@ -291,6 +291,8 @@ export default class GameView {
 
   reload() {
     this.changeState(GameViewState.UNINITIALIZED)
+    this._oneKeyDailyMission = false
+    this._autoSkyArena = false
     this.webContents.reloadIgnoringCache()
   }
 
