@@ -94,7 +94,7 @@ export default class AutoRepairEquip {
   }
 
   repairEquip() {
-    if (!this.useRepairRoll || window.xworld.isInCityNow()) {
+    if (!this.useRepairRoll) {
       window.xworld?.doRepairEquipNoAlert()
       this.requireEquipTimer = true
     } {
@@ -104,7 +104,7 @@ export default class AutoRepairEquip {
   }
 
   private logic() {
-    if ((!this.useRepairRoll && !window?.xworld.isInCityNow()) && !this.getRepairEquipCount())
+    if (!window?.xworld.isInCityNow() || !this.getRepairEquipCount())
       return
 
     this.repairEquip()
