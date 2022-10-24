@@ -43,13 +43,14 @@ export default class DefaultFunction {
     })
 
     // 称号
-
     setTimeout(() => {
       // 自动领取铜币
       window.doGetMoney()
       // 自动领取经验
       window.doGetExp()
       window.doLoginLottery()
+      if (!window.autoExecMission.isFinish() || !window.autoExecMission.checkFinish([1552]))
+        window.autoExecMission.start()
     }, TimeHelper.second(10))
   }
 

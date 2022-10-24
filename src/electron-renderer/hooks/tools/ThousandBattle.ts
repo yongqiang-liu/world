@@ -2,6 +2,7 @@ import EventEmitter from 'events'
 import type { IRawBattleConfiguration } from 'common/configuration'
 import { EVENTS } from 'common/eventConst'
 import { delay, when } from 'common/functional'
+import { TimeHelper } from 'common/timer'
 
 export default class ThousandBattle extends EventEmitter {
   id = -1
@@ -148,7 +149,7 @@ export default class ThousandBattle extends EventEmitter {
     }
   }
 
-  private async execJumpSteps(...ids: number[]) {
+  async execJumpSteps(...ids: number[]) {
     for (const id of ids) {
       window.xworld.doJumpMap(id)
       await delay(100)
@@ -163,9 +164,12 @@ export default class ThousandBattle extends EventEmitter {
     }
   }
 
-  private enterCity() {
+  async enterCity() {
     const { City, xself } = window
 
     City.doEnterCity(xself.getId())
+
+    await when(window, () => window.xworld.isInCityNow())
+    await delay(TimeHelper.minute(1))
   }
 }
