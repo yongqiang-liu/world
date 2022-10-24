@@ -1,4 +1,4 @@
-import { debounce, when } from 'common/functional'
+import { debounce, delay, when } from 'common/functional'
 
 export class AutoExecMission {
   moveLock = false
@@ -90,8 +90,11 @@ export class AutoExecMission {
       return
 
     if (missionMap && missionMap[0] && missionMap[1]) {
-      window.AutoGamer.requestAutoFindPath(missionMap[0], missionMap[1])
       this.moveLock = true
+      if (window.autoRepairEquip.getRepairEquipCount())
+        await window.thousandBattle.enterCity()
+      await delay(200)
+      window.AutoGamer.requestAutoFindPath(missionMap[0], missionMap[1])
       await when(window, () => window.xworld._isAutoMissionFindPath)
       await when(window, () => window.xself.autoMoveControlList <= 0)
       this.moveLock = false
