@@ -1,30 +1,28 @@
-import { EVENTS } from 'common/eventConst'
-import { delay, when } from 'common/functional'
+import { debounce, when } from 'common/functional'
 
 export class AutoExecMission {
-  /**
-    906 254 251 908 909 // 精灵
-    906 914 915 916 917 // 墓地
-      5  22 // 月牙
-      5 820 821 822 // 沙漠
-    263 920 921 922 923 // 冰原 !2591
-   */
-  i = 0
-  k = 0
+  moveLock = false
+  lock = false
+  index = 0
   defaultMap = [
-    [[906], [254, 251, 908, 909]],
-    [[906], [914, 915, 916, 917]],
-    [[5], [22]],
-    [[5], [820, 821, 822]],
-    [[263], [920, 921, 922, 923]],
+    [254, 115, [733, 734, 735]], [251, 107, [697, 698]], [908, 101, [766, 767, 768]],
+    [914, 107, [811]], [916, 111, [873, 841]],
+    [22, 44, [2, 333]],
+    [920, 101, [507, 508, 512]], [921, 101, [522]], [922, 105, [560, 561]], [923, 102, [559, 558]],
+    [822, 8, [26]],
+    // [824, 15, [570]],
+    // [824, 15, [1703]],
   ]
 
-  missionNpc: any[] = []
+  private defaultMission = [
+    733, 734, 735, 697, 698, 766, 767, 768, 811, 873, 841, 333, 2, 507, 508, 512, 522, 560, 561, 559, 558, 26,
+  ]
+
   private _isStarting = false
 
   constructor() {
     // 注入自动日常logic
-    window.__myEvent__.on(EVENTS.AUTO_DAILY_LOGIC, this.logic)
+    window.__myEvent__.on('auto:daily:logic', debounce(this.logic.bind(this), 600))
   }
 
   start() {
@@ -33,33 +31,79 @@ export class AutoExecMission {
   }
 
   stop() {
-    if (this._isStarting)
+    if (this._isStarting) {
       this._isStarting = false
+      this.index = 0
+    }
+  }
+
+  isFinish() {
+    return this.defaultMission.map(id => window.Mission.isMissionFinish(window.xself, id)).every(v => v)
+  }
+
+  checkFinish(missions: number[]) {
+    return missions.map(id => window.Mission.isMissionFinish(window.xself, id)).every(v => v)
   }
 
   private async logic() {
-    if (!this._isStarting || !this.checkDailyMissionFinish())
+    if (
+      this.moveLock || !this._isStarting || !this.checkDailyMissionFinish()
+      || window.xworld.inBattle || window.xworld.isJumpingMap || window.xself.controlList.length > 0
+    )
       return
 
-    const map = this.defaultMap[this.i]
-    // 进入地图
-    const ones = map[0]
-    for (const mapId of ones)
-      await this.jumpMap(mapId)
-    const twos = map[1]
+    if (this.isFinish()) {
+      if (!this.checkFinish([1552])) {
+        if (!window.xworld.isInCityNow())
+          await window.thousandBattle.enterCity()
+        await window.thousandBattle.execJumpSteps(824, 825)
+      }
+      this.stop()
+      return
+    }
+
+    const missionMap = this.defaultMap[this.index]
+    const mapId = missionMap[0]
+    const missionsMap: number[] = (missionMap[2] ?? []) as number[]
+
+    if (mapId === window.xworld.gameMap._mapId) {
+      const missions = (await this.getNPCMission()).flat(3)
+      if (missions.length === 0) {
+        this.index++
+        this.lock = false
+      }
+      else if (missions.map((mission: any) => mission.id === 2591 || window.Mission.isMissionFinish(window.xself, mission.id)).every(v => v)) {
+        this.index++
+        this.lock = false
+      }
+      else {
+        return
+      }
+    }
+
+    if (missionsMap && Array.isArray(missionsMap) && missionsMap.map(id => id === 2591 || window.Mission.isMissionFinish(window.xself, id)).every(v => v)) {
+      this.index++
+      return
+    }
+
+    if (this.lock)
+      return
+
+    if (missionMap && missionMap[0] && missionMap[1]) {
+      window.AutoGamer.requestAutoFindPath(missionMap[0], missionMap[1])
+      this.moveLock = true
+      await when(window, () => window.xworld._isAutoMissionFindPath)
+      await when(window, () => window.xself.autoMoveControlList <= 0)
+      this.moveLock = false
+      this.lock = true
+    }
   }
 
-  async jumpMap(id: number) {
-    window.xworld.doJumpMap(id)
-    await delay(100)
-    await when(window, () => !window.xworld.isJumpingMap)
-  }
-
-  async getNPCMission() {
+  async getNPCMission(): Promise<any[]> {
     const npcList = this.findMissionNPC()
     for (const npc of npcList) {
       if (!npc.missions)
-        npc.doNPC()
+        npc.doGetMissionData()
 
       await when(npc, () => npc.missions)
     }
@@ -79,7 +123,7 @@ export class AutoExecMission {
       [3063, 3067, 3071],
       [3072, 3074],
       [3073, 3075],
-      [634],
+      // [634],
     ]
 
     return dailyMissionId.map((dailyMission) => {
