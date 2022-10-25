@@ -39,6 +39,9 @@ export const enum IPC_RENDERER {
   EXIT_ESCORT = 'exit:escort',
 
   INVOKE_VERSION_INFO = 'invoke:version:info',
+
+  REQUEST_EXEC_COMMAND = 'request:exec:command',
+  REQUEST_EXEC_COMMAND_RESULT = 'request:exec:command:result',
 }
 
 // receive
@@ -71,4 +74,7 @@ export const enum IPC_MAIN {
   EXECUTE_OTHER = 'execute:other',
 
   MOUSE_WHEEL = 'mouse:wheel',
+
+  REQUEST_EXEC_COMMAND = 'request:exec:command',
+  REQUEST_EXEC_COMMAND_RESULT = 'request:exec:command:result',
 }

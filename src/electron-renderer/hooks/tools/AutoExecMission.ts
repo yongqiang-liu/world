@@ -75,9 +75,13 @@ export class AutoExecMission {
       return
     }
 
+    if (this.index >= this.defaultMap.length) {
+      this.stop()
+      return
+    }
+
     let missionMap = this.defaultMap[this.index]
     const mapId = missionMap.at(0) ?? 0
-    const missionsMap: number[] = (missionMap.at(2) ?? []) as number[]
 
     if (missionMap && (mapId === window.xworld.gameMap._mapId || this.lock)) {
       const missions = (await this.getNPCMission()).flat(3)
@@ -91,16 +95,14 @@ export class AutoExecMission {
       }
     }
 
-    if (missionsMap && Array.isArray(missionsMap) && missionsMap.map(id => id === 2591 || window.Mission.isMissionFinish(window.xself, id)).every(v => v)) {
-      this.moveLock = true
-      this.index++
-      missionMap = this.defaultMap[this.index]
-    }
-
     if (this.lock) {
       this.count--
       return
     }
+
+    this.moveLock = true
+    this.index = this.getUncompletedIndex()
+    missionMap = this.defaultMap[this.index]
 
     if (missionMap && Array.isArray(missionMap) && missionMap[0] && missionMap[1]) {
       this.lock = true
@@ -114,7 +116,20 @@ export class AutoExecMission {
       await when(window, () => window.xself.autoMoveControlList <= 0)
       this.moveLock = false
     }
+
     this.count--
+  }
+
+  getUncompletedIndex() {
+    for (let index = this.index; index < this.defaultMap.length; index++) {
+      const missionsMap = (this.defaultMap[index].at(2) ?? [2591]) as number[]
+
+      const result = missionsMap.map(id => id === 2591 || window.Mission.isMissionFinish(window.xself, id)).every(v => v)
+      if (!result)
+        return index
+    }
+
+    return this.index
   }
 
   async getNPCMission(): Promise<any[]> {

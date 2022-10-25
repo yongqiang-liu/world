@@ -3,8 +3,9 @@ import { existsSync, readFileSync, writeFileSync } from 'fs'
 import path from 'path'
 import type { Account } from 'common/configuration'
 import { debounce } from 'common/functional'
-import { IPC_MAIN } from 'common/ipcEventConst'
+import { IPC_MAIN, IPC_RENDERER } from 'common/ipcEventConst'
 import { app, ipcMain } from 'electron'
+import type { COMMAND, COMMAND_PAYLOAD } from 'common/Command'
 import VERSION_MAP, { VERSION_KEY } from '../../electron-common/versions'
 import type Configuration from './Configuration'
 import { ConfigurationEvents } from './Configuration'
@@ -395,12 +396,6 @@ export class ApplicationWindow extends GameWindow {
       view?.reload()
     })
 
-    ipcMain.on(IPC_MAIN.EXECUTE_OTHER, (e, command: string, ...args: any[]) => {
-      this.views
-        .filter(v => v.id !== e.sender.id)
-        .map(view => view.executeCommand(command, ...args))
-    })
-
     ipcMain.on(IPC_MAIN.RECEIVE_CHAT_MSG, (e) => {
       const view = this.getViewById(e.sender.id)
 
@@ -427,6 +422,22 @@ export class ApplicationWindow extends GameWindow {
       if (d < 0)
         this.setTopView(this.active_view - 1)
     }, 100))
+
+    ///
+    ipcMain.on(IPC_MAIN.REQUEST_EXEC_COMMAND, (e, payload: COMMAND_PAYLOAD) => {
+      const views = this.views.filter(view => view.id !== e.sender.id)
+      let count = 0
+      const result: any[] = []
+      ipcMain.on(IPC_MAIN.REQUEST_EXEC_COMMAND_RESULT, (_) => {
+        count++
+
+        if (count === views.length)
+          ipcMain.removeAllListeners(IPC_MAIN.REQUEST_EXEC_COMMAND_RESULT)
+      })
+
+      for (const view of views)
+        view.send(IPC_RENDERER.REQUEST_EXEC_COMMAND, payload)
+    })
   }
 
   close(): void {
