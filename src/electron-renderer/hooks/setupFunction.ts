@@ -77,6 +77,9 @@ export default function setupFunction() {
   }
 
   window.doLoginLottery = function () {
+    if (window.xself.getLevel() < 30)
+      return
+
     const timer = setInterval(() => {
       if (!window.GameWorld.loginLotteryDraw)
         window.LoginLotteryDraw.doEnter()

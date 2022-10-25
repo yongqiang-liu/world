@@ -56,6 +56,9 @@ export default class DefaultFunction {
 
   private eventLogic() {
     window.__myEvent__.on(EVENTS.EXIT_BATTLE_MAP, () => {
+      if (window.xworld.isEscort)
+        return
+
       // 自动回血
       if (
         window?.xself.get(window?.ModelConst.HP)
