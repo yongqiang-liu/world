@@ -1,5 +1,4 @@
 import type EventEmitter from 'events'
-import { resolve } from 'path'
 import type { IBattleConfiguration, IConfiguration } from 'common/configuration'
 import { BrowserWindow, shell } from 'electron'
 import { KEY_MAP, combineKeys } from 'common/key_map'

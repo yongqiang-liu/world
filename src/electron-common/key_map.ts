@@ -26,7 +26,7 @@ export const KEY_MAP = {
 export function combineKeys(...keys: string[]) {
   const _keys: string[] = []
 
-  keys.map((v) => {
+  keys.forEach((v) => {
     if (Array.isArray(v))
       _keys.push(`${v[0]}Or${v[1]}`)
 
