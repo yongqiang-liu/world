@@ -31,6 +31,7 @@ export default class GameWindow extends BrowserWindow {
     super(MainWidowConfiguration)
     this.config = _configuration.configuration
     this.battleConfig = _configuration.battleConfiguration
+    this.autoHideMenuBar = true
     this.setMenu(null)
     this.registerWindowListener()
     this.timer = setInterval(() => {
@@ -368,6 +369,12 @@ export default class GameWindow extends BrowserWindow {
     }
 
     this.windowMenus[index++] = {
+      label: view?.webContents.isDevToolsOpened() ? '关闭控制台' : '打开控制台',
+      enable: true,
+      click: () => view?.webContents.toggleDevTools(),
+    }
+
+    this.windowMenus[index++] = {
       label: '关于',
       enable: true,
       click: () => {
@@ -390,12 +397,6 @@ export default class GameWindow extends BrowserWindow {
       },
     }
 
-    this.windowMenus[index++] = {
-      label: view?.webContents.isDevToolsOpened() ? '关闭控制台' : '打开控制台',
-      enable: true,
-      click: () => view?.webContents.toggleDevTools(),
-    }
-
     this.windowMenus = hookWindowMenuClick(this.windowMenus, async () => {
       console.time('builded window menu cost time: ')
       await this.buildWindowMenu()
@@ -411,8 +412,10 @@ export default class GameWindow extends BrowserWindow {
       registerAccelerator: this.registerAccelerator,
     })
 
-    if (!this.isDestroyed())
+    if (!this.isDestroyed()) {
+      this.autoHideMenuBar = false
       this.setMenu(windowMenu)
+    }
   }
 
   private createAccountMenuByMerge(view: GameView) {
