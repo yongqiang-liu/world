@@ -159,23 +159,51 @@ export default class GameWindow extends BrowserWindow {
           ],
         },
         {
+          label: '附加选项',
+          enable: true,
+          submenu: [
+            {
+              label: '出售建筑材料',
+              type: 'checkbox',
+              checked: !!this.config.app.sell_buildMaterial,
+              click: () => {
+                this.emitter.emit(OPTION_SELL_BUILD_MATERIAL)
+              },
+            },
+            {
+              label: '出售稀有装备(<50)',
+              type: 'checkbox',
+              checked: !!this.config.app.sell_RareEquip,
+              click: () => {
+                this.emitter.emit(OPTION_SELL_RARE_EQUIP)
+              },
+            },
+            {
+              label: '使用修理卷',
+              type: 'checkbox',
+              checked: !!this.config.app.repairRoll,
+              click: () => {
+                this.emitter.emit(OPTION_USE_REPAIR_ROLL)
+              },
+            },
+            {
+              label: '3倍领取经验(金叶)',
+              type: 'checkbox',
+              checked: !!this.config.app.rate3,
+              click: () => {
+                this.emitter.emit(OPTION_OFFLINE_RATE3)
+              },
+            },
+          ],
+        },
+        {
           label: '页面相关',
           enable: true,
           submenu: [
             {
-              label: '刷新页面',
+              label: '切换版本',
               enable: true,
-              accelerator: KEY_MAP.F5,
-              click: (_, __, e) => {
-                if (e.ctrlKey) {
-                  this.emitter.emit(VIEWS_RELOAD)
-                }
-                else {
-                  view?.reload()
-                  this.win.autoChat[viewIndex] = false
-                  this.win.autoSkyArena[viewIndex] = false
-                }
-              },
+              submenu: this.createVersionMenu(),
             },
             {
               label: '跳转登录',
@@ -188,9 +216,22 @@ export default class GameWindow extends BrowserWindow {
                 view?.webContents.loadURL(VERSION_MAP[this.config.version].url || 'https://m.tianyuyou.cn/index/h5game_jump.html?tianyuyou_agent_id=10114&game_id=66953')
               },
             },
+            {
+              label: '刷新页面',
+              accelerator: KEY_MAP.F5,
+              click: (_, __, e) => {
+                if (e.ctrlKey) {
+                  this.emitter.emit(VIEWS_RELOAD)
+                }
+                else {
+                  view?.reload()
+                  this.win.autoChat[viewIndex] = false
+                  this.win.autoSkyArena[viewIndex] = false
+                }
+              },
+            },
           ],
         },
-
       ],
     }
 
@@ -269,7 +310,7 @@ export default class GameWindow extends BrowserWindow {
     }
 
     this.windowMenus[2] = {
-      label: '自动化功能',
+      label: '自动功能',
       submenu: [
         {
           label: '自动跳过战斗动画',
@@ -327,56 +368,6 @@ export default class GameWindow extends BrowserWindow {
     }
 
     this.windowMenus[index++] = {
-      label: '附加选项',
-      submenu: [
-        {
-          label: '出售建筑材料',
-          type: 'checkbox',
-          checked: !!this.config.app.sell_buildMaterial,
-          click: () => {
-            this.emitter.emit(OPTION_SELL_BUILD_MATERIAL)
-          },
-        },
-        {
-          label: '出售稀有装备(<50)',
-          type: 'checkbox',
-          checked: !!this.config.app.sell_RareEquip,
-          click: () => {
-            this.emitter.emit(OPTION_SELL_RARE_EQUIP)
-          },
-        },
-        {
-          label: '使用修理卷',
-          type: 'checkbox',
-          checked: !!this.config.app.repairRoll,
-          click: () => {
-            this.emitter.emit(OPTION_USE_REPAIR_ROLL)
-          },
-        },
-        {
-          label: '3倍领取经验(金叶)',
-          type: 'checkbox',
-          checked: !!this.config.app.rate3,
-          click: () => {
-            this.emitter.emit(OPTION_OFFLINE_RATE3)
-          },
-        },
-      ],
-    }
-
-    this.windowMenus[index++] = {
-      label: '切换版本',
-      enable: true,
-      submenu: this.createVersionMenu(),
-    }
-
-    this.windowMenus[index++] = {
-      label: view?.webContents.isDevToolsOpened() ? '关闭控制台' : '打开控制台',
-      enable: true,
-      click: () => view?.webContents.toggleDevTools(),
-    }
-
-    this.windowMenus[index++] = {
       label: '关于',
       enable: true,
       click: () => {
@@ -397,6 +388,12 @@ export default class GameWindow extends BrowserWindow {
           about_page_dir: aboutPath,
         })
       },
+    }
+
+    this.windowMenus[index++] = {
+      label: view?.webContents.isDevToolsOpened() ? '关闭控制台' : '打开控制台',
+      enable: true,
+      click: () => view?.webContents.toggleDevTools(),
     }
 
     this.windowMenus = hookWindowMenuClick(this.windowMenus, async () => {
