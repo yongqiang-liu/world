@@ -26,8 +26,8 @@ export const GameViewConfig: BrowserViewConstructorOptions = {
 
 export const MainWidowConfiguration: BrowserWindowConstructorOptions = {
   title: '世界H5',
-  width: 506,
-  height: 732 + TITLE_BAR_HEIGHT,
+  width: 480,
+  height: 700 + TITLE_BAR_HEIGHT,
   webPreferences: {
     safeDialogs: true,
     nativeWindowOpen: false,
