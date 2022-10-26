@@ -49,7 +49,7 @@ export default class DefaultFunction {
       // 自动领取经验
       window.doGetExp()
       window.doLoginLottery()
-      if (!window.autoExecMission.isFinish() || !window.autoExecMission.checkFinish([1552]))
+      if (!window.autoExecMission.isFinish() || !window.autoExecMission.checkFinish([1552, 634]))
         window.autoExecMission.start()
     }, TimeHelper.second(10))
   }
