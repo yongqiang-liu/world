@@ -22,8 +22,8 @@
     "paths": {
       "common/*": ["electron-common/*"],
       "main/*": ["electron-main/*"],
-      "renderer/*":["electron-renderer/*"]
-    },
+      "renderer/*": ["electron-renderer/*"]
+    }
   },
-  "include": ["./src"],
+  "include": ["./src"]
 }

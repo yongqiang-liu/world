@@ -24,6 +24,8 @@ export const CHANGE_WINDOW_MODE = Symbol()
 export const ADD_ACCOUNT = Symbol()
 export const DELETE_ACCOUNT = Symbol()
 
+export const VIEWS_RELOAD = Symbol()
+
 export const enum WindowState {
   UNINITIALIZED = 'uninitialized',
   MIN = 'minimize',

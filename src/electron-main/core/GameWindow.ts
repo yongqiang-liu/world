@@ -10,7 +10,7 @@ import type { MenuTemplate } from './menuHelper'
 import { buildFromTemplateWrapper, hookWindowMenuClick } from './menuHelper'
 import { MainWidowConfiguration } from './windowConfig'
 import type { ViewState } from './shared'
-import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REFRESH_MONSTER, AUTO_REPAIR, AUTO_SELL, AUTO_SKIP_BATTLE_ANIM, CHANGE_WINDOW_MODE, DELETE_ACCOUNT, ONE_KEY_AUTO_MISSION, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL } from './shared'
+import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REFRESH_MONSTER, AUTO_REPAIR, AUTO_SELL, AUTO_SKIP_BATTLE_ANIM, CHANGE_WINDOW_MODE, DELETE_ACCOUNT, ONE_KEY_AUTO_MISSION, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL, VIEWS_RELOAD } from './shared'
 
 import type { ApplicationWindow } from './window'
 import { battleConfigurationPath } from './paths'
@@ -101,7 +101,6 @@ export default class GameWindow extends BrowserWindow {
             {
               label: '自动天空',
               type: 'checkbox',
-              accelerator: KEY_MAP.F8,
               checked: !!this.win.autoSkyArena[viewIndex],
               click: () => {
                 this.win.autoSkyArena[viewIndex] = !this.win.autoSkyArena[viewIndex]
@@ -123,6 +122,7 @@ export default class GameWindow extends BrowserWindow {
               label: '跳过战斗动画',
               type: 'checkbox',
               checked: !!this.win.skipBattleAnime[viewIndex],
+              accelerator: KEY_MAP.F2,
               click: () => {
                 this.win.skipBattleAnime[viewIndex] = !this.win.skipBattleAnime[viewIndex]
                 view.setSkipBattleAnime(this.win.skipBattleAnime[viewIndex])
@@ -166,10 +166,15 @@ export default class GameWindow extends BrowserWindow {
               label: '刷新页面',
               enable: true,
               accelerator: KEY_MAP.F5,
-              click: () => {
-                view?.reload()
-                this.win.autoChat[viewIndex] = false
-                this.win.autoSkyArena[viewIndex] = false
+              click: (_, __, e) => {
+                if (e.ctrlKey) {
+                  this.emitter.emit(VIEWS_RELOAD)
+                }
+                else {
+                  view?.reload()
+                  this.win.autoChat[viewIndex] = false
+                  this.win.autoSkyArena[viewIndex] = false
+                }
               },
             },
             {
@@ -241,12 +246,11 @@ export default class GameWindow extends BrowserWindow {
           label: '一键自动日常',
           type: 'checkbox',
           checked: allOneKeyDailyMission,
-          accelerator: KEY_MAP.F2,
+          accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.F1),
           click: () => this.emitter.emit(ONE_KEY_AUTO_MISSION),
         },
         {
           label: '一键出售垃圾',
-          accelerator: KEY_MAP.F4,
           click: () => this.emitter.emit(ONE_KEY_SELL),
         },
         {
@@ -270,6 +274,7 @@ export default class GameWindow extends BrowserWindow {
         {
           label: '自动跳过战斗动画',
           type: 'checkbox',
+          accelerator: combineKeys(KEY_MAP.CTRL, KEY_MAP.F2),
           checked: this.win.skipBattleAnime[viewIndex],
           click: () => this.emitter.emit(AUTO_SKIP_BATTLE_ANIM),
         },

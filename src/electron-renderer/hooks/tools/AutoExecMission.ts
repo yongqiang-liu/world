@@ -1,4 +1,5 @@
-import { debounce, delay, when } from 'common/functional'
+import { delay, when } from 'common/functional'
+import { throttle } from 'lodash-es'
 
 export class AutoExecMission {
   count = 0
@@ -11,8 +12,19 @@ export class AutoExecMission {
     [22, 44, [2, 333]],
     [920, 101, [507, 508, 512]], [921, 101, [522]], [922, 105, [560, 561]], [923, 102, [559, 558]],
     [822, 8, [26]],
-    [926, 101, [...window.OneKeyDailyMission.idList_yuangusenlin]],
+    // [926, 101, [...window.OneKeyDailyMission.idList_yuangusenlin]],
     // [824, 15, [1703]],
+  ]
+
+  inYuanGuShenLin = false
+
+  private Task_cityList = [
+    [3061, 3065, 3069],
+    [3060, 3064, 3068],
+    [3062, 3066, 3070],
+    [3063, 3067, 3071],
+    [3072, 3074],
+    [3073, 3075],
   ]
 
   private defaultMission = [
@@ -23,7 +35,18 @@ export class AutoExecMission {
 
   constructor() {
     // 注入自动日常logic
-    window.__myEvent__.on('auto:daily:logic', debounce(this.logic.bind(this), 1000))
+    window.__myEvent__.on('auto:daily:logic', throttle(() => {
+      if (
+        this.moveLock || !this._isStarting || !this.checkDailyMissionFinish()
+        || window.xworld.inBattle || window.xworld.isJumpingMap
+        || window.xself.autoMoveControlList.length > 0
+        || window.xworld._isAutoMissionFindPath
+        || this.index >= this.defaultMission.length
+      )
+        return
+
+      this.logic()
+    }, 1000))
   }
 
   start() {
@@ -51,9 +74,11 @@ export class AutoExecMission {
 
   private async logic() {
     if (
-      (this.moveLock || !this._isStarting || !this.checkDailyMissionFinish()
-        || window.xworld.inBattle || window.xworld.isJumpingMap || window.xself.autoMoveControlList.length > 0)
-      && this.count === 0
+      this.moveLock || !this._isStarting || !this.checkDailyMissionFinish()
+      || window.xworld.inBattle || window.xworld.isJumpingMap
+      || window.xself.autoMoveControlList.length > 0
+      || window.xworld._isAutoMissionFindPath
+      || this.index >= this.defaultMission.length
     )
       return
 
@@ -71,6 +96,11 @@ export class AutoExecMission {
         }
         await window.thousandBattle.execJumpSteps(824, 825)
       }
+      if (!this.checkFinish([634])) {
+        if (!window.xworld.isInCityNow())
+          await window.thousandBattle.enterCity()
+        window.OneKeyDailyMission.doOneKeyMission_local(window.OneKeyDailyMission.ID_yuangusenlin)
+      }
       this.stop()
       return
     }
@@ -83,7 +113,8 @@ export class AutoExecMission {
     let missionMap = this.defaultMap[this.index]
     const mapId = missionMap.at(0) ?? 0
 
-    if (missionMap && (mapId === window.xworld.gameMap._mapId || this.lock)) {
+    if (mapId === window.xworld.gameMap._mapId) {
+      console.log('tag: mapId')
       const missions = (await this.getNPCMission()).flat(3)
       if (missions.length === 0) {
         this.index++
@@ -91,6 +122,9 @@ export class AutoExecMission {
       }
       else if (missions.map((mission: any) => mission.id === 2591 || window.Mission.isMissionFinish(window.xself, mission.id)).every(v => v)) {
         this.index++
+        this.lock = false
+      }
+      else {
         this.lock = false
       }
     }
@@ -109,11 +143,10 @@ export class AutoExecMission {
       this.moveLock = true
       if (window.autoRepairEquip.getRepairEquipCount())
         await window.thousandBattle.enterCity()
-      await delay(50)
       window.AutoGamer.requestAutoFindPath(missionMap[0], missionMap[1])
-      await delay(50)
       await when(window, () => window.xworld._isAutoMissionFindPath)
       await when(window, () => window.xself.autoMoveControlList <= 0)
+      window.xworld._isAutoMissionFindPath = false
       this.moveLock = false
     }
 
@@ -149,7 +182,7 @@ export class AutoExecMission {
   }
 
   checkDailyMissionFinish() {
-    return window.OneKeyDailyMission.Task_cityList.map((dailyMission: number[]) => {
+    return this.Task_cityList.map((dailyMission: number[]) => {
       return dailyMission.map((id: number) => window.Mission.isMissionFinish(window.xself, id)).some(v => v)
     })
       .every((v: boolean) => v)

@@ -12,7 +12,7 @@ import { ConfigurationEvents } from './Configuration'
 import GameView, { GameViewState } from './GameView'
 import GameWindow from './GameWindow'
 import type { ViewState } from './shared'
-import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REFRESH_MONSTER, AUTO_REPAIR, AUTO_SELL, AUTO_SKIP_BATTLE_ANIM, CHANGE_WINDOW_MODE, DELETE_ACCOUNT, ONE_KEY_AUTO_MISSION, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL } from './shared'
+import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REFRESH_MONSTER, AUTO_REPAIR, AUTO_SELL, AUTO_SKIP_BATTLE_ANIM, CHANGE_WINDOW_MODE, DELETE_ACCOUNT, ONE_KEY_AUTO_MISSION, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL, VIEWS_RELOAD } from './shared'
 
 export class ApplicationWindow extends GameWindow {
   autoChat: boolean[] = []
@@ -331,6 +331,14 @@ export class ApplicationWindow extends GameWindow {
     this.eventEmitter.on(AUTO_REFRESH_MONSTER, () => {
       this.oneKeyRefreshMonster = !this.oneKeyRefreshMonster
       this.views.map(view => view.setAutoRefreshMonster(this.oneKeyRefreshMonster))
+    })
+
+    this.eventEmitter.on(VIEWS_RELOAD, () => {
+      this.views.map((view, index) => {
+        this.autoChat[index] = false
+        this.autoSkyArena[index] = false
+        view.reload()
+      })
     })
 
     this.eventEmitter.on(CHANGE_WINDOW_MODE, (mode?: 'merge' | 'split') => {

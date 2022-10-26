@@ -151,7 +151,21 @@ export default class ThousandBattle extends EventEmitter {
 
   async execJumpSteps(...ids: number[]) {
     for (const id of ids) {
-      window.xworld.doJumpMap(id)
+      const npcs: any[] = window.xworld.npcList.filter((npc: any) => npc.isJumpIcon())
+      let index = -1
+      let _npc
+      for (const npc of npcs) {
+        index = npc.jumpMapID.findIndex((mapId: number) => mapId === id)
+        if (index !== -1) {
+          _npc = npc
+          break
+        }
+      }
+
+      if (index === -1 || !_npc)
+        window.xworld.doJumpMap(id)
+      else
+        window.xworld.doJumpMap(id, _npc.jumpMapGx[index], _npc.jumpMapGy[index])
       await delay(100)
       await when(window, () => !window.xworld.isJumpingMap)
     }
