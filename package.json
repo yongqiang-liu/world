@@ -3,8 +3,8 @@
   "version": "2.1.1",
   "private": true,
   "description": "世界OL日常脚本",
-  "author": "Seven",
-  "repository": "https://github.com/SEVEN-1-bit/world",
+  "author": "starknt",
+  "repository": "https://github.com/starknt/world",
   "scripts": {
     "start": "yarn build:preload && cross-env TS_NODE_TRANSPILE_ONLY=true electron -r ts-node/register -r tsconfig-paths/register ./src/electron-main/main.ts",
     "build": "yarn build:preload && yarn build:main",
@@ -19,6 +19,7 @@
     "clean": "rimraf ./release/build"
   },
   "dependencies": {
+    "about-window": "^1.15.2",
     "json5": "^2.2.0",
     "lodash-es": "^4.17.21"
   },

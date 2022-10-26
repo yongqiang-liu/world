@@ -1,0 +1,13 @@
+lockfileVersion: 5.4
+
+specifiers:
+  about-window: ^1.15.2
+
+dependencies:
+  about-window: 1.15.2
+
+packages:
+
+  /about-window/1.15.2:
+    resolution: {integrity: sha512-31mDAnLUfKm4uShfMzeEoS6a3nEto2tUt4zZn7qyAKedaTV4p0dGiW1n+YG8vtRh78mZiewghWJmoxDY+lHyYg==}
+    dev: false

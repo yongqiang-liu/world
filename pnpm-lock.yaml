@@ -4,6 +4,7 @@ specifiers:
   '@antfu/eslint-config': ^0.27.0
   '@types/lodash-es': ^4.17.6
   '@types/node': ^17.0.21
+  about-window: ^1.15.2
   cross-env: ^7.0.3
   electron: 15.3.0
   electron-builder: ^22.14.13
@@ -21,6 +22,7 @@ specifiers:
   webpack-merge: ^5.8.0
 
 dependencies:
+  about-window: 1.15.2
   json5: 2.2.1
   lodash-es: 4.17.21
 
@@ -760,6 +762,10 @@ packages:
   /@xtuc/long/4.2.2:
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
     dev: true
+
+  /about-window/1.15.2:
+    resolution: {integrity: sha512-31mDAnLUfKm4uShfMzeEoS6a3nEto2tUt4zZn7qyAKedaTV4p0dGiW1n+YG8vtRh78mZiewghWJmoxDY+lHyYg==}
+    dev: false
 
   /acorn-import-assertions/1.8.0_acorn@8.8.0:
     resolution: {integrity: sha512-m7VZ3jwz4eK6A4Vtt8Ew1/mNbP24u0FhdyfA7fSvnJR6LMdfOYnmuIrrJAgrYfYJ10F/otaHTtrtrtmHdMNzEw==}

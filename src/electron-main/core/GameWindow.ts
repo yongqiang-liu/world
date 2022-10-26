@@ -1,4 +1,5 @@
 import type EventEmitter from 'events'
+import { resolve } from 'path'
 import type { IBattleConfiguration, IConfiguration } from 'common/configuration'
 import { BrowserWindow, shell } from 'electron'
 import { KEY_MAP, combineKeys } from 'common/key_map'
@@ -13,7 +14,7 @@ import type { ViewState } from './shared'
 import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO_REFRESH_MONSTER, AUTO_REPAIR, AUTO_SELL, AUTO_SKIP_BATTLE_ANIM, CHANGE_WINDOW_MODE, DELETE_ACCOUNT, ONE_KEY_AUTO_MISSION, ONE_KEY_REPAIR, ONE_KEY_REWARD, ONE_KEY_SELL, OPTION_OFFLINE_RATE3, OPTION_SELL_BUILD_MATERIAL, OPTION_SELL_RARE_EQUIP, OPTION_USE_REPAIR_ROLL, VIEWS_RELOAD } from './shared'
 
 import type { ApplicationWindow } from './window'
-import { battleConfigurationPath } from './paths'
+import { aboutPath, battleConfigurationPath, resolveAssets } from './paths'
 
 export default class GameWindow extends BrowserWindow {
   protected windowMenus: MenuTemplate[] = []
@@ -373,9 +374,29 @@ export default class GameWindow extends BrowserWindow {
     this.windowMenus[index++] = {
       label: view?.webContents.isDevToolsOpened() ? '关闭控制台' : '打开控制台',
       enable: true,
-      accelerator: KEY_MAP.F12,
-      click: async () => {
-        view?.webContents.toggleDevTools()
+      click: () => view?.webContents.toggleDevTools(),
+    }
+
+    this.windowMenus[index++] = {
+      label: '关于',
+      enable: true,
+      click: () => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const openAboutWindow = require('about-window').default
+        openAboutWindow({
+          icon_path: resolveAssets('icons/win/icon.ico'),
+          win_options: {
+            title: '关于本应用',
+          },
+          homepage: 'https://github.com/starknt/world',
+          license: 'MIT',
+          copyright: 'Copyright © 2021 starknt',
+          bug_report_url: 'tencent://AddContact/?fromId=45&fromSubId=1&subcmd=all&uin=1431880400&website=www.starknt.me',
+          bug_link_text: '报告BUG',
+          description: '世界OL日常脚本电脑版',
+          product_name: '世界之手',
+          about_page_dir: aboutPath,
+        })
       },
     }
 
@@ -490,6 +511,10 @@ export default class GameWindow extends BrowserWindow {
 
   private registerWindowListener() {
     this.on('close', this.onClose)
+
+    this.on('show', () => {
+      this.setRegisterAccelerator(true)
+    })
 
     this.on('focus', () => {
       this.setRegisterAccelerator(true)
