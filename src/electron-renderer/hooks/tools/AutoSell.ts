@@ -122,8 +122,10 @@ export default class AutoSell {
       if (a.type == Define.ITEM_TYPE_ARMOR_FASHION)
         continue
       // 不出售时效道具
-      if (a.isTimeItem())
+      if (a.isTimeItem()) {
+        t.push(a)
         continue
+      }
 
       // 出售非史诗建筑道具
       if (
