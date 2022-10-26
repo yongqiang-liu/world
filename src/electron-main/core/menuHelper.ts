@@ -54,7 +54,7 @@ function transformTemplate2MenuItemConstructorOptions(
     ? template.submenu.map((menu) => {
       return transformTemplate2MenuItemConstructorOptions(menu, {
         enable: template.enable ? template.enable : options.enable,
-        registerAccelerator: !!template.registerAccelerator,
+        registerAccelerator: typeof template.registerAccelerator === 'boolean' ? template.registerAccelerator : options.registerAccelerator,
       })
     })
     : undefined
@@ -63,7 +63,7 @@ function transformTemplate2MenuItemConstructorOptions(
     id: template.id,
     label: template.label,
     accelerator: template.accelerator,
-    registerAccelerator: template.registerAccelerator,
+    registerAccelerator: typeof template.registerAccelerator === 'boolean' ? template.registerAccelerator : options.registerAccelerator,
     enabled: template.enable ? template.enable : options.enable,
     submenu,
     checked: template.checked,
@@ -84,7 +84,7 @@ export function buildFromTemplateWrapper(
         {
           id: template.id,
           label: template.label,
-          registerAccelerator: template.registerAccelerator
+          registerAccelerator: typeof template.registerAccelerator === 'boolean'
             ? template.registerAccelerator
             : options.registerAccelerator,
           enable: template.enable ? template.enable : options.enable,

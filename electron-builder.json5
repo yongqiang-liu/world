@@ -1,38 +1,38 @@
 {
-  productName: "worldh5", // 世界H5日常处理器
-  appId: "net.seven.shijieh5",
-  copyright: "Copyright © 2022 Seven",
-  asar: true,
-  files: ["dist"],
-  win: {
-    target: [
+  "productName": "worldh5", // 世界H5日常处理器
+  "appId": "net.seven.shijieh5",
+  "copyright": "Copyright © 2022 Seven",
+  "asar": true,
+  "files": ["dist"],
+  "win": {
+    "target": [
       {
-        target: "nsis",
-        arch: "x64",
-      },
+        "target": "nsis",
+        "arch": "x64"
+      }
       // {
       //   target: "nsis",
       //   arch: "ia32",
       // },
-    ],
+    ]
   },
-  icon: "./assets/icons/win/icon.ico",
-  extraResources: ["./assets"],
-  nsis: {
-    oneClick: false,
-    allowElevation: true,
-    allowToChangeInstallationDirectory: true,
-    shortcutName: '世界H5'
+  "icon": "./assets/icons/win/icon.ico",
+  "extraResources": ["./assets"],
+  "nsis": {
+    "oneClick": false,
+    "allowElevation": true,
+    "allowToChangeInstallationDirectory": true,
+    "shortcutName": "世界H5"
   },
-  directories: {
-    app: "./release/app",
-    output: "./release/build",
+  "directories": {
+    "app": "./release/app",
+    "output": "./release/build"
   },
-  publish: [
+  "publish": [
     {
-      provider: "github",
-      private: true,
-      releaseType: "release",
-    },
-  ],
+      "provider": "github",
+      "private": true,
+      "releaseType": "release"
+    }
+  ]
 }

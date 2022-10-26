@@ -31,3 +31,5 @@ export function resolveConfiguration(name: string) {
 export function resolveAssets(...paths: string[]) {
   return path.join(assetsPath, ...paths)
 }
+
+export const aboutPath = isPackaged ? path.join(__dirname, '../../node_modules/about-window') : undefined
