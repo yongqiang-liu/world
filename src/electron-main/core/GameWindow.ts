@@ -74,9 +74,9 @@ export default class GameWindow extends BrowserWindow {
 
     let index = 0
     const viewIndex = this.mode === 'merge' ? this.win?.active_view ?? 0 : this.win.getViewIndexById(this.view.id)
-    const view = this.mode === 'merge' ? this.win.views[viewIndex] : this.view
-    const oneKeyDailyMission = !!view?.getAutoDaily()
-    const allOneKeyDailyMission = this.win.views.map(view => view.getAutoDaily()).some(v => v)
+    const view = this.win.views[viewIndex]
+    const oneKeyDailyMission = view.getAutoDaily()
+    const allOneKeyDailyMission = this.win.views.map(view => view.getAutoDaily()).every(Boolean)
     const started = view.getGameStarted()
     if (started)
       this.enable = true
@@ -534,6 +534,10 @@ export default class GameWindow extends BrowserWindow {
 
     this.on('focus', () => {
       this.setRegisterAccelerator(true)
+    })
+
+    this.on('blur', () => {
+      this.setRegisterAccelerator(false)
     })
 
     this.on('hide', () => {
