@@ -345,6 +345,7 @@ export class AutoExecMission {
 
     if (targetMission) {
       window.Mission.doAcceptMissionMsg(window.xself, targetNpc, targetMission)
+      window.PanelManager?.closeNPCDialogue?.()
       await when(window, () => !!this.hasMissionById(id))
     }
 
@@ -360,6 +361,7 @@ export class AutoExecMission {
       return
 
     window.Mission.doSubmitMissionMsg(window.xself, npc, mission)
+    window.PanelManager?.closeNPCDialogue?.()
     await when(window, () => !this.hasMissionById(mission.id))
   }
 
