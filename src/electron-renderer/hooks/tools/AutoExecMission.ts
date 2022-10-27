@@ -88,12 +88,11 @@ export class AutoExecMission {
     ...window.OneKeyDailyMission.idList_yuangusenlin,
     2575, 2548, 2549, 2550, 2570, 2571, 2572, 2574, 2573, // 夜语森林
     2599, 1126, 1127, 1134, 1128, 1129, 1130, 1135, 1131, 1136, 1133, 1132, // 美女节
-    2799, 1137, 1138, 1139, 1140, 1141, 1142, 1143, 1144, 1145, 1146, 1147, // 植树节
-    2709,
   ]
 
   private oneKeyMission: number[][] = [
     [2709, 2700],
+    [2799, 1137, 1138, 1139, 1140, 1141, 1142, 1143, 1144, 1145, 1146, 1147], // 植树节
   ]
 
   private _isStarting = false
@@ -123,6 +122,11 @@ export class AutoExecMission {
 
   checkFinish(missions: number[]) {
     return missions.map(id => window.Mission.isMissionFinish(window.xself, id)).every(v => v)
+  }
+
+  autoRunInDailyMissionEnd() {
+    if (this.checkDailyMissionFinish() && window.xworld.isInCityNow())
+      this.run()
   }
 
   /**
@@ -201,6 +205,9 @@ export class AutoExecMission {
             window.xworld.toBattle(acceptedMission.acceptBattleID)
           if (acceptedMission.submitBattleID)
             window.xworld.toBattle(acceptedMission.submitBattleID)
+          if (missionId === 2574)
+            window.xworld.toBattle(1710)
+
           if (window.xworld.inBattle)
             continue
 
@@ -397,7 +404,11 @@ export class AutoExecMission {
   }
 
   private findMissionNPC() {
-    return window.xworld.npcList.filter((npc: any) => npc.isVisible() && !npc.isMonster && npc.npcType === 0 && npc.name)
+    return window.xworld.npcList.filter((npc: any) => npc.isVisible() && !npc.isMonster && this.isMissionNPC(npc) && npc.name)
+  }
+
+  private isMissionNPC(npc: any) {
+    return npc.npcType === 0 || npc.npcType === 5
   }
 
   checkDailyMissionFinish() {
