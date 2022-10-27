@@ -226,9 +226,10 @@ export default class GameWindow extends BrowserWindow {
                   this.emitter.emit(VIEWS_RELOAD)
                 }
                 else {
-                  view?.reload()
                   this.win.autoChat[viewIndex] = false
                   this.win.autoSkyArena[viewIndex] = false
+                  this.win.extendsDailyMission[viewIndex] = false
+                  view.reload()
                 }
               },
             },
