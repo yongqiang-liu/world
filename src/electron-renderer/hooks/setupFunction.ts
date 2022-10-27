@@ -69,7 +69,7 @@ export default function setupFunction() {
           (window.OfflineExp.info.expEachHour = t.getInt())
           const n = new window.StringBuffer()
           const i = window.MsgHandler.processUpLevelMsg(t, window.xself, n)
-          window.AlertPanel.alertCommon(`成功领取了${i}点离线经验`)
+          // window.AlertPanel.alertCommon(`成功领取了${i}点离线经验`)
         }
       },
       this,
