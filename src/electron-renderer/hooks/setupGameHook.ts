@@ -78,9 +78,9 @@ export default function setupGameHook() {
           window.PanelManager.mainMenu
                 && window.PanelManager.mainMenu.stage
                 && window.PanelManager.mainMenu.updateWorldIconPoint(),
-          window.AlertPanel.alertCommon(
-            window.GameText.STR_REPAIR_EQUIP_SURE_SUCCESS,
-          ),
+          // window.AlertPanel.alertCommon(
+          //   window.GameText.STR_REPAIR_EQUIP_SURE_SUCCESS,
+          // ),
           window.xself.checkPower()
         }
       }

@@ -73,7 +73,7 @@ export function when<T>(
         resolve()
         clearInterval(t)
       }
-      else if (target) {
+      else if (typeof target === 'function' && target()) {
         setTimeout(() => resolve(), 1000)
         clearInterval(t)
       }

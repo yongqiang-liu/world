@@ -2,12 +2,18 @@ import type { Account, IRawBattleConfiguration } from 'common/configuration'
 import { IPC_MAIN, IPC_RENDERER } from 'common/ipcEventConst'
 import type { SellOptions } from 'common/sell'
 import { BrowserView, app, ipcMain, session } from 'electron'
+// import contextMenu from 'electron-context-menu'
 import { GameViewConfig } from './windowConfig'
 
 export const enum GameViewState {
   UNINITIALIZED = 'uninitialized',
   INITIALIZED = 'initialized',
 }
+
+// @ts-expect-error sss
+// const { init } = contextMenu({
+//   showInspectElement: false,
+// })
 
 export default class GameView {
   private _view = new BrowserView(GameViewConfig)
@@ -34,7 +40,7 @@ export default class GameView {
     session.defaultSession.clearStorageData()
     this._view.webContents.setBackgroundThrottling(false)
     this._view.webContents.incrementCapturerCount(undefined, false, true)
-
+    // init(this._view)
     this._sellOptions = {
       buildMaterial: false,
       rareEquip: false,

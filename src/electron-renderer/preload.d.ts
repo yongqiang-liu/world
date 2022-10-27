@@ -29,6 +29,7 @@ interface Config {
 
 declare global {
   interface Window {
+    COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP: Record<number, number>
     config: Config;
     forbidBattle: boolean
     // Hooks
