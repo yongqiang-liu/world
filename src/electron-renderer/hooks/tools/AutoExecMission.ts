@@ -40,7 +40,7 @@ interface Mission {
 interface NPC {
   id: number
   missions: Mission[]
-  doGetMissionData(): any
+  doGetMissionData(func1?: any, func2?: any): any
 }
 
 const COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP: Record<number, number> = {
@@ -68,11 +68,7 @@ const COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP: Record<number, number> = {
 }
 
 export class AutoExecMission {
-  count = 0
-  moveLock = false
-  lock = false
   index = 0
-  _isAutoMissionFindPath = false
 
   private Task_cityList = [
     [3061, 3065, 3069],
@@ -95,25 +91,22 @@ export class AutoExecMission {
     [2799, 1137, 1138, 1139, 1140, 1141, 1142, 1143, 1144, 1145, 1146, 1147], // 植树节
   ]
 
-  private _isStarting = false
+  _isStarting = false
 
   constructor() {
     window.COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP = COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP
   }
 
   start() {
-    if (!this._isStarting)
+    if (!this._isStarting) {
       this._isStarting = true
+      this.run()
+    }
   }
 
   stop() {
-    if (this._isStarting) {
+    if (this._isStarting)
       this._isStarting = false
-      this.index = 0
-      this.count = 0
-      this.moveLock = false
-      this.lock = false
-    }
   }
 
   isFinish() {
@@ -137,6 +130,9 @@ export class AutoExecMission {
    * 5. -> 1
    */
   async run() {
+    if (!this._isStarting)
+      return
+
     if (this.isFinish()) {
       if (!this.checkFinish([1552])) {
         if (!window.xworld.isInCityNow())
@@ -161,7 +157,6 @@ export class AutoExecMission {
       }
       return
     }
-    console.log('run starting')
     if (this.checkFashionDurability()) {
       await window.thousandBattle.enterCity()
       window.autoRepairEquip.repairEquip()
@@ -173,6 +168,8 @@ export class AutoExecMission {
     window.xworld.setAutoMissionFindPath(false)
     const index = this.getUncompletedIndex()
     const missionId = this.defaultMission[index]
+    console.log('run starting, mission: ', missionId)
+
     const steps = await this.getMissionPathById(missionId)
     await this.jumpMapByStep(steps)
     await delay(50)
@@ -254,9 +251,8 @@ export class AutoExecMission {
     }
 
     window.skipBattleAnime.stop()
-    console.log('submit mission', missionId)
     await this.submitMission(missionId)
-    console.log('run ended')
+    console.log('run ended, mission: ', missionId)
     this.run()
   }
 
@@ -364,6 +360,12 @@ export class AutoExecMission {
   }
 
   private async jumpMapPatch(mapId: number) {
+    if (mapId === 907) {
+      const mission = (await this.getNPCAndMission()).map(npc => npc.missions).flat(3)
+        .find(mission => mission.id === 2575)
+      if (mission && mission.isCanAccept())
+        await this.acceptMission(mission.id)
+    }
     if (mapId === 927) {
       const mission = (await this.getNPCAndMission()).map(npc => npc.missions).flat(3)
         .find(mission => mission.id === 582)
@@ -391,11 +393,12 @@ export class AutoExecMission {
     return window.xworld.npcList.find((npc: NPC) => npc.id === id)
   }
 
-  async getNPCAndMission(): Promise<NPC[]> {
+  private async getNPCAndMission(): Promise<NPC[]> {
+    function noop() {}
     const npcList: NPC[] = this.findMissionNPC()
     for (const npc of npcList) {
       if (!npc.missions)
-        npc.doGetMissionData()
+        npc.doGetMissionData(noop, noop)
 
       await when(npc, () => !!npc.missions)
     }

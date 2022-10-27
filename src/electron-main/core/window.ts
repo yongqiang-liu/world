@@ -17,6 +17,7 @@ import { ADD_ACCOUNT, AUTO_ESCORT, AUTO_EXPAND_PACKAGE, AUTO_ONLINE_REWARD, AUTO
 export class ApplicationWindow extends GameWindow {
   autoChat: boolean[] = []
   autoSkyArena: boolean[] = []
+  extendsDailyMission: boolean[] = []
   oneKeyDailyMission = false
   oneKeyRefreshMonster = false
   oneKeyEscort = false
