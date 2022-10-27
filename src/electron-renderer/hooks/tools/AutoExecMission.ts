@@ -133,6 +133,8 @@ export class AutoExecMission {
     if (!this._isStarting)
       return
 
+    await when(() => !window.xworld.inBattle)
+
     if (this.isFinish()) {
       if (!this.checkFinish([1552])) {
         if (!window.xworld.isInCityNow())
@@ -152,7 +154,9 @@ export class AutoExecMission {
         }
 
         window.OneKeyDailyMission.start()
-        while (this.checkFinish([1684]));
+        while (!this.checkFinish([1684]))
+          await delay(1000)
+
         window.OneKeyDailyMission.stop()
       }
       return
