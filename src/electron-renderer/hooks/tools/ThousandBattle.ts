@@ -172,6 +172,8 @@ export default class ThousandBattle extends EventEmitter {
   }
 
   private async ensureEnterBattle(...ids: number[]) {
+    await when(() => !window.forbidBattle)
+
     for (const id of ids) {
       if (!window.xworld.inBattle)
         await this.toBattle(id)
