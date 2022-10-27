@@ -2,6 +2,7 @@ import type EventEmitter from 'events'
 import type { IBattleConfiguration, IConfiguration } from 'common/configuration'
 import { BrowserWindow, shell } from 'electron'
 import { KEY_MAP, combineKeys } from 'common/key_map'
+import { IPC_RENDERER } from 'common/ipcEventConst'
 import VERSION_MAP from '../../electron-common/versions'
 import type Configuration from './Configuration'
 import type GameView from './GameView'
@@ -364,6 +365,21 @@ export default class GameWindow extends BrowserWindow {
           type: 'checkbox',
           checked: !!this.config.app.autoExpandBag,
           click: () => this.emitter.emit(AUTO_EXPAND_PACKAGE),
+        },
+      ],
+    }
+
+    this.windowMenus[index++] = {
+      label: '测试功能',
+      submenu: [
+        {
+          label: '日常扩展',
+          type: 'checkbox',
+          checked: !!this.win.extendsDailyMission[viewIndex],
+          click: () => {
+            this.win.extendsDailyMission[viewIndex] = !this.win.extendsDailyMission[viewIndex]
+            view.send(IPC_RENDERER.EXTENDS_DAILY_MISSION, this.win.extendsDailyMission[viewIndex])
+          },
         },
       ],
     }

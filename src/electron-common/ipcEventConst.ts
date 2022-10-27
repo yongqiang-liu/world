@@ -42,6 +42,8 @@ export const enum IPC_RENDERER {
 
   REQUEST_EXEC_COMMAND = 'request:exec:command',
   REQUEST_EXEC_COMMAND_RESULT = 'request:exec:command:result',
+
+  EXTENDS_DAILY_MISSION = 'extends:daily:mission',
 }
 
 // receive

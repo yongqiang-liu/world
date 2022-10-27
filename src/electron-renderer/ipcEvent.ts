@@ -326,5 +326,13 @@ export function setupFunction() {
     window.autoSell.ai_sell()
   })
 
+  ipcRenderer.on(IPC_RENDERER.EXTENDS_DAILY_MISSION, (_, v: boolean) => {
+    if (v && !window.autoExecMission._isStarting)
+      window.autoExecMission.start()
+
+    if (!v && window.autoExecMission._isStarting)
+      window.autoExecMission.stop()
+  })
+
   ipcRenderer.send(IPC_MAIN.SETUP_FUNCTION_ENDED)
 }
