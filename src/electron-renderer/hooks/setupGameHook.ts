@@ -166,93 +166,6 @@ export default function setupGameHook() {
     a()
   }
 
-  // window.MsgHandler.processPlayerEventMsg = function (e: any) {
-  //   const {
-  //     GameText,
-  //     xworld,
-  //     Define,
-  //     xself,
-  //     xevent,
-  //     WorldEvent,
-  //     Model,
-  //     PanelManager,
-  //     AlertPanel,
-  //     nato,
-  //     PopUpManager,
-  //   } = window;
-  //   var n = e.getInt(),
-  //     i = e.getByte(),
-  //     o = e.getInt(),
-  //     a = e.getString(),
-  //     r =
-  //       (e.getString(),
-  //       e.getString(),
-  //       new Date().getTime() + e.getInt(),
-  //       GameText.STR_TITLE),
-  //     s = xworld.getModel(o);
-  //   switch (i) {
-  //     case Define.PLAYER_EVENT_TEAM_INVITE:
-  //       if (xself.isNovice) return;
-  //       if (((r = GameText.getText(GameText.TI_INVITE_TEAM)), null == s))
-  //         return;
-  //       xevent.dispatchEvent(
-  //         new WorldEvent(WorldEvent.AROUND__REFRESH_TEAM_INFO, this)
-  //       );
-  //       break;
-  //     case Define.PLAYER_EVENT_TEAM_APPLY:
-  //       if (((r = GameText.getText(GameText.TI_JOIN_TEAM)), null == s)) return;
-  //       xevent.dispatchEvent(
-  //         new WorldEvent(WorldEvent.AROUND__REFRESH_TEAM_INFO, this)
-  //       );
-  //       break;
-  //     case Define.PLAYER_EVENT_PKASK:
-  //       if (((r = GameText.getText(GameText.TI_PK)), null == s)) return;
-  //       break;
-  //     case Define.PLAYER_EVENT_JOINCOUNTRYASK:
-  //       r = GameText.getText(GameText.TI_INVITE_COUNTRY);
-  //       break;
-  //     case Define.PLAYER_EVENT_ESCORT:
-  //       if(window.autoEscortTools._isStarting) {
-  //         window.__escortEmitter__.emit(EVENTS.ACCEPT_ESCORT, n);
-  //         return;
-  //       }
-  //       r = GameText.STR_ESCORT_MISSION;
-  //       break;
-  //     case Define.PLAYER_EVENT_MASTER:
-  //       r = GameText.getText(GameText.TI_APPRENTICE);
-  //       break;
-  //     case Define.PLAYER_EVENT_JOINCOUNTRYHANDLE:
-  //       r = GameText.STR_JOINCOUNTRYHANDLE;
-  //       break;
-  //     case Define.PLAYER_EVENT_MERRY:
-  //       r = GameText.STR_PARTNER;
-  //   }
-  //   i == Define.PLAYER_EVENT_JOINCOUNTRYHANDLE
-  //     ? xself &&
-  //       (xself.setTabStatus(!0, Model.COUNTRY_APPLY),
-  //       PanelManager.updateWorldIconPoint())
-  //     : AlertPanel.alert(
-  //         r,
-  //         a,
-  //         function () {
-  //           var e = window.MsgHandler.createPlayerEvent(
-  //             n,
-  //             ProtocolDefine.PLAYER_EVENT_CHOOSE_YES
-  //           );
-  //           nato.Network.sendCmd(e);
-  //         },
-  //         this,
-  //         function () {
-  //           var e = window.MsgHandler.createPlayerEvent(
-  //             n,
-  //             ProtocolDefine.PLAYER_EVENT_CHOOSE_NO
-  //           );
-  //           nato.Network.sendCmd(e);
-  //         },
-  //         PopUpManager.CloseType.NONE
-  //       );
-  // };
-
   // 退出 Battle 后
   window.MsgHandler.processAfterBattlePoint = function (
     t: any,
@@ -336,11 +249,9 @@ export default function setupGameHook() {
             && (GameWorld.setLoginSetting(!1, GameWorld.IS_GUIDE_SKIP_BATTLE),
             this.setGuide(BattleConst.TAG_IS_GUIDE_SKIP_BATTLE)))
 
-    window.__myEvent__.emit(EVENTS.ENTER_BATTLE_MAP)
     window.__escortEmitter__.emit(EVENTS.ENTER_BATTLE_MAP)
   }
 
-  // @ts-expect-error
   window.BattleView.prototype.exit = function () {
     const {
       xworld,

@@ -36,7 +36,7 @@ export default class ThousandBattle extends EventEmitter {
   }
 
   private async recordPrevBattleId() {
-    this.prevBattleId = window.BattleInputHandler.instance.battle.monsterGroup.groupId ?? 0
+    this.prevBattleId = window.BATTLE_ID ?? 0
   }
 
   private execute() {

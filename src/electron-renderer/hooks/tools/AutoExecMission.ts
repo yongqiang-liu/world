@@ -99,6 +99,8 @@ export class AutoExecMission {
     if (!this._isStarting) {
       this._isStarting = true
       this.run()
+        .then(() => console.log('执行完毕'))
+        .catch(err => console.error(err))
     }
   }
 
@@ -120,18 +122,13 @@ export class AutoExecMission {
       this.run()
   }
 
-  /**
-   * 1. 任务寻路
-   * 2. 接受任务
-   * 3. 完成任务
-   * 4. 提交任务
-   * 5. -> 1
-   */
   async run() {
     if (!this._isStarting)
       return
 
-    await when(() => !window.xworld.inBattle)
+    await this.ensureFree()
+
+    window.OneKeyDailyMission.stop()
     window.skipBattleAnime.start()
 
     if (this.isFinish()) {
@@ -160,6 +157,7 @@ export class AutoExecMission {
       }
       return
     }
+
     if (this.checkFashionDurability()) {
       await window.thousandBattle.enterCity()
       window.autoRepairEquip.repairEquip()
@@ -168,34 +166,39 @@ export class AutoExecMission {
 
     const index = this.getUncompletedIndex()
     const missionId = this.defaultMission[index]
-
     const steps = await this.getMissionPathById(missionId)
     await this.jumpMapByStep(steps)
     await when(() => !window.xworld.isJumpingMap)
     await delay(100)
-    const acceptedMission = await this.acceptMission(missionId)
+    const acceptedMission = await this.ensureAcceptMission(missionId)!
     let condition: Condition
     let f = false
 
     if (acceptedMission && acceptedMission.isCollectItemType) {
       f = true
-      while (this.hasMissionById(missionId)!.getUnCompleteCollectionCondition()) {
-        condition = this.hasMissionById(missionId)!.getUnCompleteCollectionCondition()!
+      while (!this.ensureMissionCompleted(missionId)) {
+        await this.ensureFree()
+        condition = acceptedMission.getUnCompleteCollectionCondition()!
+        if (!condition)
+          break
         const monsterGroupId = COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP[condition.id]
         if (!window.xworld.inBattle)
           window.xworld.toBattle(monsterGroupId)
         window.xworld.setAutoMissionFindPath(false)
-        await when(window, () => window.PanelManager.battleResultPanel)
+        await when(() => window.PanelManager.battleResultPanel)
         await delay(100)
       }
 
-      await this.submitMission(missionId)
+      await this.ensureSubmitMission(missionId)
     }
 
     if (acceptedMission && acceptedMission.isKillMonsterMission()) {
       f = true
-      while (this.hasMissionById(missionId)!.getUnCompleteKillMonsterCondition()) {
-        condition = this.hasMissionById(missionId)!.getUnCompleteKillMonsterCondition()!
+      while (!this.ensureMissionCompleted(missionId)) {
+        await this.ensureFree()
+        condition = acceptedMission.getUnCompleteKillMonsterCondition()!
+        if (!condition)
+          break
         const monsterId = condition.id
         if (!window.xworld.inBattle) {
           const disabledGroups = [439]
@@ -243,12 +246,12 @@ export class AutoExecMission {
         await delay(100)
       }
 
-      await this.submitMission(missionId)
+      await this.ensureSubmitMission(missionId)
     }
 
-    if (acceptedMission && acceptedMission.isComplete()) {
+    if (this.ensureMissionCompleted(missionId)) {
       f = true
-      await this.submitMission(missionId)
+      await this.ensureSubmitMission(missionId)
     }
 
     if (!f) {
@@ -259,8 +262,70 @@ export class AutoExecMission {
     }
 
     window.skipBattleAnime.stop()
-    console.log('run ended, mission: ', missionId)
-    this.run()
+    setTimeout(() => this.run())
+  }
+
+  private async ensureFree() {
+    await when(() => !window.xworld.inBattle)
+    await when(() => !window.GameWorld.isArenaStatus())
+    await when(() => !window.GameWorld.isEscortStatus())
+    await when(() => !window.GameWorld.isCountryBossStatus())
+    await when(() => !window.GameWorld.isCountryWarStatus())
+    await when(() => !window.GameWorld.isNewArenaStatus())
+  }
+
+  private ensureMissionCompleted(id: number) {
+    const mission: Mission | undefined = window.xself.missionList.find((mission: Mission) => mission.id === id)
+
+    if (!mission)
+      return false
+
+    return mission.isComplete()
+  }
+
+  private async ensureAcceptMission(id: number) {
+    while (1) {
+      const mission = this.hasMissionById(id)
+      if (mission)
+        return mission
+
+      const npcs = await this.getNPCAndMission()
+      let targetMission
+      let targetNpc
+
+      for (const npc of npcs) {
+        const missions = npc.missions
+        targetMission = missions.find(mission => mission.id === id)
+        if (targetMission) {
+          targetNpc = npc
+          break
+        }
+      }
+
+      if (targetMission) {
+        window.Mission.doAcceptMissionMsg(window.xself, targetNpc, targetMission)
+        await when(() => !!this.hasMissionById(id))
+      }
+    }
+
+    return undefined
+  }
+
+  private async ensureSubmitMission(id: number) {
+    while (1) {
+      if (!this.hasMissionById(id))
+        break
+
+      const mission = this.hasMissionById(id)
+      if (!mission)
+        return
+      const npc = this.hasNpcById(mission.npcId)
+      if (!npc)
+        return
+
+      window.Mission.doSubmitMissionMsg(window.xself, npc, mission)
+      await when(window, () => !this.hasMissionById(mission.id))
+    }
   }
 
   private checkFashionDurability() {
@@ -349,10 +414,10 @@ export class AutoExecMission {
     if (targetMission) {
       window.Mission.doAcceptMissionMsg(window.xself, targetNpc, targetMission)
       window.PanelManager?.closeNPCDialogue?.()
-      await when(window, () => !!this.hasMissionById(id))
+      await when(() => !!this.hasMissionById(id))
     }
 
-    return this.hasMissionById(id)!
+    return this.hasMissionById(id)
   }
 
   private async submitMission(id: number) {
@@ -427,6 +492,6 @@ export class AutoExecMission {
     return this.Task_cityList.map((dailyMission: number[]) => {
       return dailyMission.map((id: number) => window.Mission.isMissionFinish(window.xself, id)).some(v => v)
     })
-      .every((v: boolean) => v)
+      .every(Boolean)
   }
 }
