@@ -68,8 +68,6 @@ const COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP: Record<number, number> = {
 }
 
 export class AutoExecMission {
-  index = 0
-
   private Task_cityList = [
     [3061, 3065, 3069],
     [3060, 3064, 3068],
@@ -134,6 +132,7 @@ export class AutoExecMission {
       return
 
     await when(() => !window.xworld.inBattle)
+    window.skipBattleAnime.start()
 
     if (this.isFinish()) {
       if (!this.checkFinish([1552])) {
@@ -166,24 +165,20 @@ export class AutoExecMission {
       window.autoRepairEquip.repairEquip()
       await delay(1000)
     }
-    window.OneKeyDailyMission.stop()
-    window.AlertPanel.instance?.closePanel?.()
-    window.PanelManager?.closeNPCDialogue?.()
-    window.xworld.setAutoMissionFindPath(false)
+
     const index = this.getUncompletedIndex()
     const missionId = this.defaultMission[index]
-    console.log('run starting, mission: ', missionId)
 
     const steps = await this.getMissionPathById(missionId)
     await this.jumpMapByStep(steps)
-    await delay(50)
+    await when(() => !window.xworld.isJumpingMap)
+    await delay(100)
     const acceptedMission = await this.acceptMission(missionId)
-    window.AlertPanel.instance?.closePanel?.()
-    window.PanelManager?.closeNPCDialogue?.()
     let condition: Condition
+    let f = false
 
     if (acceptedMission && acceptedMission.isCollectItemType) {
-      window.skipBattleAnime.start()
+      f = true
       while (this.hasMissionById(missionId)!.getUnCompleteCollectionCondition()) {
         condition = this.hasMissionById(missionId)!.getUnCompleteCollectionCondition()!
         const monsterGroupId = COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP[condition.id]
@@ -193,10 +188,12 @@ export class AutoExecMission {
         await when(window, () => window.PanelManager.battleResultPanel)
         await delay(100)
       }
+
+      await this.submitMission(missionId)
     }
 
     if (acceptedMission && acceptedMission.isKillMonsterMission()) {
-      window.skipBattleAnime.start()
+      f = true
       while (this.hasMissionById(missionId)!.getUnCompleteKillMonsterCondition()) {
         condition = this.hasMissionById(missionId)!.getUnCompleteKillMonsterCondition()!
         const monsterId = condition.id
@@ -241,21 +238,27 @@ export class AutoExecMission {
           if (groups[_index])
             window.xworld.toBattle(groups[_index].groupId)
         }
-        window.xworld.setAutoMissionFindPath(false)
+
         await when(window, () => window.PanelManager.battleResultPanel)
         await delay(100)
       }
+
+      await this.submitMission(missionId)
     }
 
-    if (!(acceptedMission?.isCollectItemType && acceptedMission?.isKillMonsterMission()) || !acceptedMission) {
+    if (acceptedMission && acceptedMission.isComplete()) {
+      f = true
+      await this.submitMission(missionId)
+    }
+
+    if (!f) {
+      window.skipBattleAnime.stop()
       window.OneKeyDailyMission.start()
-      while (!this.checkFinish([missionId]))
-        await delay(1000)
+      await when(() => this.checkFinish([missionId]))
       window.OneKeyDailyMission.stop()
     }
 
     window.skipBattleAnime.stop()
-    await this.submitMission(missionId)
     console.log('run ended, mission: ', missionId)
     this.run()
   }
@@ -290,7 +293,7 @@ export class AutoExecMission {
           const s: number = byte.getByte()
           const l: number = byte.getByte()
 
-          console.log(`mapId: ${r} x: ${s} y: ${l}`)
+          // console.log(`mapId: ${r} x: ${s} y: ${l}`)
           const step = {
             id: r,
             x: s,

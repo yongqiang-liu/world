@@ -75,7 +75,7 @@ export function setupUnInitializeFunction() {
   ipcRenderer.on(IPC_RENDERER.GET_IS_AUTO_DAILY, () => {
     ipcRenderer.send(
       IPC_MAIN.RECEIVE_IS_AUTO_DAILY,
-      window?.OneKeyDailyMission?._isStarting,
+      window.OneKeyDailyMission.isDoingOnekeyMission,
     )
   })
 
@@ -125,22 +125,6 @@ function setupAutoFunction() {
       return
 
     if (v && !window.OneKeyDailyMission._isStarting) {
-      if (window.xself.getTitle() !== '努力升级') {
-        // 查看背包是否有努力升级称号
-        for (let i = 30; i < window.xself.bag.bagEnd; i++) {
-          const item = window.xself.bag.store[i]
-          if (item && item.id == 40645)
-            window.ItemManager.doItem(item)
-        }
-
-        setTimeout(async () => {
-          const titleList = await window.defaultFunction.getTitleList()
-          const title = titleList.find(item => item[0] == 505)
-          if (title)
-            window.defaultFunction.useTitle(505)
-        }, TimeHelper.second(2))
-      }
-
       window.OneKeyDailyMission.start()
       window.config.autoDaily = true
     }
