@@ -31,6 +31,7 @@ declare global {
   interface Window {
     AUTO_MISSION_RATE: number
     MOVE_SPEED: number
+    BATTLE_ID: number
     COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP: Record<number, number>
     config: Config;
     forbidBattle: boolean
