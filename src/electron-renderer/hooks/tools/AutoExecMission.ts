@@ -289,23 +289,7 @@ export class AutoExecMission {
       if (mission)
         return mission
 
-      const npcs = await this.getNPCAndMission()
-      let targetMission
-      let targetNpc
-
-      for (const npc of npcs) {
-        const missions = npc.missions
-        targetMission = missions.find(mission => mission.id === id)
-        if (targetMission) {
-          targetNpc = npc
-          break
-        }
-      }
-
-      if (targetMission) {
-        window.Mission.doAcceptMissionMsg(window.xself, targetNpc, targetMission)
-        await when(() => !!this.hasMissionById(id))
-      }
+      await this.acceptMission(id)
     }
 
     return undefined
@@ -316,15 +300,7 @@ export class AutoExecMission {
       if (!this.hasMissionById(id))
         break
 
-      const mission = this.hasMissionById(id)
-      if (!mission)
-        return
-      const npc = this.hasNpcById(mission.npcId)
-      if (!npc)
-        return
-
-      window.Mission.doSubmitMissionMsg(window.xself, npc, mission)
-      await when(window, () => !this.hasMissionById(mission.id))
+      await this.submitMission(id)
     }
   }
 
