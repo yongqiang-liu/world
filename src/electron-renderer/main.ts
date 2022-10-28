@@ -50,6 +50,9 @@ window.addEventListener('load', async () => {
 
   console.log('进入游戏并选择角色...')
 
+  window.AUTO_MISSION_RATE = 200
+  window.MOVE_SPEED = 12
+
   setupEvent()
 
   setupFunction()
