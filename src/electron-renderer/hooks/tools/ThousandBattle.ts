@@ -32,11 +32,10 @@ export default class ThousandBattle extends EventEmitter {
   constructor() {
     super()
     window.__myEvent__.addListener(EVENTS.ENTER_BATTLE_MAP, this.recordPrevBattleId.bind(this))
+    window.__myEvent__.addListener(EVENTS.EXIT_BATTLE_MAP, this.recordPrevBattleId.bind(this))
   }
 
   private async recordPrevBattleId() {
-    await when(window.BattleInputHandler.instance.battle.monsterGroup)
-    await delay(100)
     this.prevBattleId = window.BattleInputHandler.instance.battle.monsterGroup.groupId ?? 0
   }
 
