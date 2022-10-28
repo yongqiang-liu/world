@@ -29,7 +29,10 @@ export default class SkipBattleAnime {
       } = window
 
       if (AlertPanel.instance && AlertPanel.instance.stage)
-        return AlertPanel.instance.closePanel()
+        AlertPanel.instance.closePanel()
+      const o = PanelManager.npcDialogue
+      if (o && o.stage && o.visible)
+        PanelManager.closeNPCDialogue()
 
       if (((this._logicCount = 0), xworld.inBattle)) {
         const e = PanelManager.battleUI

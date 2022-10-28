@@ -39,7 +39,7 @@ export default class DefaultFunction {
       window.forbidBattle = true
       setTimeout(() => {
         window.forbidBattle = false
-      }, TimeHelper.second(10))
+      }, TimeHelper.second(15))
     })
 
     // 称号
@@ -54,7 +54,7 @@ export default class DefaultFunction {
 
   private eventLogic() {
     window.__myEvent__.on(EVENTS.EXIT_BATTLE_MAP, () => {
-      if (window.xworld.isEscort)
+      if (window.GameWorld.isEscortStatus())
         return
 
       // 自动回血
@@ -65,6 +65,24 @@ export default class DefaultFunction {
         < window?.xself.get(window.ModelConst.MPMAX)
       )
         window?.ItemManager?.doQuickAddHP(window.xself)
+    })
+
+    window.__myEvent__.on(EVENTS.AUTO_DAILY_LOGIC, () => {
+      if (window.xself.getTitle() !== '努力升级') {
+        // 查看背包是否有努力升级称号
+        for (let i = 30; i < window.xself.bag.bagEnd; i++) {
+          const item = window.xself.bag.store[i]
+          if (item && item.id == 40645)
+            window.ItemManager.doItem(item)
+        }
+
+        setTimeout(async () => {
+          const titleList = await window.defaultFunction.getTitleList()
+          const title = titleList.find(item => item[0] == 505)
+          if (title)
+            window.defaultFunction.useTitle(505)
+        }, TimeHelper.second(2))
+      }
     })
   }
 

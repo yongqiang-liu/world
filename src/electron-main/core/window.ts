@@ -4,7 +4,7 @@ import path from 'path'
 import type { Account } from 'common/configuration'
 import { debounce } from 'common/functional'
 import { IPC_MAIN, IPC_RENDERER } from 'common/ipcEventConst'
-import { app, ipcMain } from 'electron'
+import { BrowserWindow, app, ipcMain } from 'electron'
 import type { COMMAND, COMMAND_PAYLOAD } from 'common/Command'
 import VERSION_MAP, { VERSION_KEY } from '../../electron-common/versions'
 import type Configuration from './Configuration'
@@ -62,12 +62,13 @@ export class ApplicationWindow extends GameWindow {
 
   initializeMerge() {
     for (let i = 0; i < this.views.length; i++) {
-      const window = this.windows[i]
+      const window = (BrowserWindow.getAllWindows() as GameWindow[])[i]
       const view = this.views[i]
       if (window && !window.isDestroyed())
         window.removeBrowserView(view.view)
       if (window && window.id !== this.id) {
         window.destroy()
+        window.close()
         this.windows.splice(i, 1)
       }
       this.active_view = i

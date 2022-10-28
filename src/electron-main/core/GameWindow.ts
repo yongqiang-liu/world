@@ -75,6 +75,8 @@ export default class GameWindow extends BrowserWindow {
     let index = 0
     const viewIndex = this.mode === 'merge' ? this.win?.active_view ?? 0 : this.win.getViewIndexById(this.view.id)
     const view = this.win.views[viewIndex]
+    if (!view)
+      return
     const oneKeyDailyMission = view.getAutoDaily()
     const allOneKeyDailyMission = this.win.views.map(view => view.getAutoDaily()).every(Boolean)
     const started = view.getGameStarted()
