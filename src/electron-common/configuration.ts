@@ -46,3 +46,9 @@ export interface IRawBattleConfiguration {
 export interface IBattleConfiguration {
   battle: IRawBattleConfiguration[]
 }
+
+export interface RateConfiguration {
+  AUTO_MISSION_RATE: number
+  MOVE_SPEED: number
+  BATTLE_RATE: number
+}

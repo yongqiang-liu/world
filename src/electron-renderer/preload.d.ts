@@ -11,6 +11,8 @@ import DefaultFunction from "./hooks/tools/Default";
 import SkipBattleAnime from "./hooks/tools/SkipAnime";
 import TestRefreshGame from "./hooks/tools/TestRefreshGame";
 import ThousandBattle from "./hooks/tools/ThousandBattle";
+import Store from 'electron-store'
+import { RateConfiguration } from "common/configuration";
 
 interface Config {
   autoDaily: boolean;
@@ -29,6 +31,7 @@ interface Config {
 
 declare global {
   interface Window {
+    STORE: Store<RateConfiguration>
     AUTO_MISSION_RATE: number
     MOVE_SPEED: number
     BATTLE_ID: number
