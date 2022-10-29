@@ -20,7 +20,7 @@ export const GameViewConfig: BrowserViewConstructorOptions = {
     contextIsolation: false,
     spellcheck: false,
     enableWebSQL: false,
-    devTools: !app.isPackaged,
+    // devTools: !app.isPackaged,
     imageAnimationPolicy: 'noAnimation',
     preload: resolvePreloadPath('preload.js'),
   },
