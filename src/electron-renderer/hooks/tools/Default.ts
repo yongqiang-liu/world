@@ -109,13 +109,13 @@ export default class DefaultFunction {
         (e: any) => {
           const i: any[] = []
           for (let n = e?.getByte(), o = 0; n > o; o++) {
-            (i[o] = []),
-            (i[o][0] = e.getShort()),
-            (i[o][1] = e.getString()),
-            (i[o][2] = e.getUnsignedByte()),
-            (i[o][3] = e.getShort()),
-            (i[o][4] = e.getUnsignedByte()),
-            (i[o][5] = e.getShort())
+            i[o] = []
+            i[o][0] = e.getShort()
+            i[o][1] = e.getString()
+            i[o][2] = e.getUnsignedByte()
+            i[o][3] = e.getShort()
+            i[o][4] = e.getUnsignedByte()
+            i[o][5] = e.getShort()
           }
           // 40645
           resolve(i)
@@ -143,11 +143,11 @@ export default class DefaultFunction {
         const s = e.getShort()
         const l = e.getShort()
         const n = window.xself
-        n.setTitle(o),
-        (n.titlePower1 = a),
-        (n.titlePowerValue1 = r),
-        (n.titlePower2 = s),
-        (n.titlePowerValue2 = l),
+        n.setTitle(o)
+        n.titlePower1 = a
+        n.titlePowerValue1 = r
+        n.titlePower2 = s
+        n.titlePowerValue2 = l
         Achieve.instance.setNowTitle(o)
         PanelManager.getPanel(AchieveScene, !1)
                     && PanelManager.getPanel(AchieveScene).updateNowTitle(o)
