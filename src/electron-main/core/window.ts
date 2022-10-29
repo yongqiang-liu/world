@@ -61,21 +61,22 @@ export class ApplicationWindow extends GameWindow {
   }
 
   initializeMerge() {
+    this.mode = 'merge'
     for (let i = 0; i < this.views.length; i++) {
-      const window = (BrowserWindow.getAllWindows() as GameWindow[])[i]
+      const window = this.windows[i]
       const view = this.views[i]
       if (window && !window.isDestroyed())
         window.removeBrowserView(view.view)
       if (window && window.id !== this.id) {
-        window.destroy()
+        window.mode = 'merge'
         window.close()
-        this.windows.splice(i, 1)
       }
       this.active_view = i
       this.addBrowserView(view.view)
       this.setTopView(i)
     }
 
+    this.windows = [this]
     super.initializeMerge()
   }
 
@@ -87,9 +88,6 @@ export class ApplicationWindow extends GameWindow {
       this.active_view = i
       if (!window) {
         window = new GameWindow(this.configuration, this.eventEmitter)
-        window.once('closed', () => {
-          this.windows.splice(i, 1)
-        })
         window.setApplicationWindow(this)
         this.windows.push(window)
       }

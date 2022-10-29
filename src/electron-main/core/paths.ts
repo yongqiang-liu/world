@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
-import { app } from 'electron'
+import { app, ipcMain } from 'electron'
+import { IPC_RENDERER } from 'common/ipcEventConst'
 
 const isPackaged = app.isPackaged
 
@@ -32,4 +33,10 @@ export function resolveAssets(...paths: string[]) {
   return path.join(assetsPath, ...paths)
 }
 
-export const aboutPath = isPackaged ? path.join(__dirname, '../../node_modules/about-window') : undefined
+export const aboutPath = isPackaged
+  ? path.join(__dirname, '../../node_modules/about-window')
+  : undefined
+
+ipcMain.handle(IPC_RENDERER.INVOKE_USER_DATA_PATH, () => {
+  return app.getPath('userData')
+})

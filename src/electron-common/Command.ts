@@ -1,5 +1,6 @@
 export enum COMMAND {
-
+  STOP_SKIP_ANIME = 'STOP_SKIP_ANIME',
+  STOP_DAILY_MISSION = 'STOP_DAILY_MISSION',
 }
 
 export interface COMMAND_PAYLOAD {

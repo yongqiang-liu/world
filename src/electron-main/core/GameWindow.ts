@@ -24,7 +24,7 @@ export default class GameWindow extends BrowserWindow {
   private state!: ViewState
   private view!: GameView
   private win!: ApplicationWindow
-  private mode: 'merge' | 'split' = 'merge'
+  mode: 'merge' | 'split' = 'merge'
   private timer: NodeJS.Timer | null = null
   private battleConfig: IBattleConfiguration
 
@@ -52,6 +52,7 @@ export default class GameWindow extends BrowserWindow {
     this.state = state
     this.mode = 'split'
     this.buildWindowMenu()
+    this.show()
   }
 
   setApplicationWindow(win: ApplicationWindow) {
@@ -516,7 +517,9 @@ export default class GameWindow extends BrowserWindow {
 
   protected onClose(e: Electron.Event) {
     if (this.id === this.win.id) {
-      if (this.mode === 'merge') { this.win?.close() }
+      if (this.mode === 'merge') {
+        this.win?.close()
+      }
       else {
         if (this.win.windows.length !== 1) {
           e.preventDefault()
@@ -524,11 +527,13 @@ export default class GameWindow extends BrowserWindow {
         }
       }
     }
-    else { this.destroy() }
+    else {
+      this.destroy()
+    }
   }
 
   private registerWindowListener() {
-    this.on('close', this.onClose)
+    this.once('close', this.onClose)
 
     this.on('show', () => {
       this.setRegisterAccelerator(true)
@@ -556,6 +561,7 @@ export default class GameWindow extends BrowserWindow {
   }
 
   destroy(): void {
+    super.close()
     clearInterval(this.timer!)
     super.destroy()
   }
