@@ -5,6 +5,9 @@ import { resolveAssets, resolveConfiguration } from './core/paths'
 import ExceptionHandler from './core/ExceptionHandler'
 import { ApplicationWindow } from './core/window'
 
+app.commandLine.appendSwitch('--disable-renderer-backgrounding')
+app.commandLine.appendSwitch('--force_high_performance_gpu')
+
 let mainWindow: Electron.BrowserWindow, tray: Electron.Tray
 
 function createWindow() {
