@@ -1,6 +1,6 @@
 import type { IRawBattleConfiguration } from 'common/configuration'
+import { when } from 'common/functional'
 import { IPC_MAIN, IPC_RENDERER } from 'common/ipcEventConst'
-import { TimeHelper } from 'common/timer'
 import { ipcRenderer } from 'electron'
 import { gameStarted, openDailyBox } from './gameFunctional'
 
@@ -43,7 +43,7 @@ export function setupUnInitializeFunction() {
 
     const version = await ipcRenderer.invoke(IPC_MAIN.INVOKE_VERSION_INFO)
 
-    if (version.name == '天宇') {
+    if (version.name === '天宇') {
       const wrapIframe = <HTMLIFrameElement>document.getElementById('iframe_cen')
 
       if (wrapIframe) {
@@ -59,7 +59,7 @@ export function setupUnInitializeFunction() {
         }
       }
     }
-    else if (version.name == '小七') {
+    else if (version.name === '小七') {
       const game = <HTMLIFrameElement>document.getElementById('frameGame')
 
       if (game?.src.includes('worldh5')) {
@@ -82,6 +82,23 @@ export function setupUnInitializeFunction() {
   // 获取当前是否已经进入游戏
   ipcRenderer.on(IPC_RENDERER.GET_IS_GAME_STARTED, () => {
     ipcRenderer.send(IPC_MAIN.RECEIVE_IS_GAME_STARTED, gameStarted())
+  })
+
+  ipcRenderer.on(IPC_RENDERER.SET_OFFLINE_EXP_RATE3, (_, v: boolean) => {
+    window.config.offlineExpRate3 = !!v
+  })
+
+  // 自动登录
+  ipcRenderer.on(IPC_RENDERER.AUTO_ENTER_GAME, async () => {
+    await when(window.xworld, (xworld) => {
+      return !!xworld
+    })
+
+    window.doEnterGame()
+  })
+
+  ipcRenderer.on(IPC_RENDERER.EXIT_ESCORT, () => {
+    window.Escort.doEscortPostQuitMsgNoAlert()
   })
 }
 

@@ -2,9 +2,6 @@ import type {
   BrowserViewConstructorOptions,
   BrowserWindowConstructorOptions,
 } from 'electron'
-import {
-  app,
-} from 'electron'
 import { resolvePreloadPath } from './paths'
 
 export const TITLE_BAR_HEIGHT = 56
@@ -20,6 +17,7 @@ export const GameViewConfig: BrowserViewConstructorOptions = {
     contextIsolation: false,
     spellcheck: false,
     enableWebSQL: false,
+    webSecurity: false,
     // devTools: !app.isPackaged,
     imageAnimationPolicy: 'noAnimation',
     preload: resolvePreloadPath('preload.js'),
