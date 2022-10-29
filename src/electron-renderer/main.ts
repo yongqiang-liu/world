@@ -1,13 +1,12 @@
 import { EventEmitter } from 'events'
+import path from 'path'
 import { when } from 'common/functional'
 import { IPC_MAIN, IPC_RENDERER } from 'common/ipcEventConst'
 import { ipcRenderer } from 'electron'
+import Store from 'electron-store'
+import type { RateConfiguration } from 'common/configuration'
 import { setupEvent } from './events'
-import {
-  checkGameStart,
-  whenGameStarted,
-  whenGameWillReady,
-} from './gameFunctional'
+import { checkGameStart, whenGameStarted, whenGameWillReady } from './gameFunctional'
 import { setupHooks } from './hooks'
 import { setupFunction, setupUnInitializeFunction } from './ipcEvent'
 
@@ -48,10 +47,23 @@ window.addEventListener('load', async () => {
 
   await whenGameStarted()
 
-  console.log('进入游戏并选择角色...')
+  const user_data = await ipcRenderer.invoke(IPC_RENDERER.INVOKE_USER_DATA_PATH)
 
-  window.AUTO_MISSION_RATE = 200
-  window.MOVE_SPEED = 12
+  window.STORE = new Store<RateConfiguration>({
+    name: 'rate.controller',
+    cwd: path.join(user_data, 'worldh5'),
+    defaults: {
+      AUTO_MISSION_RATE: 5,
+      MOVE_SPEED: 12,
+      BATTLE_RATE: 15,
+    },
+  })
+
+  window.AUTO_MISSION_RATE = 1000 / window.STORE.get('AUTO_MISSION_RATE')
+  window.MOVE_SPEED = window.STORE.get('MOVE_SPEED')
+
+  window.STORE.onDidChange('AUTO_MISSION_RATE', v => window.AUTO_MISSION_RATE = v ?? 12)
+  window.STORE.onDidChange('MOVE_SPEED', v => window.MOVE_SPEED = v ?? 12)
 
   setupEvent()
 

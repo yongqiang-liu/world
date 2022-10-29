@@ -1,5 +1,6 @@
 import fs from 'fs'
 import { Menu, Tray, app, protocol, session } from 'electron'
+import Store from 'electron-store'
 import Configuration from './core/Configuration'
 import { resolveAssets, resolveConfiguration } from './core/paths'
 import ExceptionHandler from './core/ExceptionHandler'
@@ -17,6 +18,8 @@ function createWindow() {
 }
 
 function setupProtocol() {
+  Store.initRenderer()
+
   protocol.registerBufferProtocol('world', (_, cb) => {
     if (fs.existsSync(resolveAssets(_.url.slice(7)))) {
       const world = fs.readFileSync(resolveAssets(_.url.slice(7)))

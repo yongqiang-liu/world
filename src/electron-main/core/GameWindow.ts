@@ -1,6 +1,7 @@
 import type EventEmitter from 'events'
+import path from 'path'
 import type { IBattleConfiguration, IConfiguration } from 'common/configuration'
-import { BrowserWindow, shell } from 'electron'
+import { BrowserWindow, app, shell } from 'electron'
 import { KEY_MAP, combineKeys } from 'common/key_map'
 import { IPC_RENDERER } from 'common/ipcEventConst'
 import VERSION_MAP from '../../electron-common/versions'
@@ -384,6 +385,10 @@ export default class GameWindow extends BrowserWindow {
             this.win.extendsDailyMission[viewIndex] = !this.win.extendsDailyMission[viewIndex]
             view.send(IPC_RENDERER.EXTENDS_DAILY_MISSION, this.win.extendsDailyMission[viewIndex])
           },
+        },
+        {
+          label: '修改游戏速度',
+          click: () => shell.openPath(path.join(app.getPath('userData'), 'worldh5', 'rate.controller.json')),
         },
       ],
     }

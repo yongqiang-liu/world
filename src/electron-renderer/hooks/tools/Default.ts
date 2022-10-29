@@ -1,11 +1,13 @@
 import { TimeHelper } from 'common/timer'
 import { EVENTS } from 'common/eventConst'
 import { whenGameStarted } from 'renderer/gameFunctional'
+import { throttle } from 'lodash-es'
 
 export default class DefaultFunction {
   _isStarting = false
 
   private _interval: number | null = null
+  private battle_rate_timer: NodeJS.Timeout | null = null
 
   start() {
     if (!this._isStarting && !this._interval) {
@@ -37,9 +39,14 @@ export default class DefaultFunction {
 
     window.__myEvent__.on('battle:rate:error', () => {
       window.forbidBattle = true
-      setTimeout(() => {
+      this.setBattleRate()
+    })
+
+    window.STORE.onDidChange('BATTLE_RATE', () => {
+      if (this.battle_rate_timer) {
         window.forbidBattle = false
-      }, TimeHelper.second(15))
+        clearTimeout(this.battle_rate_timer)
+      }
     })
 
     // 称号
@@ -50,6 +57,12 @@ export default class DefaultFunction {
       window.doGetExp()
       window.doLoginLottery()
     }, TimeHelper.second(10))
+  }
+
+  private setBattleRate() {
+    this.battle_rate_timer = setTimeout(() => {
+      window.forbidBattle = false
+    }, TimeHelper.second(window.STORE.get('BATTLE_RATE')))
   }
 
   private eventLogic() {
@@ -67,23 +80,23 @@ export default class DefaultFunction {
         window?.ItemManager?.doQuickAddHP(window.xself)
     })
 
-    window.__myEvent__.on(EVENTS.AUTO_DAILY_LOGIC, () => {
+    window.__myEvent__.on(EVENTS.AUTO_DAILY_LOGIC, throttle (() => {
       if (window.xself.getTitle() !== '努力升级') {
         // 查看背包是否有努力升级称号
         for (let i = 30; i < window.xself.bag.bagEnd; i++) {
           const item = window.xself.bag.store[i]
-          if (item && item.id == 40645)
+          if (item && item.id === 40645)
             window.ItemManager.doItem(item)
         }
 
         setTimeout(async () => {
           const titleList = await window.defaultFunction.getTitleList()
-          const title = titleList.find(item => item[0] == 505)
+          const title = titleList.find(item => item[0] === 505)
           if (title)
             window.defaultFunction.useTitle(505)
         }, TimeHelper.second(2))
       }
-    })
+    }, 1000))
   }
 
   getTitleList() {
