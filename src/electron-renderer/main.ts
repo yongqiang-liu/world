@@ -20,6 +20,25 @@ window.addEventListener('load', async () => {
     ipcRenderer.send(IPC_MAIN.MOUSE_WHEEL, e.deltaY)
   })
 
+  const user_data = await ipcRenderer.invoke(IPC_RENDERER.INVOKE_USER_DATA_PATH)
+
+  window.STORE = new Store<RateConfiguration>({
+    name: 'rate.controller',
+    cwd: path.join(user_data, 'worldh5'),
+    defaults: {
+      AUTO_MISSION_RATE: 5,
+      MOVE_SPEED: 12,
+      BATTLE_RATE: 15,
+      TICKER_RATE: 1,
+    },
+    migrations: {
+      '2.1.2': (store) => {
+        store.set('TICKER_RATE', 1)
+      },
+    },
+    watch: true,
+  })
+
   checkGameStart()
 
   ipcRenderer.on(IPC_RENDERER.SET_OFFLINE_EXP_RATE3, (_, v: boolean) => {
@@ -46,24 +65,6 @@ window.addEventListener('load', async () => {
   setupHooks()
 
   await whenGameStarted()
-
-  const user_data = await ipcRenderer.invoke(IPC_RENDERER.INVOKE_USER_DATA_PATH)
-
-  window.STORE = new Store<RateConfiguration>({
-    name: 'rate.controller',
-    cwd: path.join(user_data, 'worldh5'),
-    defaults: {
-      AUTO_MISSION_RATE: 5,
-      MOVE_SPEED: 12,
-      BATTLE_RATE: 15,
-      TICKER_RATE: 1,
-    },
-    migrations: {
-      '2.1.2': (store) => {
-        store.set('TICKER_RATE', 1)
-      },
-    },
-  })
 
   window.AUTO_MISSION_RATE = 1000 / window.STORE.get('AUTO_MISSION_RATE')
   window.MOVE_SPEED = window.STORE.get('MOVE_SPEED')
