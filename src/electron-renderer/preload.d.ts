@@ -34,6 +34,7 @@ declare global {
     STORE: Store<RateConfiguration>
     AUTO_MISSION_RATE: number
     MOVE_SPEED: number
+    TICKER_RATE: number
     BATTLE_ID: number
     COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP: Record<number, number>
     config: Config;
