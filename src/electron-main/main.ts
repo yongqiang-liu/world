@@ -1,11 +1,12 @@
 import fs from 'fs'
-import { Menu, Tray, app, protocol, session } from 'electron'
+import { Menu, Tray, app, ipcMain, protocol, session } from 'electron'
 import Store from 'electron-store'
 import Configuration from './core/Configuration'
 import { resolveAssets, resolveConfiguration } from './core/paths'
 import ExceptionHandler from './core/ExceptionHandler'
 import { ApplicationWindow } from './core/window'
 
+ipcMain.setMaxListeners(Infinity)
 app.commandLine.appendSwitch('--disable-renderer-backgrounding')
 app.commandLine.appendSwitch('--force_high_performance_gpu')
 

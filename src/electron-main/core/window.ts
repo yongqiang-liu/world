@@ -366,7 +366,7 @@ export class ApplicationWindow extends GameWindow {
 
   private registerIPCListener() {
     ipcMain.handle(IPC_MAIN.INVOKE_VERSION_INFO, () => {
-      return VERSION_MAP[this.config.version]
+      return VERSION_MAP[this.config.version] ?? VERSION_MAP['天宇']
     })
 
     ipcMain.on(IPC_MAIN.SETUP_FUNCTION_ENDED, async (e) => {
