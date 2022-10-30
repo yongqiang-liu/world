@@ -35,6 +35,7 @@ declare global {
     AUTO_MISSION_RATE: number
     MOVE_SPEED: number
     TICKER_RATE: number
+    DISABLE_AUTO_FIND_MISSION: boolean
     BATTLE_ID: number
     COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP: Record<number, number>
     config: Config;
