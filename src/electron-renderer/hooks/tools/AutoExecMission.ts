@@ -50,7 +50,7 @@ const COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP: Record<number, number> = {
   4: 5,
   5: 6,
   6: 188,
-  8: 155,
+  8: 230,
   9: 231,
   10: 232,
   28: 79,
@@ -77,9 +77,9 @@ export class AutoExecMission {
     [3073, 3075],
   ]
 
+  // 507, 508, 512, 522, 560, 561, 559, 558
   private defaultMission: number[] = [
     733, 734, 735, 697, 698, 766, 767, 768, 811, 873, 841, 333, 2, 507, 508, 512, 522, 560, 561, 559, 558, 26, 570,
-    ...window.OneKeyDailyMission.idList_yuangusenlin,
     2575, 2548, 2549, 2550, 2570, 2571, 2572, 2574, 2573, // 夜语森林
     2599, 1126, 1127, 1134, 1128, 1129, 1130, 1135, 1131, 1136, 1133, 1132, // 美女节
   ]
@@ -126,8 +126,6 @@ export class AutoExecMission {
     if (!this._isStarting)
       return
 
-    await this.ensureFree()
-
     window.OneKeyDailyMission.stop()
     window.skipBattleAnime.start()
 
@@ -168,82 +166,33 @@ export class AutoExecMission {
     const missionId = this.defaultMission[index]
     const steps = await this.getMissionPathById(missionId)
     await this.jumpMapByStep(steps)
-    await when(() => !window.xworld.isJumpingMap)
-    await delay(100)
     const acceptedMission = await this.ensureAcceptMission(missionId)!
+    console.log('acceptMission', acceptedMission)
     let condition: Condition
     let f = false
 
     if (acceptedMission && acceptedMission.isCollectItemType) {
+      window.DISABLE_AUTO_FIND_MISSION = true
       f = true
       while (!this.ensureMissionCompleted(missionId)) {
-        await this.ensureFree()
-        condition = acceptedMission.getUnCompleteCollectionCondition()!
-        if (!condition)
-          break
-        const monsterGroupId = COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP[condition.id]
-        if (!window.xworld.inBattle)
-          window.xworld.toBattle(monsterGroupId)
-        window.xworld.setAutoMissionFindPath(false)
-        await when(() => window.PanelManager.battleResultPanel)
-        await delay(100)
+        if (window.xworld.inBattle)
+          continue
+        this.toCollectMissionBattle(acceptedMission)
       }
 
       await this.ensureSubmitMission(missionId)
     }
 
     if (acceptedMission && acceptedMission.isKillMonsterMission()) {
+      window.DISABLE_AUTO_FIND_MISSION = true
       f = true
       while (!this.ensureMissionCompleted(missionId)) {
-        await this.ensureFree()
-        condition = acceptedMission.getUnCompleteKillMonsterCondition()!
-        if (!condition)
-          break
-        const monsterId = condition.id
-        if (!window.xworld.inBattle) {
-          const disabledGroups = [439]
-          if (acceptedMission.acceptBattleID)
-            window.xworld.toBattle(acceptedMission.acceptBattleID)
-          if (acceptedMission.submitBattleID)
-            window.xworld.toBattle(acceptedMission.submitBattleID)
-          if (missionId === 2574)
-            window.xworld.toBattle(1710)
+        function exitBattle() {
 
-          if (window.xworld.inBattle)
-            continue
-
-          const groups: any[] = Object.values(window.xworld.monsterGroupList)
-            .filter((group: any) => !disabledGroups.includes(group.groupId))
-            .filter((group: any) => group.monsters.includes(monsterId))
-
-          const index = groups.map((group) => {
-            let c = 0
-
-            if (group && group.monsters) {
-              for (const monster of group.monsters) {
-                if (monster && monster === acceptedMission.id)
-                  c++
-              }
-            }
-
-            return c
-          })
-          let max = -1
-          let _index = 0
-          for (let i = 0; i < index.length; i++) {
-            const ii = index[i]
-            if (ii >= max) {
-              max = ii
-              _index = i
-            }
-          }
-
-          if (groups[_index])
-            window.xworld.toBattle(groups[_index].groupId)
         }
-
-        await when(window, () => window.PanelManager.battleResultPanel)
-        await delay(100)
+        if (window.xworld.inBattle)
+          continue
+        this.toKillMonsterMissionBattle(acceptedMission)
       }
 
       await this.ensureSubmitMission(missionId)
@@ -255,6 +204,7 @@ export class AutoExecMission {
     }
 
     if (!f) {
+      window.DISABLE_AUTO_FIND_MISSION = false
       window.skipBattleAnime.stop()
       window.OneKeyDailyMission.start()
       await when(() => this.checkFinish([missionId]))
@@ -262,16 +212,67 @@ export class AutoExecMission {
     }
 
     window.skipBattleAnime.stop()
-    setTimeout(() => this.run())
+    this.run()
   }
 
-  private async ensureFree() {
-    await when(() => !window.xworld.inBattle)
-    await when(() => !window.GameWorld.isArenaStatus())
-    await when(() => !window.GameWorld.isEscortStatus())
-    await when(() => !window.GameWorld.isCountryBossStatus())
-    await when(() => !window.GameWorld.isCountryWarStatus())
-    await when(() => !window.GameWorld.isNewArenaStatus())
+  private toCollectMissionBattle(mission: Mission) {
+    const condition = mission.getUnCompleteCollectionCondition()!
+    if (!condition)
+      return false
+    const monsterGroupId = COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP[condition.id]
+    if (!window.xworld.inBattle)
+      window.xworld.toBattle(monsterGroupId)
+    return true
+  }
+
+  private toKillMonsterMissionBattle(mission: Mission) {
+    const condition = mission.getUnCompleteKillMonsterCondition()!
+    if (!condition)
+      return false
+    const monsterId = condition.id
+    if (!window.xworld.inBattle) {
+      const disabledGroups = [439]
+      if (mission.acceptBattleID)
+        window.xworld.toBattle(mission.acceptBattleID)
+      if (mission.submitBattleID)
+        window.xworld.toBattle(mission.submitBattleID)
+      if (mission.id === 2574)
+        window.xworld.toBattle(1710)
+
+      if (window.xworld.inBattle)
+        return true
+
+      const groups: any[] = Object.values(window.xworld.monsterGroupList)
+        .filter((group: any) => !disabledGroups.includes(group.groupId))
+        .filter((group: any) => group.monsters.includes(monsterId))
+
+      const index = groups.map((group) => {
+        let c = 0
+
+        if (group && group.monsters) {
+          for (const monster of group.monsters) {
+            if (monster && monster === mission.id)
+              c++
+          }
+        }
+
+        return c
+      })
+      let max = -1
+      let _index = 0
+      for (let i = 0; i < index.length; i++) {
+        const ii = index[i]
+        if (ii >= max) {
+          max = ii
+          _index = i
+        }
+      }
+
+      if (groups[_index])
+        window.xworld.toBattle(groups[_index].groupId)
+    }
+
+    return true
   }
 
   private ensureMissionCompleted(id: number) {
