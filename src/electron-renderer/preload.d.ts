@@ -67,6 +67,7 @@ declare global {
     xworld: any;
     nato: any;
 
+    AutoFindPath: any
     LoginLotteryDraw: any
     Main: any;
     Player: any;

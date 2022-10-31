@@ -1,47 +1,5 @@
 import { delay, when } from 'common/functional'
-
-interface AutoMoveMissionPathStep {
-  id: number
-  x: number
-  y: number
-}
-
-interface Condition {
-  id: number
-  current: number
-  isComplete: boolean
-  total: number
-}
-
-interface KillMonsterCondition extends Condition {
-  monsterName: string
-}
-
-interface CollectionCondition extends Condition {
-  name: string
-}
-
-interface Mission {
-  id: number
-  setting: number
-  level: number
-  mapId: number
-  npcId: number
-  acceptBattleID: number
-  submitBattleID: number
-  getUnCompleteKillMonsterCondition(): KillMonsterCondition | null
-  getUnCompleteCollectionCondition(): CollectionCondition | null
-  isComplete(): boolean
-  isCollectItemType: boolean
-  isKillMonsterMission(): boolean
-  isCanAccept(): boolean
-}
-
-interface NPC {
-  id: number
-  missions: Mission[]
-  doGetMissionData(func1?: any, func2?: any): any
-}
+import type { AutoMoveMissionPathStep, Mission, NPC } from 'common/types'
 
 const COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP: Record<number, number> = {
   1: 171,
@@ -66,7 +24,6 @@ const COLLECTION_ITEM_FROM_MONSTER_GROUP_MAP: Record<number, number> = {
   516: 505,
   517: 511,
 }
-
 export class AutoExecMission {
   private Task_cityList = [
     [3061, 3065, 3069],
@@ -77,16 +34,23 @@ export class AutoExecMission {
     [3073, 3075],
   ]
 
+  // 732:[733]  精灵之森
+  //
+
   // 507, 508, 512, 522, 560, 561, 559, 558
   private defaultMission: number[] = [
-    733, 734, 735, 697, 698, 766, 767, 768, 811, 873, 841, 333, 2, 507, 508, 512, 522, 560, 561, 559, 558, 26, 570,
-    2575, 2548, 2549, 2550, 2570, 2571, 2572, 2574, 2573, // 夜语森林
-    2599, 1126, 1127, 1134, 1128, 1129, 1130, 1135, 1131, 1136, 1133, 1132, // 美女节
+    733, 734, 735, 697, 698, 766, 767, 768, // 精灵之森
+    811, 873, 841, // 封印墓地
+    333, 2, // 月牙山
+    507, 508, 512, 522, 560, 561, 559, 558, // 绝望冰原
+    26, 70, // 失魂沙漠
   ]
 
   private oneKeyMission: number[][] = [
-    [2709, 2700],
+    [2811, 1149, 1150, 1151, 1152, 1165, 1153, 1163, 1154, 1155, 1157, 1158, 1159, 1156, 1161, 1162, 1160, 1164], // 清明节
     [2799, 1137, 1138, 1139, 1140, 1141, 1142, 1143, 1144, 1145, 1146, 1147], // 植树节
+    [2599, 1126, 1127, 1134, 1128, 1129, 1130, 1135, 1131, 1136, 1133, 1132], // 美女节
+    [2575, 2548, 2549, 2550, 2570, 2571, 2572, 2574, 2573], // 夜语森林
   ]
 
   _isStarting = false
@@ -107,6 +71,20 @@ export class AutoExecMission {
   stop() {
     if (this._isStarting)
       this._isStarting = false
+  }
+
+  doOneKeyMission_local(i: number) {
+    window.OneKeyDailyMission.curSelect = i
+    window.OneKeyDailyMission.curSelect_idList = this.oneKeyMission[i]
+    window.OneKeyDailyMission.curCityTask_idList = -1
+    const id = this.oneKeyMission[i][0]
+    if (window.Mission.isMissionFinish(window.xself, id) || window.xself.getMissionById(id)) {
+      window.OneKeyDailyMission.continueMissionInList(this.oneKeyMission[i].slice(1))
+    }
+    else {
+      window.AutoFindPath.findTask(id)
+      window.OneKeyDailyMission.isDoingOnekeyMission = true
+    }
   }
 
   isFinish() {
@@ -167,8 +145,6 @@ export class AutoExecMission {
     const steps = await this.getMissionPathById(missionId)
     await this.jumpMapByStep(steps)
     const acceptedMission = await this.ensureAcceptMission(missionId)!
-    console.log('acceptMission', acceptedMission)
-    let condition: Condition
     let f = false
 
     if (acceptedMission && acceptedMission.isCollectItemType) {
