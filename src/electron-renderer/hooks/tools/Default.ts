@@ -96,7 +96,7 @@ export default class DefaultFunction {
             window.defaultFunction.useTitle(505)
         }, TimeHelper.second(2))
       }
-    }, 1000))
+    }, TimeHelper.second(5)))
   }
 
   getTitleList() {
