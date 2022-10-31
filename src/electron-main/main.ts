@@ -63,7 +63,6 @@ function setupTray() {
   const contextMenu = Menu.buildFromTemplate([
     {
       label: '退出应用',
-      type: 'normal',
       click: () => {
         mainWindow.close()
         app.quit()
@@ -97,14 +96,6 @@ app
   .then(createWindow)
   .then(setupTray)
   .then(() => new ExceptionHandler())
-  .then(() => {
-    app.setAboutPanelOptions({
-      applicationName: '世界H5日常任务处理器',
-      applicationVersion: app.getVersion(),
-      copyright: 'Copyright © 2022 Seven',
-      iconPath: resolveAssets('icons/win/icon.ico'),
-    })
-  })
 
 app.on('window-all-closed', () => {
   app.quit()
