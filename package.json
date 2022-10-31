@@ -12,10 +12,6 @@
     "build:preload": "webpack --config ./build/webpack.renderer.ts",
     "package": "npm run clean && npm run build && electron-builder build",
     "release": "electron-builder build --publish always",
-    "prerelease": "node scripts/prepackage.js && npm run clean && yarn build",
-    "prepackage": "node scripts/prepackage.js && npm run clean && yarn build",
-    "patch": "node scripts/patch.js",
-    "major": "node scripts/major.js",
     "clean": "rimraf ./release/build"
   },
   "dependencies": {
