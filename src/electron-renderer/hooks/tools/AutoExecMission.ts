@@ -69,8 +69,11 @@ export class AutoExecMission {
   }
 
   stop() {
-    if (this._isStarting)
+    if (this._isStarting) {
       this._isStarting = false
+      window.AutoGamer.switchAutoGaming(false)
+      window.OneKeyDailyMission.stop()
+    }
   }
 
   doOneKeyMission_local(i: number) {
@@ -104,8 +107,12 @@ export class AutoExecMission {
     if (!this._isStarting)
       return
 
+    if (this.hasMissionById(2591))
+      this.deleteMission(2591)
+
+    window.AutoGamer.switchAutoGaming(false)
+    window.skipBattleAnime.stop()
     window.OneKeyDailyMission.stop()
-    window.skipBattleAnime.start()
 
     if (this.isFinish()) {
       if (!this.checkFinish([1552])) {
@@ -136,7 +143,6 @@ export class AutoExecMission {
 
     if (this.checkFashionDurability()) {
       await window.thousandBattle.enterCity()
-      window.autoRepairEquip.repairEquip()
       await delay(1000)
     }
 
@@ -144,51 +150,58 @@ export class AutoExecMission {
     const missionId = this.defaultMission[index]
     const steps = await this.getMissionPathById(missionId)
     await this.jumpMapByStep(steps)
-    const acceptedMission = await this.ensureAcceptMission(missionId)!
-    let f = false
+    window.OneKeyDailyMission.start()
+    await when(() => this.checkFinish([missionId]))
+    window.AutoGamer.switchAutoGaming(false)
+    window.OneKeyDailyMission.stop()
 
-    if (acceptedMission && acceptedMission.isCollectItemType) {
-      window.DISABLE_AUTO_FIND_MISSION = true
-      f = true
-      while (!this.ensureMissionCompleted(missionId)) {
-        if (window.xworld.inBattle)
-          continue
-        this.toCollectMissionBattle(acceptedMission)
-      }
-
-      await this.ensureSubmitMission(missionId)
-    }
-
-    if (acceptedMission && acceptedMission.isKillMonsterMission()) {
-      window.DISABLE_AUTO_FIND_MISSION = true
-      f = true
-      while (!this.ensureMissionCompleted(missionId)) {
-        function exitBattle() {
-
-        }
-        if (window.xworld.inBattle)
-          continue
-        this.toKillMonsterMissionBattle(acceptedMission)
-      }
-
-      await this.ensureSubmitMission(missionId)
-    }
-
-    if (this.ensureMissionCompleted(missionId)) {
-      f = true
-      await this.ensureSubmitMission(missionId)
-    }
-
-    if (!f) {
-      window.DISABLE_AUTO_FIND_MISSION = false
-      window.skipBattleAnime.stop()
-      window.OneKeyDailyMission.start()
-      await when(() => this.checkFinish([missionId]))
-      window.OneKeyDailyMission.stop()
-    }
-
-    window.skipBattleAnime.stop()
     this.run()
+
+    //   const acceptedMission = await this.ensureAcceptMission(missionId)!
+    //   let f = false
+
+    //   if (acceptedMission && acceptedMission.isCollectItemType) {
+    //     window.DISABLE_AUTO_FIND_MISSION = true
+    //     f = true
+    //     while (!this.ensureMissionCompleted(missionId)) {
+    //       if (window.xworld.inBattle)
+    //         continue
+    //       this.toCollectMissionBattle(acceptedMission)
+    //     }
+
+    //     await this.ensureSubmitMission(missionId)
+    //   }
+
+    //   if (acceptedMission && acceptedMission.isKillMonsterMission()) {
+    //     window.DISABLE_AUTO_FIND_MISSION = true
+    //     f = true
+    //     while (!this.ensureMissionCompleted(missionId)) {
+    //       function exitBattle() {
+
+    //       }
+    //       if (window.xworld.inBattle)
+    //         continue
+    //       this.toKillMonsterMissionBattle(acceptedMission)
+    //     }
+
+    //     await this.ensureSubmitMission(missionId)
+    //   }
+
+    //   if (this.ensureMissionCompleted(missionId)) {
+    //     f = true
+    //     await this.ensureSubmitMission(missionId)
+    //   }
+
+    //   if (!f) {
+    //     window.DISABLE_AUTO_FIND_MISSION = false
+    //     window.skipBattleAnime.stop()
+    //     window.OneKeyDailyMission.start()
+    //     await when(() => this.checkFinish([missionId]))
+    //     window.OneKeyDailyMission.stop()
+    //   }
+
+    //   window.skipBattleAnime.stop()
+    //   this.run()
   }
 
   private toCollectMissionBattle(mission: Mission) {
@@ -386,6 +399,11 @@ export class AutoExecMission {
     await when(window, () => !this.hasMissionById(mission.id))
   }
 
+  private async deleteMission(id: number) {
+    if (this.hasMissionById(id))
+      window.Mission.doDeleteMissionMsg(window.xself, this.hasMissionById(id))
+  }
+
   private async jumpMapPatch(mapId: number) {
     if (mapId === 907) {
       const mission = (await this.getNPCAndMission()).map(npc => npc.missions).flat(3)
@@ -443,8 +461,10 @@ export class AutoExecMission {
 
   checkDailyMissionFinish() {
     return this.Task_cityList.map((dailyMission: number[]) => {
-      return dailyMission.map((id: number) => window.Mission.isMissionFinish(window.xself, id)).some(v => v)
+      return dailyMission.map((id: number) => window.Mission.isMissionFinish(window.xself, id))
+        .some(Boolean)
     })
       .every(Boolean)
   }
 }
+
