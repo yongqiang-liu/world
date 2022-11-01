@@ -2,7 +2,6 @@ import type { Account, IRawBattleConfiguration } from 'common/configuration'
 import { IPC_MAIN, IPC_RENDERER } from 'common/ipcEventConst'
 import type { SellOptions } from 'common/sell'
 import { BrowserView, app, ipcMain, session } from 'electron'
-// import contextMenu from 'electron-context-menu'
 import { GameViewConfig } from './windowConfig'
 
 export const enum GameViewState {
@@ -10,13 +9,18 @@ export const enum GameViewState {
   INITIALIZED = 'initialized',
 }
 
-// @ts-expect-error sss
-// const { init } = contextMenu({
-//   showInspectElement: false,
-// })
+class GameCommander {
+  constructor(readonly webContents: Electron.WebContents) { }
 
-export default class GameView {
-  private _view = new BrowserView(GameViewConfig)
+  getId() {
+
+  }
+
+  getMissionCompleteStatusById(id: number) {}
+}
+
+export default class GameView extends GameCommander {
+  private _view: BrowserView
   private _state: GameViewState = GameViewState.UNINITIALIZED
   private _oneKeyDailyMission = false
   private _repairEquip = false
@@ -37,6 +41,9 @@ export default class GameView {
     white: Array<string>,
     equipWhite: Array<string>,
   ) {
+    const view = new BrowserView(GameViewConfig)
+    super(view.webContents)
+    this._view = view
     session.defaultSession.clearStorageData()
     this._view.webContents.setBackgroundThrottling(false)
     this._view.webContents.incrementCapturerCount(undefined, false, true)
@@ -304,10 +311,6 @@ export default class GameView {
 
   jumpLogin() {
     this.changeState(GameViewState.UNINITIALIZED)
-  }
-
-  get webContents() {
-    return this._view.webContents
   }
 
   get view() {

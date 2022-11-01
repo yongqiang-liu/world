@@ -8,6 +8,7 @@ import { setupEvent } from './events'
 import { checkGameStart, whenGameStarted, whenGameWillReady } from './gameFunctional'
 import { setupHooks } from './hooks'
 import { setupFunction, setupUnInitializeFunction } from './ipcEvent'
+import { setupCommander } from './commander'
 
 ipcRenderer.setMaxListeners(30)
 window.__myEvent__ = new EventEmitter()
@@ -63,4 +64,6 @@ window.addEventListener('load', async () => {
   setupEvent()
 
   setupFunction()
+
+  setupCommander()
 })

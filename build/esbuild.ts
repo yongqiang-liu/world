@@ -22,5 +22,6 @@ if (process.env.PRODUCT) {
     outfile: path.join(webpackPaths.distMainPath, 'main.js'),
     platform: 'node',
     minify: true,
+    external: ['electron'],
   })
 }

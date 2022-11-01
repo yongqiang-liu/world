@@ -1,8 +1,15 @@
 export enum COMMAND {
+  BASE = 'command:hello',
+
   STOP_SKIP_ANIME = 'STOP_SKIP_ANIME',
   STOP_DAILY_MISSION = 'STOP_DAILY_MISSION',
+
+  GAME_ROLE_LIST = 'GAME_ROLE_LIST',
+  GAME_USER_ID = 'GAME_USER_ID',
+  GAME_MISSION_STATUS = 'GAME_MISSION_STATUS',
 }
 
-export interface COMMAND_PAYLOAD {
+export interface COMMAND_PAYLOAD<T = any> {
   cmd: COMMAND
+  data: T
 }
