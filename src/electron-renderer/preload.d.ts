@@ -13,6 +13,7 @@ import TestRefreshGame from "./hooks/tools/TestRefreshGame";
 import ThousandBattle from "./hooks/tools/ThousandBattle";
 import Store from 'electron-store'
 import { RateConfiguration } from "common/configuration";
+import { Commander } from "./commander";
 
 interface Config {
   autoDaily: boolean;
@@ -31,6 +32,7 @@ interface Config {
 
 declare global {
   interface Window {
+    COMMAND_MANAGER: Commander
     STORE: Store<RateConfiguration>
     AUTO_MISSION_RATE: number
     MOVE_SPEED: number

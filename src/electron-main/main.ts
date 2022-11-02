@@ -96,6 +96,7 @@ app
   .then(createWindow)
   .then(setupTray)
   .then(() => new ExceptionHandler())
+  .catch(err => console.error(err))
 
 app.on('window-all-closed', () => {
   app.quit()

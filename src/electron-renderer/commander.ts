@@ -3,7 +3,7 @@ import type { COMMAND_PAYLOAD } from 'common/Command'
 import { COMMAND } from 'common/Command'
 import { ipcRenderer } from 'electron'
 
-class Commander extends EventEmitter {
+export class Commander extends EventEmitter {
   constructor() {
     super()
     this.setMaxListeners(Infinity)
@@ -16,4 +16,6 @@ export function setupCommander() {
   ipcRenderer.on(COMMAND.BASE, (e, payload: COMMAND_PAYLOAD) => {
     commander.emit(payload.cmd, e, payload)
   })
+
+  window.COMMAND_MANAGER = commander
 }
