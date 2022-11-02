@@ -17,7 +17,7 @@
     ]
   },
   "icon": "./assets/icons/win/icon.ico",
-  "extraResources": ["./assets"],
+  "extraResources": ["./buildResources"],
   "nsis": {
     "oneClick": false,
     "allowElevation": true,

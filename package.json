@@ -22,6 +22,7 @@
   "devDependencies": {
     "@antfu/eslint-config": "^0.27.0",
     "@types/lodash-es": "^4.17.6",
+    "@types/minify": "^9.1.0",
     "@types/node": "^17.0.21",
     "cross-env": "^7.0.3",
     "electron": "15.3.0",
@@ -30,6 +31,7 @@
     "esbuild-register": "^3.3.3",
     "eslint": "^8.26.0",
     "esno": "^0.16.3",
+    "minify": "^9.1.0",
     "rimraf": "^3.0.2",
     "tsconfig-paths": "^3.13.0",
     "typescript": "^4.6.2"

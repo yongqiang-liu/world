@@ -9,7 +9,7 @@ const rootPath = isPackaged
   ? path.join(process.resourcesPath)
   : path.join(__dirname, '../../..')
 const assetsPath = isPackaged
-  ? path.join(process.resourcesPath, 'assets')
+  ? path.join(process.resourcesPath, 'buildResources')
   : path.join(rootPath, 'assets')
 const preloadPath = isPackaged
   ? path.join(__dirname, '../renderer')

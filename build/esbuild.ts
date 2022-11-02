@@ -1,5 +1,7 @@
 import path from 'node:path'
+import fs, { promises } from 'node:fs'
 import { build } from 'esbuild'
+import { minify } from 'minify'
 import webpackPaths from './utils'
 
 build({
@@ -24,4 +26,22 @@ if (process.env.PRODUCT) {
     minify: true,
     external: ['electron'],
   })
+
+  minify(path.join(webpackPaths.rootPath, 'assets', 'world.js'))
+    .then((v) => {
+      promises.writeFile(path.join(webpackPaths.rootPath, 'buildResources', 'world.js'), v)
+    })
+  minify(path.join(webpackPaths.rootPath, 'assets', 'egretlib.js'))
+    .then((v) => {
+      promises.writeFile(path.join(webpackPaths.rootPath, 'buildResources', 'egretlib.js'), v)
+    })
+
+  if (!fs.existsSync(path.join(webpackPaths.rootPath, 'buildResources', 'icons'))) {
+    promises.cp(
+      path.join(webpackPaths.rootPath, 'assets', 'icons'),
+      path.join(webpackPaths.rootPath, 'buildResources', 'icons'), {
+        force: true,
+        recursive: true,
+      })
+  }
 }
