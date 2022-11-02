@@ -17,25 +17,9 @@ export default function setupFunction() {
     } = window
     const e = function (e: any) {
       if (!MsgHandler.isMessageHaveError(e)) {
-        const n = e.getInt()
-        const i = e.getInt()
+        e.getInt()
+        e.getInt()
         const o = e.getInt()
-        n > 0
-            && WorldMessage.addTips(
-              `获得 ${
-                 PowerString.makeColorString(
-                  `${GameText.STR_MONEY1}x${n}`,
-                  ColorUtils.COLOR_MONEY2,
-                )}`,
-            ),
-        i > 0
-              && WorldMessage.addTips(
-                `获得 ${
-                   PowerString.makeColorString(
-                    `${GameText.STR_MONEY2}x${i}`,
-                    ColorUtils.COLOR_MONEY2,
-                  )}`,
-              ),
         o > 0
               && WorldMessage.addTips(
                 `获得 ${
@@ -47,28 +31,28 @@ export default function setupFunction() {
       }
     }
     const n = MsgHandler.createGetCityMoneyMsg(xself.getId())
-    return nato.Network.sendCmd(n, e, this), !0
+    return nato.Network.sendCmd(n, e, this)
   }
 
   // 领取离线经验
   window.doGetExp = function () {
     const { nato } = window
     const t = new nato.Message(ProtocolDefine.CG_ACTOR_OFFLINE_EXP_GET)
-    t.putByte(window.config.offlineExpRate3 ? 1 : 0),
+    t.putByte(window.config.offlineExpRate3 ? 1 : 0)
     nato.Network.sendCmd(
       t,
       (t: any) => {
         const e = t.getByte()
         if (e < 0) { window.AlertPanel.alertCommon(t.getString()) }
         else {
-          window.xself.setMoneyByType(window.ModelConst.MONEY1, t.getInt()),
-          window.xself.setMoneyByType(window.ModelConst.MONEY2, t.getInt()),
-          window.xself.setMoneyByType(window.ModelConst.MONEY3, t.getInt()),
-          (window.OfflineExp.info.offlineTime = 0),
-          (window.OfflineExp.info.prayExp = t.getInt()),
-          (window.OfflineExp.info.expEachHour = t.getInt())
+          window.xself.setMoneyByType(window.ModelConst.MONEY1, t.getInt())
+          window.xself.setMoneyByType(window.ModelConst.MONEY2, t.getInt())
+          window.xself.setMoneyByType(window.ModelConst.MONEY3, t.getInt())
+          window.OfflineExp.info.offlineTime = 0
+          window.OfflineExp.info.prayExp = t.getInt()
+          window.OfflineExp.info.expEachHour = t.getInt()
           const n = new window.StringBuffer()
-          const i = window.MsgHandler.processUpLevelMsg(t, window.xself, n)
+          window.MsgHandler.processUpLevelMsg(t, window.xself, n)
           // window.AlertPanel.alertCommon(`成功领取了${i}点离线经验`)
         }
       },
