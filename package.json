@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "about-window": "^1.15.2",
-    "electron-context-menu": "^3.5.0",
     "electron-store": "^8.1.0",
     "json5": "^2.2.0",
     "lodash-es": "^4.17.21"
