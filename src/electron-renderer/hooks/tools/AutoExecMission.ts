@@ -62,6 +62,9 @@ export class AutoExecMission {
   start() {
     if (!this._isStarting) {
       this._isStarting = true
+      window.DISABLE_AUTO_FIND_MISSION = true
+      window.AutoGamer.switchAutoGaming(false)
+      window.OneKeyDailyMission.stop()
       this.run()
         .then(() => console.log('执行完毕'))
         .catch(err => console.error(err))
@@ -73,6 +76,7 @@ export class AutoExecMission {
       this._isStarting = false
       window.AutoGamer.switchAutoGaming(false)
       window.OneKeyDailyMission.stop()
+      window.DISABLE_AUTO_FIND_MISSION = false
     }
   }
 
