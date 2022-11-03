@@ -120,6 +120,7 @@ export class AutoExecMission {
 
     if (this.isFinish()) {
       if (!this.checkFinish([1552])) {
+        window.DISABLE_AUTO_FIND_MISSION = false
         if (!window.xworld.isInCityNow())
           await window.thousandBattle.enterCity()
         await when(() => window.xworld.isInCityNow())
