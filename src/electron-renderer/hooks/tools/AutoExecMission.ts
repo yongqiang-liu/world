@@ -37,6 +37,8 @@ export class AutoExecMission {
   // 732:[733]  精灵之森
   //
 
+  private runMissions: number[] = []
+
   // 507, 508, 512, 522, 560, 561, 559, 558
   private defaultMission: number[] = [
     733, 734, 735, 697, 698, 766, 767, 768, // 精灵之森
@@ -77,25 +79,16 @@ export class AutoExecMission {
       window.AutoGamer.switchAutoGaming(false)
       window.OneKeyDailyMission.stop()
       window.DISABLE_AUTO_FIND_MISSION = false
-    }
-  }
-
-  doOneKeyMission_local(i: number) {
-    window.OneKeyDailyMission.curSelect = i
-    window.OneKeyDailyMission.curSelect_idList = this.oneKeyMission[i]
-    window.OneKeyDailyMission.curCityTask_idList = -1
-    const id = this.oneKeyMission[i][0]
-    if (window.Mission.isMissionFinish(window.xself, id) || window.xself.getMissionById(id)) {
-      window.OneKeyDailyMission.continueMissionInList(this.oneKeyMission[i].slice(1))
-    }
-    else {
-      window.AutoFindPath.findTask(id)
-      window.OneKeyDailyMission.isDoingOnekeyMission = true
+      this.runMissions = []
     }
   }
 
   isFinish() {
-    return this.defaultMission.map(id => window.Mission.isMissionFinish(window.xself, id)).every(v => v)
+    return this.runMissions.map(id => window.Mission.isMissionFinish(window.xself, id)).every(v => v)
+  }
+
+  isFinishDefaltMission() {
+    return this.checkFinish(this.defaultMission)
   }
 
   checkFinish(missions: number[]) {
@@ -104,7 +97,7 @@ export class AutoExecMission {
 
   autoRunInDailyMissionEnd() {
     if (this.checkDailyMissionFinish() && window.xworld.isInCityNow())
-      this.run()
+      this.runOneKeyExtraMission()
   }
 
   async run() {
@@ -118,33 +111,33 @@ export class AutoExecMission {
     window.skipBattleAnime.stop()
     window.OneKeyDailyMission.stop()
 
-    if (this.isFinish()) {
-      if (!this.checkFinish([1552])) {
-        window.DISABLE_AUTO_FIND_MISSION = false
-        if (!window.xworld.isInCityNow())
-          await window.thousandBattle.enterCity()
-        await when(() => window.xworld.isInCityNow())
-        await delay(50)
-        if (this.checkFinish([1703]))
-          await window.thousandBattle.execJumpSteps(824, 825)
-        if (!this.checkFinish([1703])) {
-          window.AutoGamer.requestAutoFindPath(824, 15)
-          await when(() => window.xself.autoMoveControlList.length > 0)
-          await when(() => window.xself.autoMoveControlList.length <= 0)
-          await delay(100)
-          await this.acceptMission(1703)
-          await delay(50)
-          await this.submitMission(1703)
-        }
+    // if (this.isFinish()) {
+    //   if (!this.checkFinish([1552])) {
+    //     window.DISABLE_AUTO_FIND_MISSION = false
+    //     if (!window.xworld.isInCityNow())
+    //       await window.thousandBattle.enterCity()
+    //     await when(() => window.xworld.isInCityNow())
+    //     await delay(50)
+    //     if (this.checkFinish([1703]))
+    //       await window.thousandBattle.execJumpSteps(824, 825)
+    //     if (!this.checkFinish([1703])) {
+    //       window.AutoGamer.requestAutoFindPath(824, 15)
+    //       await when(() => window.xself.autoMoveControlList.length > 0)
+    //       await when(() => window.xself.autoMoveControlList.length <= 0)
+    //       await delay(100)
+    //       await this.acceptMission(1703)
+    //       await delay(50)
+    //       await this.submitMission(1703)
+    //     }
 
-        window.OneKeyDailyMission.start()
-        while (!this.checkFinish([1684]))
-          await delay(1000)
+    //     window.OneKeyDailyMission.start()
+    //     while (!this.checkFinish([1684]))
+    //       await delay(1000)
 
-        window.OneKeyDailyMission.stop()
-      }
-      return
-    }
+    //     window.OneKeyDailyMission.stop()
+    //   }
+    //   return
+    // }
 
     if (this.checkFashionDurability()) {
       await window.thousandBattle.enterCity()
@@ -152,15 +145,21 @@ export class AutoExecMission {
     }
 
     const index = this.getUncompletedIndex()
-    const missionId = this.defaultMission[index]
+    if (index === -1) {
+      this.stop()
+      return
+    }
+    const missionId = this.runMissions[index]
     const steps = await this.getMissionPathById(missionId)
+      .catch(() => [])
     await this.jumpMapByStep(steps)
+    await this.acceptMission(missionId)
     window.OneKeyDailyMission.start()
     await when(() => this.checkFinish([missionId]))
     window.AutoGamer.switchAutoGaming(false)
     window.OneKeyDailyMission.stop()
 
-    this.run()
+    await this.run()
 
     //   const acceptedMission = await this.ensureAcceptMission(missionId)!
     //   let f = false
@@ -207,6 +206,22 @@ export class AutoExecMission {
 
     //   window.skipBattleAnime.stop()
     //   this.run()
+  }
+
+  async runOneKeyExtraMission() {
+    this._isStarting = true
+    this.runMissions = this.defaultMission
+    window.DISABLE_AUTO_FIND_MISSION = true
+    await this.run()
+  }
+
+  async runExtraMission() {
+    for (const missions of this.oneKeyMission) {
+      this.runMissions = missions
+      this._isStarting = true
+      await this.run()
+    }
+    this.stop()
   }
 
   private toCollectMissionBattle(mission: Mission) {
@@ -345,12 +360,12 @@ export class AutoExecMission {
   }
 
   private getUncompletedIndex() {
-    for (let i = 0; i < this.defaultMission.length; i++) {
-      if (!this.checkFinish([this.defaultMission[i]]))
+    for (let i = 0; i < this.runMissions.length; i++) {
+      if (!this.checkFinish([this.runMissions[i]]))
         return i
     }
 
-    return 0
+    return -1
   }
 
   private async jumpMapByStep(steps: AutoMoveMissionPathStep[] | AutoMoveMissionPathStep) {

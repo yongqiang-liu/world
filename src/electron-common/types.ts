@@ -40,3 +40,11 @@ export interface NPC {
   missions: Mission[]
   doGetMissionData(func1?: any, func2?: any): any
 }
+
+
+export interface JumpMapOption {
+  npcId: number
+  mapId: number
+  jumpMapReqMissionID: number
+  jumpMapReqMissionState: number
+}
