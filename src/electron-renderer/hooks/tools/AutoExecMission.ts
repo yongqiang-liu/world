@@ -67,6 +67,7 @@ export class AutoExecMission {
       window.DISABLE_AUTO_FIND_MISSION = true
       window.AutoGamer.switchAutoGaming(false)
       window.OneKeyDailyMission.stop()
+      this.runMissions = this.defaultMission
       this.run()
         .then(() => console.log('执行完毕'))
         .catch(err => console.error(err))
