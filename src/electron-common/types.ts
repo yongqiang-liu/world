@@ -37,10 +37,13 @@ export interface Mission {
 
 export interface NPC {
   id: number
+  jumpMapID: number[]
+  jumpMapGx: number[]
+  jumpMapGy: number[]
   missions: Mission[]
   doGetMissionData(func1?: any, func2?: any): any
+  isJumpIcon(): boolean
 }
-
 
 export interface JumpMapOption {
   npcId: number

@@ -1,10 +1,10 @@
 import { delay, when } from 'common/functional'
-import type { JumpMapOption } from 'common/types'
+import type { JumpMapOption, NPC } from 'common/types'
 
 export async function jumpMaps(steps: (number | JumpMapOption)[]) {
   for (const step of steps) {
     if (typeof step === 'number') {
-      const npcs: any[] = window.xworld.npcList.filter((npc: any) => npc.isJumpIcon() || Array.isArray(npc.jumpMapID))
+      const npcs: NPC[] = window.xworld.npcList.filter((npc: NPC) => npc.isJumpIcon() || Array.isArray(npc.jumpMapID))
       let index = -1
       let _npc
       for (const npc of npcs) {
@@ -23,7 +23,7 @@ export async function jumpMaps(steps: (number | JumpMapOption)[]) {
       await when(window, () => !window.xworld.isJumpingMap)
     }
     else {
-
+      const npcs: NPC[] = window.xworld.npcList.filter((npc: NPC) => npc.isJumpIcon() || Array.isArray(npc.jumpMapID))
     }
   }
 }
