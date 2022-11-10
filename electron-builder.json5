@@ -3,7 +3,11 @@
   "appId": "net.seven.shijieh5",
   "copyright": "Copyright © 2022 Seven",
   "asar": true,
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "node_modules",
+    "package.json"
+  ],
   "win": {
     "target": [
       {
@@ -22,7 +26,8 @@
     "oneClick": false,
     "allowElevation": true,
     "allowToChangeInstallationDirectory": true,
-    "shortcutName": "世界H5"
+    "shortcutName": "世界H5",
+    "artifactName": "${productName}_windows_${arch}_${version}.${ext}"
   },
   "directories": {
     "app": "./release/app",

@@ -21,13 +21,12 @@ export default function setupFunction() {
         e.getInt()
         const o = e.getInt()
         o > 0
-              && WorldMessage.addTips(
-                `获得 ${
-                   PowerString.makeColorString(
-                    `${GameText.STR_MONEY3}x${o}`,
-                    ColorUtils.COLOR_MONEY3,
-                  )}`,
-              )
+          && WorldMessage.addTips(
+            `获得 ${PowerString.makeColorString(
+              `${GameText.STR_MONEY3}x${o}`,
+              ColorUtils.COLOR_MONEY3,
+            )}`,
+          )
       }
     }
     const n = MsgHandler.createGetCityMoneyMsg(xself.getId())
@@ -37,27 +36,37 @@ export default function setupFunction() {
   // 领取离线经验
   window.doGetExp = function () {
     const { nato } = window
-    const t = new nato.Message(ProtocolDefine.CG_ACTOR_OFFLINE_EXP_GET)
-    t.putByte(window.config.offlineExpRate3 ? 1 : 0)
-    nato.Network.sendCmd(
-      t,
-      (t: any) => {
-        const e = t.getByte()
-        if (e < 0) { window.AlertPanel.alertCommon(t.getString()) }
-        else {
-          window.xself.setMoneyByType(window.ModelConst.MONEY1, t.getInt())
-          window.xself.setMoneyByType(window.ModelConst.MONEY2, t.getInt())
-          window.xself.setMoneyByType(window.ModelConst.MONEY3, t.getInt())
-          window.OfflineExp.info.offlineTime = 0
-          window.OfflineExp.info.prayExp = t.getInt()
-          window.OfflineExp.info.expEachHour = t.getInt()
-          const n = new window.StringBuffer()
-          window.MsgHandler.processUpLevelMsg(t, window.xself, n)
-          // window.AlertPanel.alertCommon(`成功领取了${i}点离线经验`)
-        }
-      },
-      this,
-    )
+
+    if (window.xself.money2 < 500)
+      return
+
+    const e = new nato.Message(ProtocolDefine.CG_ACTOR_OFFLINE_EXP_OPEN)
+    nato.Network.sendCmd(e, (e: any) => {
+      window.OfflineExp.fromBytes(e)
+      if (window.OfflineExp.info.expGetable >= 50000) {
+        const t = new nato.Message(ProtocolDefine.CG_ACTOR_OFFLINE_EXP_GET)
+        t.putByte(window.config.offlineExpRate3 ? 1 : 0)
+        nato.Network.sendCmd(
+          t,
+          (t: any) => {
+            const e = t.getByte()
+            if (e < 0) { window.AlertPanel.alertCommon(t.getString()) }
+            else {
+              window.xself.setMoneyByType(window.ModelConst.MONEY1, t.getInt())
+              window.xself.setMoneyByType(window.ModelConst.MONEY2, t.getInt())
+              window.xself.setMoneyByType(window.ModelConst.MONEY3, t.getInt())
+              window.OfflineExp.info.offlineTime = 0
+              window.OfflineExp.info.prayExp = t.getInt()
+              window.OfflineExp.info.expEachHour = t.getInt()
+              const n = new window.StringBuffer()
+              window.MsgHandler.processUpLevelMsg(t, window.xself, n)
+              // window.AlertPanel.alertCommon(`成功领取了${i}点离线经验`)
+            }
+          },
+          this,
+        )
+      }
+    }, this)
   }
 
   window.doLoginLottery = function () {
