@@ -42,7 +42,7 @@ export default function setupFunction() {
 
     const e = new nato.Message(ProtocolDefine.CG_ACTOR_OFFLINE_EXP_OPEN)
     nato.Network.sendCmd(e, (e: any) => {
-      window.OfflineExp.fromBytes(e)
+      window.OfflineExp.info.fromBytes(e)
       if (window.OfflineExp.info.expGetable >= 50000) {
         const t = new nato.Message(ProtocolDefine.CG_ACTOR_OFFLINE_EXP_GET)
         t.putByte(window.config.offlineExpRate3 ? 1 : 0)
